@@ -213,3 +213,37 @@ export function previewEatItems() {
     mk('e5', 'Phở Thìn', '13 Lò Đúc', 'tried', ['sáng']),
   ]
 }
+
+/* ---------- Dữ liệu giả cho Phase 3 ---------- */
+
+function inDaysYmd(days: number) {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+export function previewAgenda() {
+  const mk = (
+    id: string,
+    title: string,
+    emoji: string,
+    days: number,
+    system = false,
+  ) => ({
+    id,
+    title,
+    emoji,
+    occurs_on: inDaysYmd(days),
+    days_away: days,
+    is_system: system,
+    recurrence: 'yearly' as const,
+  })
+
+  return [
+    mk('ev1', 'Sinh nhật Diên', '🎂', 5),
+    mk('milestone:Tròn 14 tháng', 'Tròn 14 tháng', '💕', 16, true),
+    mk('ev2', 'Đi Đà Nẵng', '✈️', 34),
+    mk('milestone:Ngày thứ 500', 'Ngày thứ 500', '💕', 88, true),
+    mk('ev3', 'Kỉ niệm ngày cưới ba mẹ', '💍', -12),
+  ]
+}

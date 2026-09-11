@@ -28,6 +28,8 @@ const SCREENS = [
   { name: 'timeline-grid', url: '/timeline?preview=1&view=grid', wait: 'Kỉ niệm' },
   { name: 'post', url: '/timeline/preview-post-0?preview=1', wait: 'Hoàng hôn' },
   { name: 'compose', url: '/compose?preview=1', wait: 'Thêm kỉ niệm' },
+  { name: 'plan', url: '/plan?preview=1', wait: 'Sinh nhật' },
+  { name: 'event-new', url: '/plan/new?preview=1', wait: 'Thêm dịp' },
   { name: 'eat', url: '/eat?preview=1', wait: 'Muốn thử' },
   { name: 'eat-spin', url: '/eat/spin?preview=1', wait: 'Tối nay ăn gì' },
   { name: 'settings', url: '/settings?preview=1', wait: 'Cài đặt' },

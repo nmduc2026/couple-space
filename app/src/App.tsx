@@ -21,6 +21,8 @@ import { HomeScreen } from './features/home/HomeScreen'
 import { TimelineScreen } from './features/timeline/TimelineScreen'
 import { PostDetailScreen } from './features/timeline/PostDetailScreen'
 import { ComposeScreen } from './features/timeline/ComposeScreen'
+import { PlanScreen } from './features/plan/PlanScreen'
+import { EventFormScreen } from './features/plan/EventFormScreen'
 import { EatScreen } from './features/eat/EatScreen'
 import { SpinScreen } from './features/eat/SpinScreen'
 import { SettingsScreen } from './features/settings/SettingsScreen'
@@ -81,6 +83,7 @@ export default function App() {
             <Route element={<AppShell />}>
               <Route path="/" element={<HomeScreen />} />
               <Route path="/timeline" element={<TimelineScreen />} />
+              <Route path="/plan" element={<PlanScreen />} />
               <Route path="/eat" element={<EatScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
             </Route>
@@ -89,6 +92,8 @@ export default function App() {
             <Route path="/waiting" element={<WaitingScreen />} />
             <Route path="/compose" element={<ComposeScreen />} />
             <Route path="/timeline/:id" element={<PostDetailScreen />} />
+            <Route path="/plan/new" element={<EventFormScreen />} />
+            <Route path="/plan/:id" element={<EventFormScreen />} />
             <Route path="/eat/spin" element={<SpinScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>

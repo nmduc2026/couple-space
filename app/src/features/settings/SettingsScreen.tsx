@@ -16,6 +16,15 @@ import {
 } from '../../components/ui'
 import { btn } from '../../lib/ui-classes'
 
+/** [cột trong notification_prefs, nhãn, giá trị mặc định] */
+const NOTIFY_TOGGLES: Array<[string, string, boolean]> = [
+  ['partner_joined', 'Người ấy đã tham gia', true],
+  ['new_post', 'Kỉ niệm mới', true],
+  ['reactions', 'Tim và bình luận', true],
+  ['event_reminders', 'Nhắc dịp đặc biệt', true],
+  ['daily_day_count', 'Nhắc số ngày mỗi sáng', false],
+]
+
 const THEMES: Array<[Theme, string]> = [
   ['system', 'Theo máy'],
   ['light', 'Sáng'],
@@ -106,12 +115,19 @@ export function SettingsScreen() {
     setMessage('Đã lưu.')
   }
 
-  async function togglePartnerJoined(next: boolean) {
+  /** Ghi kèm múi giờ máy mỗi lần lưu — server cần nó để gửi nhắc đúng
+   *  9 giờ sáng theo giờ người nhận, không phải 9 giờ UTC. */
+  async function savePrefs(patch: Record<string, unknown>) {
     if (!user) return
-    await supabase.from('notification_prefs').upsert({
+    const { error } = await supabase.from('notification_prefs').upsert({
       user_id: user.id,
-      partner_joined: next,
+      time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      ...patch,
     })
+    if (error) {
+      setMessage(error.message)
+      return
+    }
     await prefsQuery.refetch()
   }
 
@@ -203,16 +219,47 @@ export function SettingsScreen() {
         <div className="mt-7">
           <SectionLabel>Thông báo</SectionLabel>
           <Group>
+            {NOTIFY_TOGGLES.map(([key, label, fallback]) => (
+              <Row
+                key={key}
+                className="flex items-center justify-between gap-3"
+              >
+                <span className="text-[15px] text-text">{label}</span>
+                <Switch
+                  label={label}
+                  checked={
+                    (prefsQuery.data?.[key] as boolean | undefined) ?? fallback
+                  }
+                  onChange={(next) => void savePrefs({ [key]: next })}
+                />
+              </Row>
+            ))}
+
             <Row className="flex items-center justify-between gap-3">
-              <span className="text-[15px] text-text">
-                Người ấy đã tham gia
+              <span className="shrink-0 text-[15px] text-text">
+                Giờ yên lặng
               </span>
-              <Switch
-                label="Thông báo khi người ấy tham gia"
-                checked={prefsQuery.data?.partner_joined ?? true}
-                onChange={(next) => void togglePartnerJoined(next)}
-              />
+              <span className="flex items-center gap-1.5">
+                <input
+                  type="time"
+                  value={prefsQuery.data?.quiet_hours_from ?? ''}
+                  onChange={(e) =>
+                    void savePrefs({ quiet_hours_from: e.target.value || null })
+                  }
+                  className="bg-transparent text-right text-[15px] text-text outline-none"
+                />
+                <span className="text-muted">–</span>
+                <input
+                  type="time"
+                  value={prefsQuery.data?.quiet_hours_to ?? ''}
+                  onChange={(e) =>
+                    void savePrefs({ quiet_hours_to: e.target.value || null })
+                  }
+                  className="bg-transparent text-right text-[15px] text-text outline-none"
+                />
+              </span>
             </Row>
+
             <Row>
               <button
                 type="button"
@@ -229,6 +276,10 @@ export function SettingsScreen() {
               ) : null}
             </Row>
           </Group>
+          <p className="mt-2 px-1 text-[12.5px] leading-relaxed text-muted">
+            Nhắc gửi lúc 9 giờ sáng theo giờ máy bạn. Rơi vào giờ yên lặng thì
+            hoãn tới lúc hết, không bỏ.
+          </p>
         </div>
 
         <div className="mt-7">

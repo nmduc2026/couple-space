@@ -7,6 +7,8 @@ import { shareInvite } from '../../lib/inviteShare'
 import { supabase } from '../../lib/supabase'
 import { Loading } from '../../components/ui'
 import { usePosts } from '../../hooks/usePosts'
+import { useAgenda } from '../../hooks/useAgenda'
+import { countdownLabel } from '../../lib/recurrence'
 
 /** Ảnh bìa mặc định khi đôi chưa đặt ảnh riêng — lấy từ prototype. */
 const DEFAULT_COVER =
@@ -16,6 +18,7 @@ export function HomeScreen() {
   const { user } = useSession()
   const { couple, refetch, isLoading, isFetching } = useCouple()
   const { posts } = usePosts()
+  const { agenda } = useAgenda(2)
   const [offline, setOffline] = useState(!navigator.onLine)
   const [inviteCode, setInviteCode] = useState<string | null>(null)
 
@@ -160,6 +163,39 @@ export function HomeScreen() {
             ›
           </span>
         </Link>
+
+        {agenda.length > 0 ? (
+          <section className="mt-6">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+                Sắp tới
+              </h2>
+              <Link to="/plan" className="text-[11.5px] text-accent">
+                Xem tất cả
+              </Link>
+            </div>
+            <ul className="mt-2.5 flex flex-col gap-2">
+              {agenda.slice(0, 2).map((item) => (
+                <li key={item.id}>
+                  <Link
+                    to="/plan"
+                    className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
+                  >
+                    <span aria-hidden className="text-xl">
+                      {item.emoji ?? '📅'}
+                    </span>
+                    <b className="min-w-0 flex-1 truncate text-[15px] font-semibold text-text">
+                      {item.title}
+                    </b>
+                    <span className="shrink-0 text-[13px] font-medium text-accent">
+                      {countdownLabel(item.days_away)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section className="mt-6">
           <div className="flex items-baseline justify-between">
