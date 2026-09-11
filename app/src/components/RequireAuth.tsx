@@ -1,32 +1,55 @@
-import { Navigate, Outlet } from 'react-router'
-import { useMockSession } from '../lib/mock-session'
+import { useCouple } from '../hooks/useCouple'
+import { useSession } from '../hooks/useSession'
+import { Navigate, Outlet, useLocation } from 'react-router'
+import { Loading as BootScreen } from './ui'
+import { PREVIEW } from '../dev/preview'
 
-/** Chưa đăng nhập → /welcome. Logic thật ở P1-14. */
+
+
 export function RequireAuth() {
-  const { isAuthenticated } = useMockSession()
-  if (!isAuthenticated) return <Navigate to="/welcome" replace />
+  // Chế độ xem thử (?preview=1) bỏ qua mọi guard để chụp được mọi màn
+  const preview = PREVIEW
+  const { isAuthenticated, isLoading } = useSession()
+  const location = useLocation()
+
+  if (preview) return <Outlet />
+  if (isLoading) return <BootScreen />
+  if (!isAuthenticated) {
+    return <Navigate to="/welcome" replace state={{ from: location.pathname }} />
+  }
   return <Outlet />
 }
 
-/** Đã đăng nhập nhưng chưa có space → /setup. */
 export function RequireCouple() {
-  const { hasCouple } = useMockSession()
-  if (!hasCouple) return <Navigate to="/setup" replace />
+  // Chế độ xem thử (?preview=1) bỏ qua mọi guard để chụp được mọi màn
+  const preview = PREVIEW
+  const { couple, isLoading } = useCouple()
+  if (preview) return <Outlet />
+  if (isLoading) return <BootScreen />
+  if (!couple) return <Navigate to="/setup" replace />
   return <Outlet />
 }
 
-/** Đã có space thì không ở nhóm setup/join/waiting. */
 export function RequireNoCouple() {
-  const { hasCouple } = useMockSession()
-  if (hasCouple) return <Navigate to="/" replace />
+  // Chế độ xem thử (?preview=1) bỏ qua mọi guard để chụp được mọi màn
+  const preview = PREVIEW
+  const { couple, isLoading } = useCouple()
+  if (preview) return <Outlet />
+  if (isLoading) return <BootScreen />
+  if (couple) return <Navigate to="/" replace />
   return <Outlet />
 }
 
-/** Đã đăng nhập thì không ở welcome/login. */
 export function GuestOnly() {
-  const { isAuthenticated, hasCouple } = useMockSession()
+  // Chế độ xem thử (?preview=1) bỏ qua mọi guard để chụp được mọi màn
+  const preview = PREVIEW
+  const { isAuthenticated, isLoading } = useSession()
+  const { couple, isLoading: coupleLoading } = useCouple()
+
+  if (preview) return <Outlet />
+  if (isLoading || (isAuthenticated && coupleLoading)) return <BootScreen />
   if (isAuthenticated) {
-    return <Navigate to={hasCouple ? '/' : '/setup'} replace />
+    return <Navigate to={couple ? '/' : '/setup'} replace />
   }
   return <Outlet />
 }

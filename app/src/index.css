@@ -3,36 +3,85 @@
 /* dark: theo class .dark trên <html>, không theo media query mặc định */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Đổi màu theme = sửa các biến này (light). .dark bên dưới ghi đè. */
+/* Bảng màu lấy đúng từ docs/design/frontend/ui/prototype.html.
+   Đổi theme = sửa các biến này (light). .dark bên dưới ghi đè. */
 @theme {
-  --color-bg: #fdfcfb;
+  --color-bg: #fbf8f9;
   --color-surface: #ffffff;
-  --color-text: #1c1917;
-  --color-muted: #78716c;
-  --color-accent: #e11d48; /* màu chủ đạo */
-  --color-border: #e7e5e4;
+  --color-text: #2a1f26;
+  --color-muted: #8a7480;
+  --color-border: #eadfe3;
+  --color-accent: #c2415b;
+  --color-on-accent: #ffffff;
+  --color-soft: #f7e3e8;
+  --color-ok: #3f7d63;
+  --color-warn: #9a6a2f;
+
+  --font-sans:
+    "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
 }
 
 .dark {
-  --color-bg: #1c1917;
-  --color-surface: #292524;
-  --color-text: #fafaf9;
-  --color-muted: #a8a29e;
-  --color-accent: #fb7185;
-  --color-border: #44403c;
+  --color-bg: #1a1418;
+  --color-surface: #251c21;
+  --color-text: #f7edf0;
+  --color-muted: #a38e98;
+  --color-border: #3a2d34;
+  --color-accent: #e8788d;
+  --color-on-accent: #2a1218;
+  --color-soft: #3a242b;
+  --color-ok: #7fbf9e;
+  --color-warn: #d4a86a;
 }
 
-/* Vùng an toàn iPhone (tai thỏ, thanh gạt dưới đáy) */
-.pt-safe {
+/* Vùng an toàn iPhone (tai thỏ, thanh gạt dưới đáy).
+   Dùng calc() để cộng thêm vào padding sẵn có, không đè nhau. */
+@utility pt-safe {
   padding-top: env(safe-area-inset-top);
 }
 
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+@utility pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+}
+
+/* Chừa chỗ cho status bar mà vẫn giữ padding riêng của phần tử */
+@utility top-safe {
+  padding-top: calc(env(safe-area-inset-top) + var(--top-safe-extra, 0.75rem));
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   background-color: var(--color-bg);
   color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  /* iOS: không cho kéo bật nền trắng khi scroll quá đà */
+  overscroll-behavior-y: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Input đã có viền focus riêng, không cần outline kép */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

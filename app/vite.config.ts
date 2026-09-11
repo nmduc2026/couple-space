@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
@@ -10,7 +11,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo.svg'],
+      includeAssets: ['favicon.svg', 'logo.svg', 'push-sw.js'],
+      workbox: {
+        importScripts: ['/push-sw.js'],
+      },
       manifest: {
         name: 'Couple Space',
         short_name: 'Couple Space',
@@ -41,4 +45,8 @@ export default defineConfig({
       },
     }),
   ],
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
+  },
 })

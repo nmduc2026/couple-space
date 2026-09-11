@@ -1,45 +1,85 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes, useSearchParams } from 'react-router'
+import { useEffect } from 'react'
 import {
   GuestOnly,
   RequireAuth,
   RequireCouple,
   RequireNoCouple,
 } from './components/RequireAuth'
-import { MockSessionBar } from './components/MockSessionBar'
+import { ThemeSync } from './components/ThemeSync'
+import { Loading } from './components/ui'
+import { PREVIEW } from './dev/preview'
 import { WelcomeScreen } from './features/auth/WelcomeScreen'
-import { LoginPage } from './features/auth/LoginPage'
-import { SetupPage } from './features/pairing/SetupPage'
-import { JoinPage } from './features/pairing/JoinPage'
-import { WaitingPage } from './features/pairing/WaitingPage'
-import { HomePage } from './features/home/HomePage'
-import { SettingsPage } from './features/settings/SettingsPage'
+import { EmailScreen } from './features/auth/EmailScreen'
+import { OtpScreen } from './features/auth/OtpScreen'
+import { ChoiceScreen } from './features/pairing/ChoiceScreen'
+import { SetupScreen } from './features/pairing/SetupScreen'
+import { WaitingScreen } from './features/pairing/WaitingScreen'
+import { JoinScreen } from './features/pairing/JoinScreen'
+import { HomeScreen } from './features/home/HomeScreen'
+import { SettingsScreen } from './features/settings/SettingsScreen'
+import { UnpairScreen } from './features/settings/UnpairScreen'
+import { useCouple } from './hooks/useCouple'
+import { useSession } from './hooks/useSession'
+
+function JoinEntry() {
+  const [params] = useSearchParams()
+  const { isAuthenticated, isLoading } = useSession()
+  const { couple, isLoading: coupleLoading } = useCouple()
+
+  useEffect(() => {
+    const code = params.get('code')
+    if (code) sessionStorage.setItem('pendingInviteCode', code.toUpperCase())
+  }, [params])
+
+  if (PREVIEW) {
+    return <JoinScreen />
+  }
+
+  if (isLoading || (isAuthenticated && coupleLoading)) {
+    return <Loading />
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (couple) {
+    return <Navigate to="/" replace />
+  }
+
+  return <JoinScreen />
+}
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ThemeSync />
       <Routes>
         <Route element={<GuestOnly />}>
           <Route path="/welcome" element={<WelcomeScreen />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<EmailScreen />} />
+          <Route path="/login/otp" element={<OtpScreen />} />
         </Route>
+
+        <Route path="/join" element={<JoinEntry />} />
 
         <Route element={<RequireAuth />}>
           <Route element={<RequireNoCouple />}>
-            <Route path="/setup" element={<SetupPage />} />
-            <Route path="/join" element={<JoinPage />} />
-            <Route path="/waiting" element={<WaitingPage />} />
+            <Route path="/setup" element={<ChoiceScreen />} />
+            <Route path="/setup/create" element={<SetupScreen />} />
           </Route>
 
           <Route element={<RequireCouple />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/" element={<HomeScreen />} />
+            <Route path="/waiting" element={<WaitingScreen />} />
+            <Route path="/settings" element={<SettingsScreen />} />
+            <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>
         </Route>
 
         <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
-
-      <MockSessionBar />
     </BrowserRouter>
   )
 }
