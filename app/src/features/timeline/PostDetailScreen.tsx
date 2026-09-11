@@ -1,0 +1,289 @@
+import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate, useParams } from 'react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCouple } from '../../hooks/useCouple'
+import { useSession } from '../../hooks/useSession'
+import { usePosts } from '../../hooks/usePosts'
+import { ACTIVITY_LABELS } from '../../lib/activities'
+import { supabase } from '../../lib/supabase'
+import { notifyPartner } from '../../lib/notify'
+import { PREVIEW, previewComments } from '../../dev/preview'
+import { Loading, Screen, TopBar } from '../../components/ui'
+import { input } from '../../lib/ui-classes'
+import { formatDay } from '../../lib/formatDate'
+
+type Comment = {
+  id: string
+  author_id: string
+  body: string
+  created_at: string
+}
+
+export function PostDetailScreen() {
+  const { id = '' } = useParams()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { user } = useSession()
+  const { couple } = useCouple()
+  const { posts, isLoading } = usePosts()
+  const post = posts.find((p) => p.id === id)
+
+  const [index, setIndex] = useState(0)
+  const [draft, setDraft] = useState('')
+  const [sending, setSending] = useState(false)
+  // Thả tim phản hồi lạc quan: `override` là ý muốn của người dùng,
+  // null nghĩa là chưa bấm gì nên cứ tin dữ liệu server.
+  const [override, setOverride] = useState<boolean | null>(null)
+  const liked = override ?? post?.liked_by_me ?? false
+  const likeCount =
+    (post?.reaction_count ?? 0) +
+    (override === null || override === post?.liked_by_me
+      ? 0
+      : override
+        ? 1
+        : -1)
+
+  const commentsQuery = useQuery({
+    queryKey: ['comments', id],
+    enabled: !!id && !PREVIEW,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('id, author_id, body, created_at')
+        .eq('post_id', id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      return (data ?? []) as Comment[]
+    },
+  })
+
+  const comments = PREVIEW ? previewComments() : (commentsQuery.data ?? [])
+
+  // Bình luận của người kia hiện ngay, không phải tải lại
+  useEffect(() => {
+    if (!id || PREVIEW) return
+    const channel = supabase
+      .channel(`post-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'comments',
+          filter: `post_id=eq.${id}`,
+        },
+        () => void queryClient.invalidateQueries({ queryKey: ['comments', id] }),
+      )
+      .subscribe()
+    return () => {
+      void supabase.removeChannel(channel)
+    }
+  }, [id, queryClient])
+
+  if (isLoading) return <Loading />
+  if (!post) {
+    return (
+      <Screen>
+        <TopBar to="/timeline" />
+        <p className="px-5 py-20 text-center text-sm text-muted">
+          Không tìm thấy kỉ niệm này.
+        </p>
+      </Screen>
+    )
+  }
+
+  const nameOf = (userId: string) =>
+    couple?.members.find((m) => m.user_id === userId)?.nickname ?? '?'
+  const activity = post.activity ? ACTIVITY_LABELS[post.activity] : undefined
+  const mine = post.author_id === user?.id
+
+  /** Thả tim phản hồi lạc quan: đổi giao diện trước, gọi server sau. */
+  async function toggleLike() {
+    if (!post || !user || PREVIEW) return
+    const next = !liked
+    setOverride(next)
+
+    if (next) {
+      const { error } = await supabase.from('reactions').insert({
+        post_id: post.id,
+        couple_id: post.couple_id,
+        user_id: user.id,
+      })
+      if (error) {
+        setOverride(null)
+        return
+      }
+      void notifyPartner(couple, user.id, {
+        title: 'Couple Space',
+        body: `${nameOf(user.id)} đã thả tim một kỉ niệm`,
+        path: `/timeline/${post.id}`,
+      })
+    } else {
+      await supabase
+        .from('reactions')
+        .delete()
+        .eq('post_id', post.id)
+        .eq('user_id', user.id)
+    }
+  }
+
+  async function sendComment(event: FormEvent) {
+    event.preventDefault()
+    const body = draft.trim()
+    if (!body || !post || !user || PREVIEW) return
+    setSending(true)
+    const { error } = await supabase.from('comments').insert({
+      post_id: post.id,
+      couple_id: post.couple_id,
+      author_id: user.id,
+      body,
+    })
+    setSending(false)
+    if (error) return
+    setDraft('')
+    await queryClient.invalidateQueries({ queryKey: ['comments', post.id] })
+    void notifyPartner(couple, user.id, {
+      title: nameOf(user.id),
+      body,
+      path: `/timeline/${post.id}`,
+    })
+  }
+
+  async function removePost() {
+    if (!post || PREVIEW) return
+    if (!window.confirm('Xoá kỉ niệm này?')) return
+    await supabase
+      .from('posts')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', post.id)
+    await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    navigate('/timeline', { replace: true })
+  }
+
+  const media = post.media
+  const current = media[Math.min(index, media.length - 1)]
+
+  return (
+    <main className="flex min-h-svh flex-col bg-bg pb-safe">
+      <TopBar to="/timeline" />
+
+      {current ? (
+        <div className="relative aspect-square w-full bg-soft">
+          <img
+            src={current.url}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          {media.length > 1 ? (
+            <>
+              <button
+                type="button"
+                aria-label="Ảnh trước"
+                onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                className="absolute inset-y-0 left-0 w-1/4"
+              />
+              <button
+                type="button"
+                aria-label="Ảnh sau"
+                onClick={() =>
+                  setIndex((i) => Math.min(media.length - 1, i + 1))
+                }
+                className="absolute inset-y-0 right-0 w-1/4"
+              />
+              <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
+                {media.map((m, i) => (
+                  <span
+                    key={m.id}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === index ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="px-4 pt-4">
+        {post.caption ? (
+          <p className="text-[15px] leading-relaxed text-text">{post.caption}</p>
+        ) : null}
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+          <span>{formatDay(post.happened_on)}</span>
+          {post.place_name ? <span>📍 {post.place_name}</span> : null}
+          {activity ? (
+            <span>
+              {activity.emoji} {activity.label}
+            </span>
+          ) : null}
+          <span>· {nameOf(post.author_id)} đăng</span>
+        </div>
+
+        <div className="mt-4 flex items-center gap-4 border-y border-border py-2.5">
+          <button
+            type="button"
+            onClick={() => void toggleLike()}
+            className={`text-sm ${liked ? 'text-accent' : 'text-muted'}`}
+          >
+            {liked ? '❤️' : '🤍'} {likeCount}
+          </button>
+          <span className="text-sm text-muted">💬 {comments.length}</span>
+          {mine ? (
+            <button
+              type="button"
+              onClick={() => void removePost()}
+              className="ml-auto text-sm text-muted"
+            >
+              Xoá
+            </button>
+          ) : null}
+        </div>
+
+        <div className="pb-4">
+          {comments.map((c) => (
+            <div
+              key={c.id}
+              className="flex items-start gap-2.5 border-b border-border py-3"
+            >
+              <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-soft text-xs font-bold text-accent">
+                {nameOf(c.author_id).slice(0, 1).toUpperCase()}
+              </span>
+              <div className="min-w-0">
+                <b className="block text-[13px] text-text">
+                  {nameOf(c.author_id)}
+                </b>
+                <p className="text-[14px] leading-relaxed text-text">{c.body}</p>
+              </div>
+            </div>
+          ))}
+          {comments.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted">
+              Chưa có bình luận nào.
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <form
+        onSubmit={sendComment}
+        className="pb-safe sticky bottom-0 mt-auto flex gap-2 border-t border-border bg-bg/95 px-4 pt-2.5 backdrop-blur"
+      >
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Viết gì đó..."
+          className={`${input} flex-1`}
+        />
+        <button
+          type="submit"
+          disabled={!draft.trim() || sending}
+          className="h-12 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
+        >
+          Gửi
+        </button>
+      </form>
+    </main>
+  )
+}

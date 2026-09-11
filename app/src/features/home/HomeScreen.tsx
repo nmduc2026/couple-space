@@ -6,6 +6,7 @@ import { daysTogether, nextMilestone } from '../../lib/dateCount'
 import { shareInvite } from '../../lib/inviteShare'
 import { supabase } from '../../lib/supabase'
 import { Loading } from '../../components/ui'
+import { usePosts } from '../../hooks/usePosts'
 
 /** Ảnh bìa mặc định khi đôi chưa đặt ảnh riêng — lấy từ prototype. */
 const DEFAULT_COVER =
@@ -14,6 +15,7 @@ const DEFAULT_COVER =
 export function HomeScreen() {
   const { user } = useSession()
   const { couple, refetch, isLoading, isFetching } = useCouple()
+  const { posts } = usePosts()
   const [offline, setOffline] = useState(!navigator.onLine)
   const [inviteCode, setInviteCode] = useState<string | null>(null)
 
@@ -77,7 +79,7 @@ export function HomeScreen() {
   const waiting = couple.members.length < 2
 
   return (
-    <main className="min-h-svh bg-bg pb-safe">
+    <div className="flex-1">
       <header
         className="top-safe relative flex min-h-[44svh] flex-col justify-end px-5 pb-7 text-center text-white"
         style={
@@ -114,7 +116,7 @@ export function HomeScreen() {
         ) : null}
       </header>
 
-      <div className="mx-auto w-full max-w-md px-4 pt-4 pb-10">
+      <div className="mx-auto w-full max-w-md px-4 pt-4 pb-6">
         {offline ? (
           <p className="mb-3 rounded-xl bg-soft px-4 py-2.5 text-center text-xs text-muted">
             Đang ngoại tuyến — đang xem dữ liệu đã lưu
@@ -122,7 +124,7 @@ export function HomeScreen() {
         ) : null}
 
         {waiting ? (
-          <div className="flex items-center justify-between gap-3 rounded-2xl bg-soft px-4 py-3">
+          <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-soft px-4 py-3">
             <p className="text-[13.5px] text-muted">
               Đang chờ{' '}
               <span className="font-semibold text-text">{rightName}</span> tham
@@ -139,13 +141,68 @@ export function HomeScreen() {
           </div>
         ) : null}
 
-        <p className="mt-6 px-2 text-center text-[13.5px] leading-relaxed text-muted">
-          {waiting
-            ? `Khi ${rightName} vào, tụi mình sẽ mở khoá dòng thời gian, chi tiêu chung và mọi thứ còn lại.`
-            : 'Chưa có kỉ niệm nào. Dòng thời gian mở ở Phase 2.'}
-        </p>
+        <Link
+          to="/eat"
+          className="flex w-full items-center gap-3.5 rounded-2xl border border-border bg-surface p-3.5 text-left"
+        >
+          <span aria-hidden className="text-2xl">
+            🍜
+          </span>
+          <span className="min-w-0">
+            <b className="block text-[15px] font-semibold text-text">
+              Tối nay ăn gì?
+            </b>
+            <small className="block text-[12.5px] text-muted">
+              Quay một cái cho khỏi cãi nhau
+            </small>
+          </span>
+          <span aria-hidden className="ml-auto text-muted">
+            ›
+          </span>
+        </Link>
 
-        <div className="mt-8 flex justify-center">
+        <section className="mt-6">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+              Kỉ niệm gần đây
+            </h2>
+            {posts.length > 0 ? (
+              <Link to="/timeline" className="text-[11.5px] text-accent">
+                Xem tất cả
+              </Link>
+            ) : null}
+          </div>
+
+          {posts.length === 0 ? (
+            <p className="py-8 text-center text-[13.5px] leading-relaxed text-muted">
+              {waiting
+                ? `Khi ${rightName} vào, tụi mình mở khoá dòng thời gian và mọi thứ còn lại.`
+                : 'Chưa có kỉ niệm nào. Bấm nút + để thêm tấm đầu tiên.'}
+            </p>
+          ) : (
+            <div className="mt-2.5 grid grid-cols-4 gap-1.5">
+              {posts
+                .flatMap((p) => p.media.map((m) => ({ postId: p.id, m })))
+                .slice(0, 4)
+                .map(({ postId, m }) => (
+                  <Link
+                    key={m.id}
+                    to={`/timeline/${postId}`}
+                    className="aspect-square overflow-hidden rounded-xl bg-soft"
+                  >
+                    <img
+                      src={m.url}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                  </Link>
+                ))}
+            </div>
+          )}
+        </section>
+
+        <div className="mt-7 flex justify-center">
           <button
             type="button"
             onClick={() => void refetch()}
@@ -156,6 +213,6 @@ export function HomeScreen() {
           </button>
         </div>
       </div>
-    </main>
+  </div>
   )
 }

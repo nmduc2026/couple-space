@@ -24,6 +24,12 @@ const SCREENS = [
   { name: 'join-confirm', url: '/join?preview=1&code=A7K2M9', wait: 'mời bạn vào' },
   { name: 'home', url: '/?preview=1', wait: 'ngày bên nhau' },
   { name: 'home-waiting', url: '/?preview=1&solo=1', wait: 'Đang chờ' },
+  { name: 'timeline', url: '/timeline?preview=1', wait: 'Kỉ niệm' },
+  { name: 'timeline-grid', url: '/timeline?preview=1&view=grid', wait: 'Kỉ niệm' },
+  { name: 'post', url: '/timeline/preview-post-0?preview=1', wait: 'Hoàng hôn' },
+  { name: 'compose', url: '/compose?preview=1', wait: 'Thêm kỉ niệm' },
+  { name: 'eat', url: '/eat?preview=1', wait: 'Muốn thử' },
+  { name: 'eat-spin', url: '/eat/spin?preview=1', wait: 'Tối nay ăn gì' },
   { name: 'settings', url: '/settings?preview=1', wait: 'Cài đặt' },
   { name: 'unpair', url: '/settings/unpair?preview=1', wait: 'Trước khi huỷ' },
 ]

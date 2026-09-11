@@ -7,6 +7,7 @@ import {
   RequireNoCouple,
 } from './components/RequireAuth'
 import { ThemeSync } from './components/ThemeSync'
+import { AppShell } from './components/AppShell'
 import { Loading } from './components/ui'
 import { PREVIEW } from './dev/preview'
 import { WelcomeScreen } from './features/auth/WelcomeScreen'
@@ -17,6 +18,11 @@ import { SetupScreen } from './features/pairing/SetupScreen'
 import { WaitingScreen } from './features/pairing/WaitingScreen'
 import { JoinScreen } from './features/pairing/JoinScreen'
 import { HomeScreen } from './features/home/HomeScreen'
+import { TimelineScreen } from './features/timeline/TimelineScreen'
+import { PostDetailScreen } from './features/timeline/PostDetailScreen'
+import { ComposeScreen } from './features/timeline/ComposeScreen'
+import { EatScreen } from './features/eat/EatScreen'
+import { SpinScreen } from './features/eat/SpinScreen'
 import { SettingsScreen } from './features/settings/SettingsScreen'
 import { UnpairScreen } from './features/settings/UnpairScreen'
 import { useCouple } from './hooks/useCouple'
@@ -71,9 +77,19 @@ export default function App() {
           </Route>
 
           <Route element={<RequireCouple />}>
-            <Route path="/" element={<HomeScreen />} />
+            {/* Màn có thanh tab dưới đáy */}
+            <Route element={<AppShell />}>
+              <Route path="/" element={<HomeScreen />} />
+              <Route path="/timeline" element={<TimelineScreen />} />
+              <Route path="/eat" element={<EatScreen />} />
+              <Route path="/settings" element={<SettingsScreen />} />
+            </Route>
+
+            {/* Màn toàn trang — tab bar sẽ che mất nút chính */}
             <Route path="/waiting" element={<WaitingScreen />} />
-            <Route path="/settings" element={<SettingsScreen />} />
+            <Route path="/compose" element={<ComposeScreen />} />
+            <Route path="/timeline/:id" element={<PostDetailScreen />} />
+            <Route path="/eat/spin" element={<SpinScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>
         </Route>
