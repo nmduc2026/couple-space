@@ -19,15 +19,15 @@ Web Push (VAPID). Xem [tech-stack.md](../../docs/decisions/tech-stack.md).
 
 ## B. Database → [steps/b-database.md](steps/b-database.md)
 
-- [ ] **P1-06** Cài Supabase CLI, khởi tạo thư mục migration
-- [ ] **P1-07** Migration nền móng + `profiles` — [database-schema.md](../../docs/design/backend/database-schema.md) mục 4
-- [ ] **P1-08** Migration `couples` + `couple_members` + trạng thái space — mục 5
-- [ ] **P1-09** Hàm phân quyền `is_member_of` / `can_write_to` — mục 6
-- [ ] **P1-10** Bật RLS và **kiểm tra bằng hai tài khoản khác nhau** — mục 11
+- [x] **P1-06** Cài Supabase CLI, khởi tạo thư mục migration
+- [x] **P1-07** Migration nền móng + `profiles` — [database-schema.md](../../docs/design/backend/database-schema.md) mục 4
+- [x] **P1-08** Migration `couples` + `couple_members` + trạng thái space — mục 5
+- [x] **P1-09** Hàm phân quyền `is_member_of` / `can_write_to` — mục 6
+- [~] **P1-10** Bật RLS và **kiểm tra bằng hai tài khoản khác nhau** — mục 11 (RLS đã bật; phép thử đọc chéo để lại khi có login trên app)
 
 ## C. Auth → [steps/c-auth.md](steps/c-auth.md)
 
-- [ ] **P1-11** Màn hình Welcome
+- [~] **P1-11** Màn hình Welcome
 - [ ] **P1-12** Nhập email → gửi OTP
 - [ ] **P1-13** Nhập OTP → đăng nhập, lưu phiên, tự đăng nhập lại khi mở app
 - [ ] **P1-14** Điều hướng theo trạng thái: chưa đăng nhập / chưa có space / đã ghép đôi

@@ -6,7 +6,7 @@ import {
   RequireNoCouple,
 } from './components/RequireAuth'
 import { MockSessionBar } from './components/MockSessionBar'
-import { WelcomePage } from './features/auth/WelcomePage'
+import { WelcomeScreen } from './features/auth/WelcomeScreen'
 import { LoginPage } from './features/auth/LoginPage'
 import { SetupPage } from './features/pairing/SetupPage'
 import { JoinPage } from './features/pairing/JoinPage'
@@ -19,7 +19,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<GuestOnly />}>
-          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/welcome" element={<WelcomeScreen />} />
           <Route path="/login" element={<LoginPage />} />
         </Route>
 
