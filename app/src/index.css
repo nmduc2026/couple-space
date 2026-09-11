@@ -1,27 +1,38 @@
-:root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
-  color: #1c1917;
-  background: #fdfcfb;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import "tailwindcss";
+
+/* dark: theo class .dark trên <html>, không theo media query mặc định */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Đổi màu theme = sửa các biến này (light). .dark bên dưới ghi đè. */
+@theme {
+  --color-bg: #fdfcfb;
+  --color-surface: #ffffff;
+  --color-text: #1c1917;
+  --color-muted: #78716c;
+  --color-accent: #e11d48; /* màu chủ đạo */
+  --color-border: #e7e5e4;
+}
+
+.dark {
+  --color-bg: #1c1917;
+  --color-surface: #292524;
+  --color-text: #fafaf9;
+  --color-muted: #a8a29e;
+  --color-accent: #fb7185;
+  --color-border: #44403c;
+}
+
+/* Vùng an toàn iPhone (tai thỏ, thanh gạt dưới đáy) */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 body {
   margin: 0;
-}
-
-#root {
-  min-height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-h1 {
-  margin: 0;
-  font-weight: 600;
-  font-size: 2rem;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
