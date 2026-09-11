@@ -3,11 +3,21 @@
 > **Mục tiêu:** giữ chân — những tính năng tạo lý do mở app mỗi ngày, kể cả ngày không có gì đặc biệt.
 
 **Trạng thái:** 🔲 Chưa bắt đầu (chờ Phase 4 xong)
-**Task:** [tasks.md](tasks.md)
+**Task:** [tasks.md](tasks.md) · **Hướng dẫn từng bước:** [steps/](steps/)
 
 ## 1. Định nghĩa hoàn thành (DoD)
 
-*Viết chi tiết khi Phase 4 sắp xong — viết sớm hơn thì gần như chắc chắn phải sửa.*
+Hai dòng đầu là dòng quan trọng nhất — kiểm bằng **gọi API trực tiếp**, không phải nhìn màn hình:
+
+- [ ] 🔒 Chưa trả lời câu hỏi → gọi API bằng token của mình **không lấy được** câu trả lời của người kia
+- [ ] 🔒 Thư chưa tới ngày mở → gọi API **không lấy được** nội dung, chỉ có metadata
+- [ ] Cả hai trả lời → mở khoá ngay trên cả hai máy
+- [ ] Check-in tâm trạng → người kia thấy realtime; mức 😞 thì nhận push
+- [ ] Biểu đồ 7 ngày đọc được sự lệch nhau giữa hai người
+- [ ] Streak đứt → về 0, **không có thông báo nào**
+- [ ] Gửi nudge → máy kia kêu trong vài giây; gửi cái thứ 6 trong ngày thì bị chặn
+- [ ] "Ăn gì": đi ăn thật một lần → **số lần ăn và giá trung bình tự cập nhật**, không nhập tay
+- [ ] Đánh dấu 😕 một quán → quán đó không còn ra khi quay
 
 ## 2. Phạm vi
 
@@ -42,3 +52,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | Ngày | Đã làm | Dừng ở đâu | Bước tiếp theo |
 |---|---|---|---|
 | 2026-09-11 | Tạo khung phase | Chưa bắt đầu | Chờ phase trước đạt DoD |
+| 2026-09-11 | Viết đặc tả đầy đủ 4 tính năng Phase 5 + dựng 6 màn hình prototype | Đã có đặc tả, chưa chia task | Chờ Phase 4 đạt DoD |

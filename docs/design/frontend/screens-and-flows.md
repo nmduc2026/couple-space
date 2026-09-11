@@ -1,5 +1,8 @@
 # Màn hình & User flow (MVP)
 
+> 👉 **Xem trước bằng mắt:** [ui/prototype.html](ui/prototype.html) — 36 màn hình bấm được
+> của cả 6 phase. Mở bằng trình duyệt.
+>
 > **Phạm vi file này: tầng giao diện** — điều hướng, bố cục màn hình, thứ tự thao tác.
 > **Luật nghiệp vụ và ca biên nằm ở [docs/features/](../../features/README.md)**, không lặp lại ở đây.
 > Thấy mâu thuẫn giữa hai nơi thì `docs/features/` là nguồn đúng.
@@ -111,7 +114,7 @@ Cuộn dọc, từ trên xuống:
 ├──────────────────────────────────────┤
 │  THÁNG NÀY                           │
 │  8 buổi hẹn · 2.450.000đ             │
-│  Linh đang nợ Minh 120.000đ          │
+│  Đi ăn 12 lần — nhiều nhất tháng này │
 ├──────────────────────────────────────┤
 │  MỤC TIÊU                            │
 │  Đi Đà Lạt        ████████░░  80%    │
@@ -140,8 +143,7 @@ Màn hình soạn bài — MỘT màn hình duy nhất, không nhiều bước
   ├─ Hoạt động: 🍜 🍰 ✈️ 🎬 🏠 ...     ← chọn 1 chạm, tuỳ chọn
   └─ 💰 Thêm chi phí                  ← mở gọn xuống, tuỳ chọn
       ├─ Số tiền
-      ├─ Ai trả:  [Minh] [Linh]
-      └─ Chia:    [Chia đôi] [Bao trọn]
+      └─ Ai trả:  [Minh] [Linh]
   ▼
 [Đăng]
   ├─ Ảnh upload nền, bài hiện ngay trên timeline ở trạng thái "đang tải"
@@ -188,22 +190,25 @@ Hai tab con: **Sự kiện** | **Mục tiêu**
 ├──────────────────────────────────────┤
 │  Tổng chi        2.450.000đ          │
 │  Minh trả 1.850.000 · Linh 600.000   │
+│  Trung bình mỗi buổi hẹn  306.000đ   │
 │                                      │
-│  ▸ Linh đang nợ Minh  120.000đ       │
-│    [Đã thanh toán]                   │
+│  ▸ Tháng này đi ăn 12 lần — nhiều    │
+│    hơn tháng trước 4 lần             │
 ├──────────────────────────────────────┤
 │  [biểu đồ tròn theo danh mục]        │
 ├──────────────────────────────────────┤
 │  12/09  🍜 Bún chả Hàng Quạt         │
-│         180.000đ · Minh trả · chia đôi│
+│         180.000đ · Minh trả          │
 │  10/09  🎬 Xem phim CGV              │
-│         240.000đ · Linh trả · bao    │
+│         240.000đ · Linh trả          │
 │  ...                                 │
 └──────────────────────────────────────┘
 ```
 
 - Khoản chi phát sinh từ bài kỉ niệm có icon 📷, chạm vào mở bài đó.
-- "Đã thanh toán" ghi lại một bản ghi tất toán và đưa số dư về 0 (không xoá lịch sử).
+- **Không có số dư nợ nhau, không có nút "đã thanh toán", không có chia đôi / bao trọn.**
+  Đã bỏ có chủ đích — xem [p4-expenses.md](../../features/p4-expenses.md) mục 1.
+  Cột "ai trả" chỉ để thống kê.
 
 ---
 

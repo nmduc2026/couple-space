@@ -3,11 +3,18 @@
 > **Mục tiêu:** có lý do mở app hằng ngày — sự kiện, đếm ngược, nhắc nhở đúng lúc.
 
 **Trạng thái:** 🔲 Chưa bắt đầu (chờ Phase 2 xong)
-**Task:** [tasks.md](tasks.md)
+**Task:** [tasks.md](tasks.md) · **Hướng dẫn từng bước:** [steps/](steps/)
 
 ## 1. Định nghĩa hoàn thành (DoD)
 
-*Viết chi tiết khi Phase 2 sắp xong — viết sớm hơn thì gần như chắc chắn phải sửa.*
+Kiểm trên **hai máy thật**:
+
+- [ ] Tạo một sự kiện, **cả hai máy** đều nhận nhắc đúng ngày đã chọn
+- [ ] Mốc ngày yêu tự sinh, hiện đúng trong danh sách, **xoá không được nhưng tắt nhắc được**
+- [ ] Đặt sự kiện cho ngày mai, để máy qua đêm → push tới lúc 9:00 sáng
+- [ ] Cùng ngày có nhiều dịp → nhận **một** thông báo gộp, không phải nhiều cái
+- [ ] Bật giờ yên lặng, đặt nhắc lúc 23:00 → thông báo hoãn tới sáng
+- [ ] Test ngày tháng xanh hết: 29/2, ngày 31 ở tháng ngắn, đổi múi giờ
 
 ## 2. Phạm vi
 
@@ -41,3 +48,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | Ngày | Đã làm | Dừng ở đâu | Bước tiếp theo |
 |---|---|---|---|
 | 2026-09-11 | Tạo khung phase | Chưa bắt đầu | Chờ phase trước đạt DoD |
+| 2026-09-11 | Viết đặc tả đầy đủ `p3-events-reminders.md` + dựng 4 màn hình prototype | Đã có đặc tả, chưa chia task | Chờ Phase 2 đạt DoD, rồi chia task và viết `steps/` |

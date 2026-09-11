@@ -26,7 +26,7 @@ Row-Level Security nghĩa là Postgres tự chặn: dù app có viết sai câu 
 Mọi bảng nội dung có cột `deleted_at`. Xoá = ghi thời điểm xoá. Lỡ tay xoá mất kỉ niệm là chuyện không sửa được, và khi chia tay cũng cần dữ liệu còn nguyên để xuất ra.
 
 **4. Tiền là số nguyên.**
-Lưu bằng `bigint`, đơn vị **đồng** (không có phần thập phân). Không bao giờ dùng `float` cho tiền — sai số làm lệch số dư nợ nhau.
+Lưu bằng `bigint`, đơn vị **đồng** (không có phần thập phân). Không bao giờ dùng `float` cho tiền — sai số tích luỹ làm lệch mọi thống kê.
 
 ## 2. Sơ đồ quan hệ
 
@@ -44,7 +44,6 @@ erDiagram
 
     couples ||--o{ events : ""
     couples ||--o{ expenses : ""
-    couples ||--o{ settlements : ""
     couples ||--o{ goals : ""
     goals   ||--o{ goal_steps : ""
 
@@ -66,7 +65,6 @@ erDiagram
 | `comments` | Bình luận | MVP |
 | `events` | Sự kiện & nhắc nhở | MVP |
 | `expenses` | Khoản chi tiêu | MVP |
-| `settlements` | Lần tất toán nợ nhau | MVP |
 | `goals` | Mục tiêu chung | MVP |
 | `goal_steps` | Các bước con của mục tiêu | MVP |
 | `push_subscriptions` | Đăng ký Web Push của từng máy | MVP |
@@ -382,31 +380,15 @@ create table public.expenses (
   category      text,                -- 'food' | 'movie' | 'travel' | 'gift' | ...
   note          text,
   spent_on      date not null default current_date,
+  -- Ai trả. CHỈ dùng để thống kê ("tháng này Minh trả nhiều hơn"),
+  -- KHÔNG BAO GIỜ dùng để tính ai phải trả lại ai.
+  -- App không ghi nợ — xem docs/features/p4-expenses.md mục 1.
   paid_by       uuid not null references public.profiles(id),
-  split_type    text not null default 'equal'
-                check (split_type in ('equal', 'payer_covers', 'custom')),
-  -- equal        = chia đôi
-  -- payer_covers = người trả bao trọn, người kia không nợ gì
-  -- custom       = tự nhập phần người kia chịu
-  partner_share_minor bigint check (partner_share_minor >= 0),
-
-  -- Số tiền người kia NỢ người trả, tính tự động. Không nhập tay được
-  -- → không bao giờ lệch so với split_type.
-  debt_minor bigint generated always as (
-    case split_type
-      when 'equal'        then amount_minor / 2
-      when 'payer_covers' then 0
-      else coalesce(partner_share_minor, 0)
-    end
-  ) stored,
 
   created_by  uuid not null references public.profiles(id),
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now(),
   deleted_at  timestamptz,
-
-  constraint custom_needs_share
-    check (split_type <> 'custom' or partner_share_minor is not null)
 );
 
 create index on public.expenses (couple_id, spent_on desc) where deleted_at is null;
@@ -418,22 +400,9 @@ create trigger expenses_touch
 
 
 -- ------------------------------------------------------------
--- settlements: "đã thanh toán, về 0"
--- Ghi thành một dòng riêng thay vì xoá lịch sử chi tiêu.
--- ------------------------------------------------------------
-create table public.settlements (
-  id           uuid primary key default gen_random_uuid(),
-  couple_id    uuid not null references public.couples(id) on delete cascade,
-  from_user    uuid not null references public.profiles(id),  -- người trả nợ
-  to_user      uuid not null references public.profiles(id),  -- người nhận
-  amount_minor bigint not null check (amount_minor > 0),
-  settled_on   date not null default current_date,
-  note         text,
-  created_at   timestamptz not null default now(),
-  check (from_user <> to_user)
-);
-
-create index on public.settlements (couple_id, settled_on desc);
+-- (Đã bỏ bảng `settlements`.) App KHÔNG ghi nợ nhau — xem
+-- docs/features/p4-expenses.md mục 1. Cột `paid_by` của expenses chỉ dùng
+-- để thống kê, không bao giờ dùng để tính ai phải trả lại ai.
 ```
 
 ## 10. Mục tiêu, thông báo, và các hàm tính toán
@@ -520,36 +489,8 @@ create table public.notification_prefs (
 -- PHẦN 9: HÀM TÍNH TOÁN
 -- ============================================================
 
--- Số dư nợ nhau.
--- net_minor > 0  → người kia đang nợ mình
--- net_minor < 0  → mình đang nợ người kia
-create or replace function public.couple_balance(p_couple_id uuid)
-returns table (user_id uuid, net_minor bigint)
-language sql stable security definer set search_path = public as $$
-  with members as (
-    select m.user_id from public.couple_members m
-    where m.couple_id = p_couple_id and m.left_at is null
-  ),
-  moves as (
-    -- người trả tiền được ghi có phần người kia nợ
-    select e.paid_by as uid, e.debt_minor as amt
-    from public.expenses e
-    where e.couple_id = p_couple_id and e.deleted_at is null
-    union all
-    -- người còn lại bị ghi nợ tương ứng
-    select m.user_id, -e.debt_minor
-    from public.expenses e join members m on m.user_id <> e.paid_by
-    where e.couple_id = p_couple_id and e.deleted_at is null
-    union all
-    -- trả nợ thì số dư dịch về 0
-    select s.from_user, s.amount_minor from public.settlements s where s.couple_id = p_couple_id
-    union all
-    select s.to_user, -s.amount_minor from public.settlements s where s.couple_id = p_couple_id
-  )
-  select m.user_id, coalesce(sum(mv.amt), 0)::bigint
-  from members m left join moves mv on mv.uid = m.user_id
-  group by m.user_id;
-$$;
+-- (Đã bỏ hàm tính số dư nợ nhau.) Thay bằng thống kê thuần:
+-- tổng chi theo tháng, theo danh mục, và số buổi hẹn.
 
 
 -- Các mốc kỉ niệm sắp tới (tính ra, không lưu trong bảng)
@@ -611,7 +552,6 @@ alter table public.reactions         enable row level security;
 alter table public.comments          enable row level security;
 alter table public.events            enable row level security;
 alter table public.expenses          enable row level security;
-alter table public.settlements       enable row level security;
 alter table public.goals             enable row level security;
 alter table public.goal_steps        enable row level security;
 alter table public.push_subscriptions enable row level security;
@@ -695,10 +635,6 @@ create policy events_write on public.events for all
 
 create policy expenses_read  on public.expenses for select using (public.is_member_of(couple_id));
 create policy expenses_write on public.expenses for all
-  using (public.can_write_to(couple_id)) with check (public.can_write_to(couple_id));
-
-create policy settlements_read  on public.settlements for select using (public.is_member_of(couple_id));
-create policy settlements_write on public.settlements for all
   using (public.can_write_to(couple_id)) with check (public.can_write_to(couple_id));
 
 create policy goals_read  on public.goals for select using (public.is_member_of(couple_id));

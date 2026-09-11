@@ -80,3 +80,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 |---|---|---|---|
 | 2026-09-11 | Tổ chức lại toàn bộ tài liệu: tách `docs/features/`, đổi `others/` → `decisions/`, dựng `tasks/`, viết `AGENTS.md` | Đặc tả Phase 1–2 xong, chưa có dòng code nào | Chốt các quyết định đang treo |
 | 2026-09-11 | Chốt D1–D5. Đổi nền tảng sang **Vite + React (bỏ Expo)**, viết lại `tech-stack.md` và `distribution.md`. Đánh số file feature theo phase (`p1-`, `p2-`…). Viết 8 file hướng dẫn từng bước trong `steps/` | Tài liệu đã đủ để bắt đầu code | **Bắt đầu P1-01** — theo [steps/a-setup.md](steps/a-setup.md) |
+| 2026-09-11 | Viết nốt đặc tả Phase 3–6, chốt D6 (không ghi nợ), lưu prototype 36 màn hình vào `docs/design/frontend/ui/` | Không đổi gì trong phase này | Không đổi |

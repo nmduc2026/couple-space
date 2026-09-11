@@ -64,3 +64,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 |---|---|---|---|
 | 2026-09-11 | Viết đặc tả timeline + phạm vi phase | Chưa bắt đầu — chờ Phase 1 | Bắt đầu sau khi Phase 1 đạt DoD |
 | 2026-09-11 | Viết 6 file hướng dẫn từng bước trong `steps/` (P2-01 → P2-26) | Tài liệu Phase 2 đã đủ để code | Chờ Phase 1 đạt DoD |
+| 2026-09-11 | Viết nốt đặc tả Phase 3–6, chốt D6 (không ghi nợ), lưu prototype 36 màn hình vào `docs/design/frontend/ui/` | Không đổi gì trong phase này | Không đổi |

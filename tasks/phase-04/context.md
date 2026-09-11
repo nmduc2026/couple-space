@@ -3,11 +3,18 @@
 > **Mục tiêu:** khác biệt so với app cùng loại — chi tiêu chung và mục tiêu chung.
 
 **Trạng thái:** 🔲 Chưa bắt đầu (chờ Phase 3 xong)
-**Task:** [tasks.md](tasks.md)
+**Task:** [tasks.md](tasks.md) · **Hướng dẫn từng bước:** [steps/](steps/)
 
 ## 1. Định nghĩa hoàn thành (DoD)
 
-*Viết chi tiết khi Phase 3 sắp xong — viết sớm hơn thì gần như chắc chắn phải sửa.*
+- [ ] Ghi một khoản chi **dưới 15 giây**, form chỉ có 4 trường
+- [ ] Đăng kỉ niệm kèm chi phí → khoản chi tự xuất hiện bên Chi tiêu, có icon 📷
+- [ ] Màn hình tháng hiện đúng tổng, biểu đồ danh mục, và **dải nhận xét** sinh từ dữ liệu
+- [ ] Sửa một khoản chi cũ → **không có gì phải tính lại**, không có số dư nào sai
+- [ ] Tạo mục tiêu bằng **một ô nhập**, thêm bước con, tích tới bước cuối
+- [ ] Tích bước cuối → hỏi "Đăng lên kỉ niệm?" → vào thẳng flow đăng bài, caption điền sẵn
+- [ ] Mục tiêu quá hạn **không nhắc, không đỏ** — chỉ trôi xuống cuối
+- [ ] Tìm khắp app: **không còn chữ "nợ" nào**
 
 ## 2. Phạm vi
 
@@ -17,8 +24,11 @@
 | Mục tiêu chung | [goals.md](../../docs/features/p4-goals.md) |
 | Home: khối "Tháng này" + "Mục tiêu" | [home-dashboard.md](../../docs/features/p1-home-dashboard.md) |
 
-Đây là phase **cần đặc tả kỹ nhất trước khi code** — tiền bạc và cách chia là chỗ
-dễ sai và sai thì khó sửa (số dư nợ tính lại, sửa khoản chi cũ, xoá bài có gắn chi phí).
+> ✅ **Đã chốt (D6): app KHÔNG ghi nợ nhau.** Không số dư, không nút "đã thanh toán",
+> không chia đôi / bao trọn. Quyết định này xoá luôn phần khó nhất của phase —
+> xem [p4-expenses.md](../../docs/features/p4-expenses.md) mục 1.
+
+Còn lại là chi tiêu thuần: ghi lại đã tiêu gì, ai trả, để thống kê và nhìn lại.
 
 ## 3. Tiến độ
 
@@ -40,3 +50,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | Ngày | Đã làm | Dừng ở đâu | Bước tiếp theo |
 |---|---|---|---|
 | 2026-09-11 | Tạo khung phase | Chưa bắt đầu | Chờ phase trước đạt DoD |
+| 2026-09-11 | Chốt **D6: không ghi nợ nhau** — gỡ số dư, tất toán, cách chia khỏi đặc tả, schema và prototype. Viết đặc tả đầy đủ cho `p4-expenses.md` và `p4-goals.md` | Phase 4 đã có đặc tả, chưa chia task | Chờ Phase 3 đạt DoD |

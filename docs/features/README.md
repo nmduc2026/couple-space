@@ -18,21 +18,23 @@ Bản đồ tổng quan và thứ tự ưu tiên: [../../overview.md](../../over
 | [Huỷ ghép đôi](p1-breakup.md) | 1 | ✅ Đã đặc tả |
 | [Dòng thời gian](p2-timeline.md) | 2 | ✅ Đã đặc tả |
 | [Tối nay ăn gì?](p2-eat-tonight.md) | 2 → 5 | ✅ Đã đặc tả |
-| [Sự kiện & nhắc nhở](p3-events-reminders.md) | 3 | 🔲 Tóm tắt |
-| [Chi tiêu chung](p4-expenses.md) | 4 | 🔲 Tóm tắt |
-| [Mục tiêu chung](p4-goals.md) | 4 | 🔲 Tóm tắt |
-| [Câu hỏi mỗi ngày](p5-daily-question.md) | 5 | 🔲 Tóm tắt |
-| [Thư gửi tương lai](p5-future-letter.md) | 5 | 🔲 Tóm tắt |
-| [Check-in tâm trạng](p5-mood-checkin.md) | 5 | 🔲 Tóm tắt |
-| [Nhắc nhẹ (Nudge)](p5-nudge.md) | 5 | 🔲 Tóm tắt |
-| [Wishlist quà tặng](p6-gift-wishlist.md) | 6 | 🔲 Tóm tắt |
-| [Bản đồ dấu chân](p6-footprint-map.md) | 6 | 🔲 Tóm tắt |
-| [Tổng kết năm](p6-wrapped.md) | 6 | 🔲 Tóm tắt |
-| [Album & sao lưu](p6-albums-export.md) | 6 | 🔲 Tóm tắt |
+| [Sự kiện & nhắc nhở](p3-events-reminders.md) | 3 | ✅ Đã đặc tả |
+| [Chi tiêu chung](p4-expenses.md) | 4 | ✅ Đã đặc tả |
+| [Mục tiêu chung](p4-goals.md) | 4 | ✅ Đã đặc tả |
+| [Câu hỏi mỗi ngày](p5-daily-question.md) | 5 | ✅ Đã đặc tả |
+| [Thư gửi tương lai](p5-future-letter.md) | 5 | ✅ Đã đặc tả |
+| [Check-in tâm trạng](p5-mood-checkin.md) | 5 | ✅ Đã đặc tả |
+| [Nhắc nhẹ (Nudge)](p5-nudge.md) | 5 | ✅ Đã đặc tả |
+| [Wishlist quà tặng](p6-gift-wishlist.md) | 6 | ✅ Đã đặc tả |
+| [Bản đồ dấu chân](p6-footprint-map.md) | 6 | ✅ Đã đặc tả |
+| [Tổng kết năm](p6-wrapped.md) | 6 | ✅ Đã đặc tả |
+| [Album & sao lưu](p6-albums-export.md) | 6 | ✅ Đã đặc tả |
 
-> **Quy tắc:** một tính năng phải ở trạng thái ✅ **trước khi** phase chứa nó bắt đầu.
-> Đặc tả đi trước code đúng một bước — không viết trước xa hơn, vì thứ viết quá sớm
-> gần như chắc chắn phải sửa.
+> ✅ **Toàn bộ 19 tính năng đã có đặc tả đầy đủ** (2026-09-11). Prototype 36 màn hình
+> dựng theo các đặc tả này: [prototype.html](../design/frontend/ui/prototype.html).
+>
+> Đặc tả có thể còn thay đổi khi chạm vào code thật. Sửa thì sửa ở đây trước, rồi mới
+> sửa `tasks/`.
 
 ## Quy ước đặt tên
 

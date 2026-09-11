@@ -4,6 +4,13 @@
 > bằng việc đọc file này, rồi đọc `context.md` của phase đang chạy.
 > Quy trình đầy đủ: [../AGENTS.md](../AGENTS.md) mục 2.
 
+## Prototype
+
+36 màn hình bấm được của cả 6 phase, dựng theo đặc tả trong `docs/features/`:
+**[docs/design/frontend/ui/prototype.html](../docs/design/frontend/ui/prototype.html)**
+— mở bằng trình duyệt. Sửa tính năng thì **sửa prototype cùng lúc với đặc tả**, để nó không
+lệch khỏi tài liệu.
+
 ## Phase đang chạy
 
 > ### 🔄 **Phase 1 — Nền móng**
@@ -12,14 +19,23 @@
 
 ## Toàn cảnh
 
-| Phase | Tên | Mục tiêu | Trạng thái |
-|---|---|---|---|
-| [1](phase-01/context.md) | Nền móng | Hai máy nhìn thấy nhau | 🔲 Chưa bắt đầu |
-| [2](phase-02/context.md) | Kỉ niệm | App có nội dung | 🔲 Chưa bắt đầu |
-| [3](phase-03/context.md) | Nhịp sống | Có lý do mở app hằng ngày | 🔲 Chưa bắt đầu |
-| [4](phase-04/context.md) | Cùng nhau | Khác biệt so với app cùng loại | 🔲 Chưa bắt đầu |
-| [5](phase-05/context.md) | Gắn kết | Giữ chân | 🔲 Chưa bắt đầu |
-| [6](phase-06/context.md) | Lan truyền | Tăng trưởng | 🔲 Chưa bắt đầu |
+| Phase | Tên | Mục tiêu | Task | Hướng dẫn từng bước | Trạng thái |
+|---|---|---|---|---|---|
+| [1](phase-01/context.md) | Nền móng | Hai máy nhìn thấy nhau | 36 | ✅ [steps/](phase-01/steps/) | 🔲 Chưa bắt đầu |
+| [2](phase-02/context.md) | Kỉ niệm | App có nội dung | 26 | ✅ [steps/](phase-02/steps/) | 🔲 Chưa bắt đầu |
+| [3](phase-03/context.md) | Nhịp sống | Có lý do mở app hằng ngày | 28 | ✅ [steps/](phase-03/steps/) | 🔲 Chưa bắt đầu |
+| [4](phase-04/context.md) | Cùng nhau | Khác biệt so với app cùng loại | 38 | ✅ [steps/](phase-04/steps/) | 🔲 Chưa bắt đầu |
+| [5](phase-05/context.md) | Gắn kết | Giữ chân | 42 | ✅ [steps/](phase-05/steps/) | 🔲 Chưa bắt đầu |
+| [6](phase-06/context.md) | Lan truyền | Tăng trưởng | 50 | ✅ [steps/](phase-06/steps/) | 🔲 Chưa bắt đầu |
+
+**220 task** cho cả 6 phase. Đặc tả nghiệp vụ đã đầy đủ cho **cả 19 tính năng**.
+
+**220 task, 26 file hướng dẫn từng bước** — đủ cho cả 6 phase.
+
+> ⚠️ **`steps/` của Phase 3–6 viết trước khi có code thật.** Tên file, tên hàm và lệnh cài
+> thư viện trong đó là **dự kiến** theo quy ước đặt ở Phase 1. Khi bắt tay vào một phase,
+> nếu code thật khác — **tin code thật**, rồi sửa lại file hướng dẫn. Phần luật nghiệp vụ
+> và cảnh báo "bẫy" thì không phụ thuộc code, dùng được nguyên.
 
 Ký hiệu: 🔲 chưa bắt đầu · 🔄 đang làm · ✅ xong · ⏸ tạm dừng
 
@@ -34,6 +50,7 @@ Ký hiệu: 🔲 chưa bắt đầu · 🔄 đang làm · ✅ xong · ⏸ tạm 
 | D3 | Có khu vực "chỉ mình thấy" trong không gian chung không? | ✅ **Không có nhật ký riêng.** Mọi thứ trong space là chung. Chỉ 3 ngoại lệ có kiểm soát. | [../overview.md](../overview.md) mục 3 |
 | D4 | Space `archived` giữ ảnh bao lâu? | ✅ **6 tháng** không ai truy cập → báo trước 30 ngày → xoá ảnh, giữ phần chữ | [p1-breakup.md](../docs/features/p1-breakup.md) |
 | D5 | Ảnh do A đăng thì B có tải về được không? | ✅ **Có.** Kỉ niệm là chung — đó là toàn bộ định vị của app. | [p1-breakup.md](../docs/features/p1-breakup.md) |
+| D6 | Chi tiêu có ghi nợ nhau không? | ✅ **Không.** Bỏ số dư nợ, nút "đã thanh toán", và cách chia. Chỉ ghi ai trả để thống kê. Trái định vị sản phẩm, và là nguồn phức tạp lớn nhất của Phase 4. | [p4-expenses.md](../docs/features/p4-expenses.md) mục 1 |
 
 ## Quyết định đang treo
 

@@ -97,7 +97,7 @@ tối và cuối tuần (~10–15 giờ/tuần). Lộ trình theo 6 phase ở [t
 | **2 — Kỉ niệm** | Chọn ảnh, nén, upload, timeline, tim/bình luận, "Ăn gì" bản gọn | **2–3 tuần** |
 | ⭐ | *Tới đây đã dùng thật được* | *≈ 4–6 tuần* |
 | **3 — Nhịp sống** | Sự kiện, đếm ngược, pg_cron + Edge Function gửi nhắc | **1–1.5 tuần** |
-| **4 — Cùng nhau** | Chi tiêu, thống kê, số dư nợ nhau, mục tiêu | **2–2.5 tuần** |
+| **4 — Cùng nhau** | Chi tiêu, thống kê theo danh mục, mục tiêu, quỹ chung | **2 tuần** |
 | **5 — Gắn kết** | Câu hỏi mỗi ngày, thư tương lai, tâm trạng, "Ăn gì" đầy đủ | **1.5–2 tuần** |
 | **6 — Lan truyền** | Bản đồ dấu chân, Wrapped, xuất PDF, xuất dữ liệu | **2–3 tuần** |
 | **Tổng** | | **≈ 9–14 tuần** |

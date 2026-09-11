@@ -92,7 +92,7 @@ Nói cho công bằng, có hai thứ:
 Đây là quyết định quan trọng nhất, vì nó khó đảo ngược:
 
 - **Postgres + Row-Level Security khớp chính xác với mô hình "space".** Mọi bảng mang `couple_id`, một policy `couple_id IN (SELECT ... FROM memberships WHERE user_id = auth.uid())` là cô lập được dữ liệu ở tầng database. Không phụ thuộc vào việc app nhớ lọc đúng — sai sót kiểu này ở app cho cặp đôi là thảm hoạ.
-- **Chi tiêu và thống kê là bài toán quan hệ.** "Tổng chi theo danh mục theo tháng", "số dư nợ nhau", "Wrapped cuối năm" — trong SQL là vài câu query; trong Firestore là bảng đếm thủ công + cloud function cập nhật, dễ lệch số.
+- **Chi tiêu và thống kê là bài toán quan hệ.** "Tổng chi theo danh mục theo tháng", "quán ăn nhiều nhất năm", "Wrapped cuối năm" — trong SQL là vài câu query; trong Firestore là bảng đếm thủ công + cloud function cập nhật, dễ lệch số.
 - **Có đường lùi.** Supabase là Postgres tiêu chuẩn, tự host được. Firestore thì khoá chặt.
 - Realtime, Auth, Storage đều có sẵn — không cần tự dựng server ở giai đoạn đầu.
 

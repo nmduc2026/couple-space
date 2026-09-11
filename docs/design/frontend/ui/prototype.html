@@ -1,0 +1,1389 @@
+<title>Couple Space Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  /* nền xưởng (shell) */
+  --w-bg:#F2EEF0;
+  --w-panel:#FFFFFF;
+  --w-line:#DFD3D8;
+  --w-ink:#2A1F26;
+  --w-dim:#8A7480;
+  /* bảng màu app */
+  --a-bg:#FBF8F9;
+  --a-surface:#FFFFFF;
+  --a-ink:#2A1F26;
+  --a-muted:#8A7480;
+  --a-line:#EADFE3;
+  --a-accent:#C2415B;
+  --a-accent-ink:#FFFFFF;
+  --a-soft:#F7E3E8;
+  --a-ok:#3F7D63;
+  --a-warn:#9A6A2F;
+  --shadow:0 18px 50px -22px rgba(42,31,38,.45);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --w-bg:#151013;--w-panel:#1F1920;--w-line:#382C33;--w-ink:#F4EAEE;--w-dim:#A38E98;
+    --a-bg:#1A1418;--a-surface:#251C21;--a-ink:#F7EDF0;--a-muted:#A38E98;--a-line:#3A2D34;
+    --a-accent:#E8788D;--a-accent-ink:#2A1218;--a-soft:#3A242B;--a-ok:#7FBF9E;--a-warn:#D4A86A;
+    --shadow:0 18px 50px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --w-bg:#151013;--w-panel:#1F1920;--w-line:#382C33;--w-ink:#F4EAEE;--w-dim:#A38E98;
+  --a-bg:#1A1418;--a-surface:#251C21;--a-ink:#F7EDF0;--a-muted:#A38E98;--a-line:#3A2D34;
+  --a-accent:#E8788D;--a-accent-ink:#2A1218;--a-soft:#3A242B;--a-ok:#7FBF9E;--a-warn:#D4A86A;
+  --shadow:0 18px 50px -22px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--w-bg);color:var(--w-ink);
+  font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--a-accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+/* ---------- khung xưởng ---------- */
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 48px}
+.head{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between;
+  border-bottom:1px solid var(--w-line);padding-bottom:18px;margin-bottom:26px}
+.head h1{margin:0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em;text-wrap:balance}
+.head p{margin:6px 0 0;color:var(--w-dim);max-width:62ch;font-size:14px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--a-accent);border:1px solid currentColor;border-radius:999px;padding:3px 10px;margin-bottom:10px}
+.themebtn{border:1px solid var(--w-line);background:var(--w-panel);border-radius:999px;
+  padding:7px 14px;font-size:12.5px;white-space:nowrap}
+
+.bench{display:grid;grid-template-columns:212px minmax(0,1fr) minmax(0,300px);gap:26px;align-items:start}
+@media (max-width:1020px){.bench{grid-template-columns:1fr;gap:22px}}
+
+/* chỉ mục màn hình */
+@media (min-width:1021px){
+  .rail{position:sticky;top:20px;max-height:calc(100dvh - 40px);overflow-y:auto;
+    scrollbar-width:thin;padding-right:4px}
+}
+.rail h2,.notes h2{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--w-dim);
+  margin:0 0 10px;font-weight:700}
+.rail ol{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:1px}
+.rail li button{display:flex;gap:9px;align-items:baseline;width:100%;text-align:left;
+  padding:6px 9px;border-radius:7px;font-size:13.5px;color:var(--w-dim);transition:background .12s,color .12s}
+.rail li button:hover{background:var(--w-panel);color:var(--w-ink)}
+.rail li button[aria-current="true"]{background:var(--a-accent);color:var(--a-accent-ink);font-weight:600}
+.rail .num{font-size:10px;opacity:.7;flex:none;min-width:3.6em}
+@media (max-width:1020px){
+  .rail{border:1px solid var(--w-line);border-radius:12px;background:var(--w-panel);padding:14px}
+  .rail ol{flex-direction:row;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .rail li button{width:auto;border:1px solid var(--w-line)}
+}
+
+/* sân khấu + điện thoại */
+.stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+.phone{width:min(392px,100%);border:11px solid #1C1419;border-radius:46px;background:#1C1419;
+  box-shadow:var(--shadow);position:relative;flex:none}
+.phone::after{content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:104px;height:26px;border-radius:999px;background:#1C1419;z-index:5;pointer-events:none}
+.screenbox{height:clamp(620px,calc(100dvh - 208px),848px);overflow-y:auto;overflow-x:hidden;
+  border-radius:35px;background:var(--a-bg);color:var(--a-ink);
+  scrollbar-width:none;-ms-overflow-style:none}
+.screenbox::-webkit-scrollbar{width:0;height:0;display:none}
+.stagebar{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;
+  font-size:12px;color:var(--w-dim)}
+.stagebar .mono{color:var(--a-accent);font-weight:500}
+.nav{display:flex;gap:8px}
+.nav button{border:1px solid var(--w-line);background:var(--w-panel);border-radius:8px;padding:5px 12px;font-size:12.5px}
+
+/* ghi chú */
+.notes{border:1px solid var(--w-line);background:var(--w-panel);border-radius:14px;padding:18px;position:sticky;top:20px}
+@media (max-width:1020px){.notes{position:static}}
+.notes h3{margin:0 0 4px;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.notes .src{font-size:11.5px;color:var(--a-accent);margin-bottom:12px}
+.notes p{margin:0 0 12px;font-size:13.5px;color:var(--w-dim)}
+.notes .rule{border-left:2px solid var(--a-accent);padding:2px 0 2px 11px;font-size:13px;margin-bottom:10px}
+.notes .rule b{color:var(--w-ink);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+
+/* ---------- nội dung app ---------- */
+.scr{display:flex;flex-direction:column;min-height:100%;padding:46px 20px 26px}
+.scr.flush{padding:0}
+.stat{display:flex;justify-content:space-between;font-size:11px;font-weight:600;
+  padding:0 8px 10px;color:var(--a-muted)}
+h4.t{margin:0 0 6px;font-size:23px;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.sub{margin:0 0 22px;color:var(--a-muted);font-size:14px}
+.btn{display:block;width:100%;text-align:center;background:var(--a-accent);color:var(--a-accent-ink);
+  border-radius:14px;padding:14px;font-weight:600;font-size:15px}
+.btn.ghost{background:transparent;color:var(--a-muted);font-weight:500}
+.btn.outline{background:transparent;color:var(--a-ink);border:1px solid var(--a-line)}
+.btn.danger{background:transparent;color:#C2415B;border:1px solid currentColor}
+.fld{display:block;margin-bottom:14px}
+.fld span{display:block;font-size:12px;color:var(--a-muted);margin-bottom:5px}
+.fld i{display:block;background:var(--a-surface);border:1px solid var(--a-line);border-radius:12px;
+  padding:12px 14px;font-style:normal;font-size:15px}
+.fld i.dim{color:var(--a-muted)}
+.spacer{flex:1;min-height:16px}
+
+.otp{display:flex;gap:8px;margin-bottom:18px}
+.otp i{flex:1;aspect-ratio:3/4;display:grid;place-items:center;background:var(--a-surface);
+  border:1px solid var(--a-line);border-radius:11px;font-size:22px;font-weight:700;font-style:normal}
+.otp i.on{border-color:var(--a-accent);color:var(--a-accent)}
+
+.pick{display:flex;flex-direction:column;gap:11px}
+.pick button{border:1px solid var(--a-line);background:var(--a-surface);border-radius:15px;
+  padding:16px;text-align:left}
+.pick b{display:block;font-size:15px;margin-bottom:2px}
+.pick small{color:var(--a-muted);font-size:12.5px}
+
+.code{font-size:38px;font-weight:800;letter-spacing:.16em;text-align:center;color:var(--a-accent);
+  background:var(--a-soft);border-radius:16px;padding:20px 10px;margin-bottom:8px}
+.hintc{text-align:center;font-size:12px;color:var(--a-muted);margin:0 0 20px}
+.invite{background:var(--a-surface);border:1px dashed var(--a-line);border-radius:14px;
+  padding:14px;font-size:13.5px;color:var(--a-muted);margin-bottom:18px;line-height:1.6}
+
+/* home */
+.cover{height:186px;background:linear-gradient(150deg,#E8A0AE,#C2415B 55%,#7C3350);
+  position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+  align-items:center;padding:0 18px 20px;color:#fff}
+.cover .gear{position:absolute;top:50px;right:16px;font-size:19px;line-height:1}
+.cover .names{font-size:15px;font-weight:600;opacity:.95}
+.days{font-size:62px;font-weight:800;line-height:.95;letter-spacing:-.04em;margin-top:2px}
+.dayslabel{font-size:13px;opacity:.9;letter-spacing:.02em}
+.mile{margin-top:9px;font-size:12px;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:999px}
+.body{padding:16px 16px 92px;display:flex;flex-direction:column;gap:14px}
+.banner{background:var(--a-soft);border-radius:13px;padding:12px 14px;display:flex;
+  justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
+.banner b{color:var(--a-accent);font-weight:600;white-space:nowrap}
+.sec{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--a-muted);font-weight:700}
+.sec span{font-size:11.5px;letter-spacing:0;text-transform:none;color:var(--a-accent);font-weight:500}
+.eatcard{display:flex;align-items:center;gap:13px;background:var(--a-surface);border:1px solid var(--a-line);
+  border-radius:15px;padding:14px;width:100%;text-align:left}
+.eatcard .em{font-size:24px}
+.eatcard b{display:block;font-size:15px}
+.eatcard small{color:var(--a-muted);font-size:12.5px}
+.eatcard .ar{margin-left:auto;color:var(--a-muted)}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.ph{aspect-ratio:1;border-radius:10px;display:grid;place-items:center;font-size:19px}
+.ph1{background:linear-gradient(140deg,#F0C27B,#C2415B)}
+.ph2{background:linear-gradient(140deg,#A8C8E8,#4A5D8A)}
+.ph3{background:linear-gradient(140deg,#F5D5A8,#A8724A)}
+.ph4{background:linear-gradient(140deg,#C9B6D8,#6B4E7D)}
+.ph5{background:linear-gradient(140deg,#9FCFB4,#3F7D63)}
+.ph6{background:linear-gradient(140deg,#F2B8C0,#9A3F55)}
+.mini{background:var(--a-surface);border:1px solid var(--a-line);border-radius:14px;padding:14px}
+.mini .row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
+.mini .row.big b{font-size:17px;font-weight:700}
+.bar{height:7px;background:var(--a-soft);border-radius:99px;margin-top:9px;overflow:hidden}
+.bar i{display:block;height:100%;width:80%;background:var(--a-accent);border-radius:99px}
+
+/* tab bar */
+.tabs{position:sticky;bottom:0;display:flex;justify-content:space-around;align-items:center;
+  background:color-mix(in srgb,var(--a-surface) 92%,transparent);backdrop-filter:blur(12px);
+  border-top:1px solid var(--a-line);padding:9px 6px 20px;margin-top:auto}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;
+  color:var(--a-muted);flex:1}
+.tabs button.on{color:var(--a-accent);font-weight:600}
+.tabs .em{font-size:19px}
+.tabs .plus{width:46px;height:46px;border-radius:50%;background:var(--a-accent);color:var(--a-accent-ink);
+  display:grid;place-items:center;font-size:24px;flex:none;margin-top:-16px;box-shadow:0 6px 16px -6px var(--a-accent)}
+
+/* timeline */
+.topbar{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:10px;
+  background:color-mix(in srgb,var(--a-bg) 92%,transparent);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--a-line);padding:48px 16px 11px}
+.topbar b{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.topbar .right{margin-left:auto;display:flex;gap:7px}
+.chip{border:1px solid var(--a-line);border-radius:999px;padding:4px 11px;font-size:12px;color:var(--a-muted)}
+.chip.on{background:var(--a-accent);border-color:var(--a-accent);color:var(--a-accent-ink);font-weight:600}
+.month{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--a-muted);
+  font-weight:700;padding:14px 0 8px}
+.post{background:var(--a-surface);border:1px solid var(--a-line);border-radius:17px;overflow:hidden;
+  width:100%;text-align:left;display:block}
+.post .big{aspect-ratio:4/3;display:grid;place-items:center;font-size:38px}
+.post .meta{padding:12px 14px}
+.post .cap{font-size:14.5px;margin-bottom:7px;line-height:1.5}
+.post .fine{display:flex;flex-wrap:wrap;gap:5px 11px;font-size:12px;color:var(--a-muted)}
+.post .acts{display:flex;gap:16px;font-size:13px;color:var(--a-muted);
+  border-top:1px solid var(--a-line);padding:9px 14px}
+.post .acts .liked{color:var(--a-accent)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:12px 0}
+.grid3 .ph{border-radius:4px;font-size:23px}
+
+/* chi tiết bài */
+.hero{aspect-ratio:1;display:grid;place-items:center;font-size:62px;position:relative}
+.hero .cnt{position:absolute;right:12px;bottom:12px;background:rgba(28,20,25,.55);color:#fff;
+  font-size:11.5px;padding:3px 9px;border-radius:999px}
+.cmt{display:flex;gap:9px;padding:11px 0;border-bottom:1px solid var(--a-line);align-items:flex-start}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:12px;
+  font-weight:700;background:var(--a-soft);color:var(--a-accent);flex:none}
+.cmt b{font-size:13px;display:block}
+.cmt p{margin:1px 0 0;font-size:13.5px}
+.cmt time{font-size:11px;color:var(--a-muted)}
+
+/* soạn bài */
+.tray{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.tray .ph{aspect-ratio:1;border-radius:11px;font-size:22px;position:relative}
+.tray .x{position:absolute;top:4px;right:4px;background:rgba(28,20,25,.6);color:#fff;
+  width:19px;height:19px;border-radius:50%;display:grid;place-items:center;font-size:11px}
+.pills{display:flex;gap:7px;flex-wrap:wrap}
+.pills i{font-style:normal;border:1px solid var(--a-line);border-radius:999px;padding:6px 12px;font-size:17px}
+.pills i.on{border-color:var(--a-accent);background:var(--a-soft)}
+.fold{border:1px solid var(--a-line);border-radius:12px;padding:12px 14px;font-size:14px;
+  color:var(--a-muted);display:flex;justify-content:space-between;margin-bottom:14px}
+
+/* ăn gì */
+.addrow{display:flex;gap:8px;margin-bottom:16px}
+.addrow i{flex:1;font-style:normal;background:var(--a-surface);border:1px solid var(--a-line);
+  border-radius:12px;padding:12px 14px;color:var(--a-muted);font-size:14px}
+.addrow b{width:46px;display:grid;place-items:center;background:var(--a-accent);color:var(--a-accent-ink);
+  border-radius:12px;font-size:21px}
+.item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--a-line)}
+.item .em{font-size:21px}
+.item b{display:block;font-size:14.5px;font-weight:600}
+.item small{color:var(--a-muted);font-size:12px}
+.item .new{margin-left:auto;font-size:10.5px;color:var(--a-accent);border:1px solid currentColor;
+  border-radius:999px;padding:2px 8px;white-space:nowrap}
+.wheel{background:var(--a-surface);border:1px solid var(--a-line);border-radius:20px;
+  padding:34px 20px;text-align:center;margin:18px 0}
+.wheel .em{font-size:46px;display:block;margin-bottom:10px}
+.wheel .name{font-size:23px;font-weight:700;letter-spacing:-.02em;min-height:1.3em}
+.wheel .det{font-size:13px;color:var(--a-muted);margin-top:7px}
+.wheel.spin .name{animation:flick .09s steps(1) infinite}
+@keyframes flick{50%{opacity:.35}}
+.two{display:flex;gap:10px}
+.two .btn{flex:1}
+
+/* cài đặt */
+.grp{background:var(--a-surface);border:1px solid var(--a-line);border-radius:14px;overflow:hidden}
+.grp .r{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:13px 15px;font-size:14.5px;border-bottom:1px solid var(--a-line)}
+.grp .r:last-child{border-bottom:none}
+.grp .r small{color:var(--a-muted);font-size:13px}
+.sw{width:42px;height:25px;border-radius:999px;background:var(--a-accent);position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;background:#fff}
+.sw.off{background:var(--a-line)}
+.sw.off::after{right:auto;left:3px}
+.danger-zone{margin-top:22px}
+.warnbox{background:var(--a-soft);border-radius:14px;padding:16px;font-size:13.5px;line-height:1.7;margin-bottom:18px}
+.warnbox li{margin-bottom:5px}
+.warnbox ul{margin:0;padding-left:18px}
+.foot{font-size:11.5px;color:var(--a-muted);text-align:center;margin-top:26px}
+
+/* ---------- Phase 3: sự kiện ---------- */
+.evt{display:flex;align-items:center;gap:13px;background:var(--a-surface);border:1px solid var(--a-line);
+  border-radius:15px;padding:12px 14px}
+.ring{width:48px;height:48px;border-radius:50%;flex:none;position:relative;
+  background:conic-gradient(var(--a-accent) var(--p,50%),var(--a-soft) 0)}
+.ring span{position:absolute;inset:3.5px;border-radius:50%;background:var(--a-surface);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;
+  font-size:14px;font-weight:700;color:var(--a-accent)}
+.ring small{font-size:8px;font-weight:500;color:var(--a-muted)}
+.evt b{display:block;font-size:14.5px}
+.evt small{color:var(--a-muted);font-size:12px}
+.evt .sys{margin-left:auto;font-size:9.5px;color:var(--a-muted);border:1px solid var(--a-line);
+  border-radius:999px;padding:2px 7px;white-space:nowrap}
+.lock{min-height:100%;background:linear-gradient(168deg,#4A2F3C,#1C1419 68%);color:#fff;
+  padding:66px 16px 26px;display:flex;flex-direction:column;gap:10px}
+.lock .clock{text-align:center;font-size:66px;font-weight:300;letter-spacing:-.035em;line-height:1}
+.lock .date{text-align:center;font-size:13.5px;opacity:.72;margin-bottom:24px}
+.noti{background:rgba(255,255,255,.15);border-radius:16px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start}
+.noti .ic{width:26px;height:26px;border-radius:7px;background:#C2415B;display:grid;place-items:center;
+  font-size:13px;flex:none}
+.noti b{display:block;font-size:12px;opacity:.8;font-weight:600}
+.noti p{margin:2px 0 0;font-size:13.5px}
+/* ---------- Phase 4: chi tiêu, mục tiêu ---------- */
+.donut{width:130px;height:130px;border-radius:50%;position:relative;flex:none;
+  background:conic-gradient(#C2415B 0 42%,#C9A227 0 62%,#4A7DA8 0 82%,#6B8E5A 0 100%)}
+.donut::after{content:"";position:absolute;inset:25px;border-radius:50%;background:var(--a-surface)}
+.donut b{position:absolute;inset:0;display:grid;place-items:center;z-index:1;font-size:12.5px;font-weight:700}
+.legend{display:flex;flex-direction:column;gap:7px;font-size:12.5px;flex:1;min-width:0}
+.legend div{display:flex;align-items:center;gap:7px}
+.legend i{width:9px;height:9px;border-radius:3px;flex:none}
+.legend span{margin-left:auto;color:var(--a-muted);font-variant-numeric:tabular-nums}
+.exp{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--a-line)}
+.exp:last-child{border-bottom:none}
+.exp .d{font-size:11px;color:var(--a-muted);width:36px;flex:none;padding-top:3px}
+.exp b{display:block;font-size:14.5px}
+.exp small{color:var(--a-muted);font-size:12px}
+.exp .amt{margin-left:auto;font-weight:600;font-size:14.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.owe{background:var(--a-soft);border-radius:14px;padding:13px 15px;display:flex;
+  justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.owe b{color:var(--a-accent);font-variant-numeric:tabular-nums}
+.owe button{border:1px solid var(--a-accent);color:var(--a-accent);border-radius:999px;
+  padding:5px 12px;font-size:12px;white-space:nowrap}
+.goal{background:var(--a-surface);border:1px solid var(--a-line);border-radius:15px;padding:14px;
+  width:100%;text-align:left;display:block}
+.goal .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.goal b{font-size:15px}
+.goal small{color:var(--a-muted);font-size:12px;white-space:nowrap}
+.check{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--a-line);font-size:14px}
+.check:last-child{border-bottom:none}
+.box{width:21px;height:21px;border-radius:6px;border:1.5px solid var(--a-line);flex:none;
+  display:grid;place-items:center;font-size:12px}
+.box.on{background:var(--a-accent);border-color:var(--a-accent);color:var(--a-accent-ink)}
+.check.done span{color:var(--a-muted);text-decoration:line-through}
+.split{display:flex;gap:8px}
+.split button{flex:1;border:1px solid var(--a-line);border-radius:12px;padding:11px 6px;
+  font-size:13px;text-align:center}
+.split button.on{border-color:var(--a-accent);background:var(--a-soft);font-weight:600}
+/* ---------- Phase 5 ---------- */
+.qcard{background:var(--a-surface);border:1px solid var(--a-line);border-radius:18px;padding:18px;margin-bottom:14px}
+.qcard .q{font-size:18px;font-weight:600;line-height:1.45;letter-spacing:-.01em}
+.blur{filter:blur(8px);user-select:none}
+.hidden-ans{background:var(--a-soft);border-radius:13px;padding:15px;text-align:center;
+  font-size:13px;color:var(--a-muted)}
+.ansbox{background:var(--a-soft);border-radius:13px;padding:14px;font-size:14px;line-height:1.6}
+.letter{display:flex;gap:12px;align-items:center;border:1px solid var(--a-line);background:var(--a-surface);
+  border-radius:15px;padding:14px;margin-bottom:10px}
+.letter.sealed{border-style:dashed;background:transparent}
+.letter .em{font-size:22px}
+.letter b{display:block;font-size:14.5px}
+.letter small{color:var(--a-muted);font-size:12px}
+.moods{display:flex;gap:6px;align-items:flex-end;height:104px;margin:12px 0 6px}
+.moods>div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;height:100%}
+.moods .pair{display:flex;flex-direction:row;align-items:flex-end;gap:2px;flex:1}
+.moods i{flex:1;border-radius:3px 3px 0 0;display:block}
+.moods .m{background:var(--a-accent)}
+.moods .l{background:#4A7DA8}
+.moods u{text-decoration:none;font-size:9px;color:var(--a-muted);text-align:center;flex:none}
+.faces{display:flex;gap:7px;justify-content:space-between;margin:14px 0}
+.faces button{flex:1;aspect-ratio:1;border:1px solid var(--a-line);border-radius:14px;font-size:23px}
+.faces button.on{border-color:var(--a-accent);background:var(--a-soft)}
+.streak{display:flex;align-items:center;gap:9px;background:var(--a-soft);border-radius:13px;
+  padding:11px 14px;font-size:13.5px}
+.sheet{margin-top:auto;background:var(--a-surface);border-radius:22px 22px 0 0;
+  border-top:1px solid var(--a-line);padding:18px 18px 26px}
+.nudges{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.nudges button{border:1px solid var(--a-line);border-radius:14px;padding:15px 8px;text-align:center;font-size:14px}
+.verd{display:flex;gap:9px;margin-top:12px}
+.verd button{flex:1;border:1px solid var(--a-line);border-radius:14px;padding:12px 4px;font-size:25px}
+.verd button.on{border-color:var(--a-accent);background:var(--a-soft)}
+.verd small{display:block;font-size:10.5px;color:var(--a-muted);margin-top:3px}
+.kv{display:flex;justify-content:space-between;font-size:14px;padding:10px 0;border-bottom:1px solid var(--a-line)}
+.kv:last-child{border-bottom:none}
+.kv b{font-weight:600;font-variant-numeric:tabular-nums}
+/* ---------- Phase 6 ---------- */
+.mapbox{position:relative;height:250px;border-radius:18px;overflow:hidden;border:1px solid var(--a-line);
+  background:linear-gradient(155deg,var(--a-soft),var(--a-surface))}
+.dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--a-accent);
+  box-shadow:0 0 0 5px color-mix(in srgb,var(--a-accent) 20%,transparent)}
+.dot b{position:absolute;left:15px;top:-5px;font-size:10.5px;white-space:nowrap;font-weight:600}
+.dot.ghost{background:var(--a-muted);box-shadow:none;opacity:.45}
+.wrapd{background:linear-gradient(155deg,#C2415B,#5E2438 72%);color:#fff;border-radius:20px;padding:24px 20px}
+.wrapd .yr{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
+.wrapd .hero2{font-size:48px;font-weight:800;letter-spacing:-.035em;line-height:1;margin:8px 0 0}
+.wrapd .cap2{font-size:14px;opacity:.9;margin-top:4px}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.wgrid div{background:rgba(255,255,255,.15);border-radius:13px;padding:12px}
+.wgrid b{display:block;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.wgrid small{font-size:11px;opacity:.85}
+.alb{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--a-line)}
+.alb:last-child{border-bottom:none}
+.alb .cv{width:52px;height:52px;border-radius:11px;flex:none;display:grid;place-items:center;font-size:21px}
+.alb b{display:block;font-size:14.5px}
+.alb small{color:var(--a-muted);font-size:12px}
+.wish{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--a-line)}
+.wish:last-child{border-bottom:none}
+.wish .em{font-size:21px}
+.wish b{display:block;font-size:14.5px}
+.wish small{color:var(--a-muted);font-size:12px}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="tag">Bản dựng thử · không phải code app</span>
+      <h1>Couple Space — prototype màn hình</h1>
+      <p>36 màn hình của cả 6 phase, bấm được để hình dung luồng đi. Dữ liệu là giả.
+         Mỗi màn hình kèm ghi chú luật nghiệp vụ và nguồn đặc tả.
+         <b>Phase 1–2 đã có task chi tiết; Phase 3–6 mới là đề xuất</b> — duyệt xong tôi mới viết đặc tả và
+         <span class="mono">steps/</span> cho chúng.</p>
+    </div>
+    <button class="themebtn" id="theme">◐ Đổi nền sáng / tối</button>
+  </header>
+
+  <div class="bench">
+    <nav class="rail" id="rail" aria-label="Chỉ mục màn hình"></nav>
+
+    <div class="stage">
+      <div class="phone">
+        <div class="screenbox" id="box"></div>
+      </div>
+      <div class="stagebar">
+        <div class="nav">
+          <button id="prev">‹ Trước</button>
+          <button id="next">Sau ›</button>
+        </div>
+        <span>Bấm vào nút bên trong máy để đi tiếp — <span class="mono" id="code">P1-11</span></span>
+      </div>
+    </div>
+
+    <aside class="notes" aria-live="polite">
+      <h2>Ghi chú màn hình</h2>
+      <h3 id="n-title">—</h3>
+      <div class="src mono" id="n-src">—</div>
+      <p id="n-desc">—</p>
+      <div id="n-rules"></div>
+    </aside>
+  </div>
+
+  <p class="foot">Prototype dựng từ <span class="mono">docs/features/</span> và
+     <span class="mono">docs/design/frontend/screens-and-flows.md</span>. Ảnh là khối màu thay thế.</p>
+</div>
+
+<script>
+const COVER = `<div class="cover">
+  <div class="stat" style="position:absolute;top:14px;left:0;right:0;color:#fff;opacity:.9"><span>9:41</span><span>◍ ⏻</span></div>
+  <span class="gear" data-go="settings">⚙</span>
+  <div class="names">Minh 🤍 Linh</div>
+  <div class="days">412</div>
+  <div class="dayslabel">ngày bên nhau</div>
+  <div class="mile">còn 88 ngày nữa là 500</div>
+</div>`;
+const TABS = on => `<div class="tabs">
+  <button class="${on==='home'?'on':''}" data-go="home-p4"><span class="em">🏠</span>Nhà</button>
+  <button class="${on==='mem'?'on':''}" data-go="timeline"><span class="em">📷</span>Kỉ niệm</button>
+  <button class="plus" data-go="compose">+</button>
+  <button class="${on==='plan'?'on':''}" data-go="events"><span class="em">📅</span>Kế hoạch</button>
+  <button class="${on==='money'?'on':''}" data-go="expenses"><span class="em">💰</span>Chi tiêu</button>
+</div>`;
+const BAR = (title, back, right) => `<div class="topbar">${back?`<span data-go="${back}" style="color:var(--a-muted)">‹</span>`:''}<b>${title}</b>${right?`<div class="right">${right}</div>`:''}</div>`;
+
+const S = [
+/* ---------------- PHASE 1 ---------------- */
+{id:"welcome",phase:1,code:"P1-11",name:"Welcome",title:"Màn hình Welcome",
+ src:"steps/c-auth.md · P1-11",
+ desc:"Màn hình đầu tiên. Một câu định vị, một nút. Người thứ hai vào đây khi đang được mời — họ muốn vào nhanh.",
+ rules:[["Không làm onboarding nhiều trang","Mỗi bước thêm là một chỗ người ta bỏ ngang."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <div class="spacer"></div>
+  <div style="text-align:center">
+    <div style="font-size:64px;line-height:1">🤍</div>
+    <h4 class="t" style="font-size:27px;margin-top:14px">Couple Space</h4>
+    <p class="sub" style="margin-inline:auto;max-width:26ch">Nơi hai người cùng viết lại chuyện tình của mình.</p>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn" data-go="email">Bắt đầu</button>
+ </div>`},
+
+{id:"email",phase:1,code:"P1-12",name:"Nhập email",title:"Nhập email → gửi OTP",
+ src:"steps/c-auth.md · P1-12",
+ desc:"Chỉ dùng email OTP ở Phase 1. Không đăng nhập Google/Apple — ít việc hơn, không phụ thuộc cấu hình ngoài.",
+ rules:[["Mã số, không phải magic link","Bấm link hay mở nhầm trình duyệt khác và mất phiên đăng nhập trong PWA."],
+        ["Nhắc chuyện thư rác","Email xác thực rất hay rơi vào mục spam."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <h4 class="t">Email của bạn</h4>
+  <p class="sub">Tụi mình gửi một mã 6 số để xác nhận. Không cần mật khẩu.</p>
+  <label class="fld"><span>EMAIL</span><i>minh.nguyen@gmail.com</i></label>
+  <div class="spacer"></div>
+  <button class="btn" data-go="otp">Tiếp tục</button>
+ </div>`},
+
+{id:"otp",phase:1,code:"P1-13",name:"Nhập mã OTP",title:"Nhập OTP → đăng nhập",
+ src:"steps/c-auth.md · P1-13",
+ desc:"Nhập mã đúng thì vào app, và lần mở sau không phải đăng nhập lại.",
+ rules:[["Thử trên PWA đã cài","PWA và tab Safari là hai kho lưu trữ riêng — đăng nhập ở Safari rồi cài PWA thì vẫn phải đăng nhập lại."],
+        ["autocomplete one-time-code","Để iOS tự điền mã từ email."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <h4 class="t">Nhập mã</h4>
+  <p class="sub">Đã gửi tới minh.nguyen@gmail.com</p>
+  <div class="otp"><i class="on">4</i><i class="on">8</i><i class="on">2</i><i class="on">9</i><i>·</i><i>·</i></div>
+  <p style="font-size:13px;color:var(--a-muted);margin:0">Không thấy email? Kiểm tra hộp thư rác.</p>
+  <p style="font-size:13px;color:var(--a-accent);margin:8px 0 0">Gửi lại mã (60s)</p>
+  <div class="spacer"></div>
+  <button class="btn" data-go="choice">Xác nhận</button>
+ </div>`},
+
+{id:"choice",phase:1,code:"P1-15",name:"Có mã mời chưa?",title:"Rẽ nhánh ghép đôi",
+ src:"steps/d-pairing.md · P1-15",
+ desc:"Tách người tạo space và người được mời. Vào bằng link có sẵn mã thì bỏ qua hẳn màn hình này.",
+ rules:[["Mục tiêu đo được","Người thứ hai tham gia trong 24 giờ đầu. Mọi thứ ở nhóm D phục vụ con số đó."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <h4 class="t">Bạn đã có mã mời chưa?</h4>
+  <p class="sub">Người tạo không gian trước, người kia vào sau bằng mã.</p>
+  <div class="pick">
+    <button data-go="setup"><b>Chưa, tạo không gian mới</b><small>Mình là người bắt đầu</small></button>
+    <button data-go="setup"><b>Rồi, nhập mã mời</b><small>Người ấy đã gửi cho mình một mã 6 ký tự</small></button>
+  </div>
+  <div class="spacer"></div>
+ </div>`},
+
+{id:"setup",phase:1,code:"P1-16",name:"Thiết lập đôi",title:"Thiết lập hồ sơ đôi",
+ src:"steps/d-pairing.md · P1-16",
+ desc:"Thu thông tin tối thiểu để space có ý nghĩa. Người thứ hai sẽ không phải nhập lại ngày bắt đầu yêu.",
+ rules:[["Ngày lưu kiểu date","Không phải timestamp. Sai chỗ này thì countdown lệch 1 ngày và rất khó phát hiện muộn."],
+        ["Không cho chọn ngày tương lai","Chặn ngay khi nhập."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <h4 class="t">Kể tụi mình nghe</h4>
+  <p class="sub">Mấy thông tin này dùng khắp app, sửa lại lúc nào cũng được.</p>
+  <label class="fld"><span>NGÀY BẮT ĐẦU YÊU</span><i>15 / 03 / 2024</i></label>
+  <label class="fld"><span>GỌI BẠN LÀ</span><i>Minh</i></label>
+  <label class="fld"><span>GỌI NGƯỜI ẤY LÀ</span><i>Linh</i></label>
+  <label class="fld"><span>ẢNH ĐẠI DIỆN</span><i class="dim">Bỏ qua cũng được</i></label>
+  <div class="spacer"></div>
+  <button class="btn" data-go="waiting">Tạo không gian</button>
+ </div>`},
+
+{id:"waiting",phase:1,code:"P1-18",name:"Phòng chờ",title:"Phòng chờ + lời mời",
+ src:"steps/d-pairing.md · P1-18",
+ desc:"Màn hình quyết định người thứ hai có vào hay không. Lời mời phải hấp dẫn, không phải một chuỗi ký tự khô khan.",
+ rules:[["Không chặn ở phòng chờ","Nút “Cứ vào xem trước” là bắt buộc — chặn cứng là cách nhanh nhất để người ta bỏ app."],
+        ["Mã bỏ ký tự dễ nhầm","Không dùng 0 O 1 I L. Hạn 7 ngày."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <h4 class="t">Gửi lời mời cho Linh</h4>
+  <p class="sub">Không gian chỉ mở khi có đủ hai người.</p>
+  <div class="code">A7K2M9</div>
+  <p class="hintc">Bấm để sao chép · hết hạn sau 7 ngày</p>
+  <div class="invite">“Anh vừa tạo một nơi để tụi mình lưu kỉ niệm 🤍 Vào bằng mã <b>A7K2M9</b> nhé:
+    couple-space.vercel.app/join?code=A7K2M9”</div>
+  <button class="btn" data-go="home-waiting">Chia sẻ lời mời</button>
+  <div style="height:10px"></div>
+  <button class="btn ghost" data-go="home-waiting">Cứ vào xem trước</button>
+ </div>`},
+
+{id:"home-waiting",phase:1,code:"P1-28",name:"Home — đang chờ",title:"Home khi chưa ghép đôi",
+ src:"steps/f-home.md · P1-28",
+ desc:"Người thứ nhất vào Home được ngay, chỉ thêm một dải banner nhắc mời. Đây là tính năng chống rủi ro lớn nhất của app.",
+ rules:[["Realtime","Người kia bấm tham gia thì banner tự biến mất, không cần tải lại."]],
+ html:`<div class="scr flush">
+  <div class="cover">
+    <div class="stat" style="position:absolute;top:14px;left:0;right:0;color:#fff;opacity:.9"><span>9:41</span><span>◍ ⏻</span></div>
+    <span class="gear" data-go="settings">⚙</span>
+    <div class="names">Minh 🤍 Linh</div>
+    <div class="days">412</div>
+    <div class="dayslabel">ngày bên nhau</div>
+    <div class="mile">còn 88 ngày nữa là 500</div>
+  </div>
+  <div class="body">
+    <div class="banner"><span>Đang chờ <b style="color:var(--a-ink)">Linh</b> tham gia</span><b data-go="waiting">Mời lại</b></div>
+    <p style="font-size:13.5px;color:var(--a-muted);text-align:center;margin:24px 8px">
+      Khi Linh vào, tụi mình sẽ mở khoá dòng thời gian, chi tiêu chung và mọi thứ còn lại.</p>
+  </div>
+  <div class="tabs">
+    <button class="on"><span class="em">🏠</span>Nhà</button>
+    <button data-go="home-p1"><span class="em">🤍</span>Đã ghép</button>
+  </div>
+ </div>`},
+
+{id:"home-p1",phase:1,code:"P1-27",name:"Home — Phase 1",title:"Home sau khi ghép đôi",
+ src:"steps/f-home.md · P1-27",
+ desc:"Phase 1 Home chỉ có ảnh bìa và số ngày — và như vậy là đủ. Khối nào chưa có tính năng thì ẩn hẳn.",
+ rules:[["Con số là thứ lớn nhất màn hình","Đừng để nó cạnh tranh với gì khác."],
+        ["Tính theo ngày lịch ở múi giờ máy","Không dùng now() của server trừ mili-giây."],
+        ["Ngày bắt đầu yêu = ngày thứ 1","Không phải ngày thứ 0."]],
+ html:`<div class="scr flush">
+  <div class="cover">
+    <div class="stat" style="position:absolute;top:14px;left:0;right:0;color:#fff;opacity:.9"><span>9:41</span><span>◍ ⏻</span></div>
+    <span class="gear" data-go="settings">⚙</span>
+    <div class="names">Minh 🤍 Linh</div>
+    <div class="days">412</div>
+    <div class="dayslabel">ngày bên nhau</div>
+    <div class="mile">còn 88 ngày nữa là 500</div>
+  </div>
+  <div class="body">
+    <p style="font-size:13.5px;color:var(--a-muted);text-align:center;margin:26px 8px 0">
+      Chưa có kỉ niệm nào. Tính năng dòng thời gian mở ở Phase 2.</p>
+  </div>
+  <div class="tabs">
+    <button class="on"><span class="em">🏠</span>Nhà</button>
+    <button data-go="home-p2"><span class="em">📷</span>Phase 2</button>
+  </div>
+ </div>`},
+
+{id:"settings",phase:1,code:"P1-30",name:"Cài đặt",title:"Màn hình Cài đặt",
+ src:"steps/g-settings.md · P1-30 → P1-32",
+ desc:"Vào bằng icon ⚙ ở header Home, không chiếm một tab. Vùng nguy hiểm đặt cuối cùng, cách rõ với phần trên.",
+ rules:[["Cả hai sửa được thông tin chung","Không có khái niệm “chủ space” — trái nguyên tắc space-first."],
+        ["Đổi ngày bắt đầu yêu thì báo người kia","Đổi âm thầm con số cảm xúc nhất app sẽ gây hiểu lầm."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <h4 class="t">Cài đặt</h4>
+  <div class="sec" style="margin:10px 0 8px">Không gian của chúng ta</div>
+  <div class="grp">
+    <div class="r"><span>Ảnh bìa</span><small>Hoàng hôn Đà Lạt ›</small></div>
+    <div class="r"><span>Gọi nhau là</span><small>Minh · Linh ›</small></div>
+    <div class="r"><span>Ngày bắt đầu yêu</span><small>15/03/2024 ›</small></div>
+    <div class="r"><span>Theme màu</span><small>Hồng đất ›</small></div>
+  </div>
+  <div class="sec" style="margin:20px 0 8px">Thông báo</div>
+  <div class="grp">
+    <div class="r"><span>Kỉ niệm mới</span><span class="sw"></span></div>
+    <div class="r"><span>Tim và bình luận</span><span class="sw"></span></div>
+    <div class="r"><span>Giờ yên lặng</span><small>22:00 – 08:00 ›</small></div>
+  </div>
+  <div class="sec danger-zone" style="margin-bottom:8px;color:#C2415B">Vùng nguy hiểm</div>
+  <button class="btn danger" data-go="breakup">Huỷ ghép đôi</button>
+  <div class="spacer"></div>
+ </div>`},
+
+{id:"breakup",phase:1,code:"P1-33",name:"Huỷ ghép đôi",title:"Huỷ ghép đôi",
+ src:"steps/g-settings.md · P1-33",
+ desc:"Đây là tính năng thật, không phải ca biên. Cách xử lý nó quyết định app có đáng tin hay không.",
+ rules:[["Nút tải dữ liệu đặt TRƯỚC nút xác nhận","Nhiều người bấm huỷ trong lúc xúc động."],
+        ["Một người là đủ để huỷ ghép","Nhưng xoá vĩnh viễn thì cần cả hai."],
+        ["Không xoá gì ngay","Space chuyển chỉ đọc, ảnh giữ 6 tháng."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <h4 class="t">Trước khi huỷ ghép đôi</h4>
+  <p class="sub">Tụi mình nói thẳng chuyện sẽ xảy ra.</p>
+  <div class="warnbox"><ul>
+    <li>Không gian chuyển sang chỉ đọc, không ai đăng thêm được</li>
+    <li>Cả hai <b>vẫn xem và tải được</b> toàn bộ kỉ niệm</li>
+    <li>Không có gì bị xoá ngay</li>
+    <li>Muốn xoá vĩnh viễn thì cần cả hai cùng xác nhận</li>
+  </ul></div>
+  <button class="btn outline">⬇ Tải toàn bộ dữ liệu về máy</button>
+  <div class="spacer"></div>
+  <label class="fld"><span>GÕ “HUỶ GHÉP” ĐỂ XÁC NHẬN</span><i class="dim">…</i></label>
+  <button class="btn danger" data-go="settings">Huỷ ghép đôi</button>
+ </div>`},
+
+/* ---------------- PHASE 2 ---------------- */
+{id:"home-p2",phase:2,code:"P2-26",name:"Home — Phase 2",title:"Home sau Phase 2",
+ src:"steps/f-home.md · P2-26",
+ desc:"Thêm hai khối và tab bar. Thẻ “Ăn gì” đặt trên khối Kỉ niệm — thứ cần dùng gấp đứng trước thứ để ngắm.",
+ rules:[["Chỉ hiện tab đã có nội dung","Kế hoạch và Chi tiêu ẩn tới Phase 3–4. Tab bấm vào ra màn hình trống tệ hơn là chưa có tab."],
+        ["Hai chạm tới kết quả quay","Từ Home → màn hình quay → ra món."]],
+ html:`<div class="scr flush">
+  <div class="cover">
+    <div class="stat" style="position:absolute;top:14px;left:0;right:0;color:#fff;opacity:.9"><span>9:41</span><span>◍ ⏻</span></div>
+    <span class="gear" data-go="settings">⚙</span>
+    <div class="names">Minh 🤍 Linh</div>
+    <div class="days">412</div>
+    <div class="dayslabel">ngày bên nhau</div>
+    <div class="mile">còn 88 ngày nữa là 500</div>
+  </div>
+  <div class="body">
+    <button class="eatcard" data-go="eat-spin">
+      <span class="em">🍜</span>
+      <span><b>Tối nay ăn gì?</b><small>23 chỗ đang muốn thử</small></span>
+      <span class="ar">›</span>
+    </button>
+    <div class="sec">Kỉ niệm gần đây <span data-go="timeline">Xem tất cả</span></div>
+    <div class="thumbs">
+      <div class="ph ph1" data-go="post">🍜</div><div class="ph ph2">✈️</div>
+      <div class="ph ph3">🍰</div><div class="ph ph4">🎬</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="on"><span class="em">🏠</span>Nhà</button>
+    <button data-go="timeline"><span class="em">📷</span>Kỉ niệm</button>
+    <button class="plus" data-go="compose">+</button>
+    <button style="opacity:.3"><span class="em">📅</span>Kế hoạch</button>
+    <button style="opacity:.3"><span class="em">💰</span>Chi tiêu</button>
+  </div>
+ </div>`},
+
+{id:"timeline",phase:2,code:"P2-11",name:"Dòng thời gian",title:"Timeline dạng thẻ",
+ src:"steps/c-browse.md · P2-11",
+ desc:"Một dòng thời gian chung, cả hai cùng đăng. Chia nhóm theo tháng, tiêu đề dính khi cuộn.",
+ rules:[["Tải ảnh lười, chừa sẵn khung","Nếu không, trang nhảy mỗi khi một ảnh tải xong."],
+        ["Băng thông mới đắt, không phải lưu trữ","Đừng tải ảnh đầy đủ cho thẻ nhỏ."]],
+ html:`<div class="scr flush">
+  <div class="topbar"><b>Kỉ niệm</b>
+    <div class="right"><span class="chip on">Dòng thời gian</span><span class="chip" data-go="grid">Lưới</span></div>
+  </div>
+  <div class="body" style="padding-top:0">
+    <div class="month">Tháng 9, 2026</div>
+    <button class="post" data-go="post">
+      <div class="big ph1">🍜</div>
+      <div class="meta">
+        <div class="cap">Bún chả ngon nhất từ trước tới giờ. Lần sau đi sớm hơn cho khỏi xếp hàng 🤍</div>
+        <div class="fine"><span>📍 Hàng Quạt</span><span>🍜 Ăn uống</span><span>180.000đ</span><span>12/09 · Minh</span></div>
+      </div>
+      <div class="acts"><span class="liked">❤️ 2</span><span>💬 3</span></div>
+    </button>
+    <button class="post">
+      <div class="big ph4">🎬</div>
+      <div class="meta">
+        <div class="cap">Xem phim mà em ngủ mất nửa tiếng 😌</div>
+        <div class="fine"><span>📍 CGV Vincom</span><span>🎬 Giải trí</span><span>240.000đ</span><span>10/09 · Linh</span></div>
+      </div>
+      <div class="acts"><span class="liked">❤️ 1</span><span>💬 0</span></div>
+    </button>
+    <div class="month">Tháng 8, 2026</div>
+    <button class="post">
+      <div class="big ph2">✈️</div>
+      <div class="meta">
+        <div class="cap">Đà Lạt lạnh hơn tưởng tượng.</div>
+        <div class="fine"><span>📍 Đà Lạt</span><span>✈️ Du lịch</span><span>28/08 · Minh</span></div>
+      </div>
+      <div class="acts"><span class="liked">❤️ 2</span><span>💬 7</span></div>
+    </button>
+  </div>
+  <div class="tabs">
+    <button data-go="home-p2"><span class="em">🏠</span>Nhà</button>
+    <button class="on"><span class="em">📷</span>Kỉ niệm</button>
+    <button class="plus" data-go="compose">+</button>
+    <button style="opacity:.3"><span class="em">📅</span>Kế hoạch</button>
+    <button style="opacity:.3"><span class="em">💰</span>Chi tiêu</button>
+  </div>
+ </div>`},
+
+{id:"grid",phase:2,code:"P2-12",name:"Lưới ảnh",title:"Chế độ lưới ảnh",
+ src:"steps/c-browse.md · P2-12",
+ desc:"Xem nhanh toàn bộ ảnh, không đọc caption. Nhớ lựa chọn của người dùng cho lần mở sau.",
+ rules:[["Chạm vào nhảy đúng tấm đã chạm","Không phải mở về đầu bài."]],
+ html:`<div class="scr flush">
+  <div class="topbar"><b>Kỉ niệm</b>
+    <div class="right"><span class="chip" data-go="timeline">Dòng thời gian</span><span class="chip on">Lưới</span></div>
+  </div>
+  <div style="padding:0 4px 92px">
+    <div class="month" style="padding-left:12px">Tháng 9, 2026</div>
+    <div class="grid3">
+      <div class="ph ph1" data-go="post">🍜</div><div class="ph ph4">🎬</div><div class="ph ph6">🍰</div>
+      <div class="ph ph3">☕</div><div class="ph ph5">🌿</div><div class="ph ph2">🌊</div>
+    </div>
+    <div class="month" style="padding-left:12px">Tháng 8, 2026</div>
+    <div class="grid3">
+      <div class="ph ph2">✈️</div><div class="ph ph5">🏔</div><div class="ph ph1">🔥</div>
+      <div class="ph ph6">🎂</div><div class="ph ph3">🏠</div><div class="ph ph4">🌙</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button data-go="home-p2"><span class="em">🏠</span>Nhà</button>
+    <button class="on"><span class="em">📷</span>Kỉ niệm</button>
+    <button class="plus" data-go="compose">+</button>
+    <button style="opacity:.3"><span class="em">📅</span>Kế hoạch</button>
+    <button style="opacity:.3"><span class="em">💰</span>Chi tiêu</button>
+  </div>
+ </div>`},
+
+{id:"post",phase:2,code:"P2-13",name:"Chi tiết bài",title:"Chi tiết bài + bình luận",
+ src:"steps/c-browse.md · P2-13 · steps/d-reactions.md",
+ desc:"Xem ảnh toàn màn hình, vuốt ngang. Bình luận hiện realtime — đây là thứ biến app từ hai cuốn nhật ký thành một cuộc trò chuyện chậm.",
+ rules:[["Một loại reaction duy nhất","Trái tim. Với hai người thì bộ reaction chỉ thêm lựa chọn, không thêm ý nghĩa."],
+        ["Khử trùng khi realtime bắn về","Bình luận vừa gửi dễ hiện hai lần: một do cập nhật lạc quan, một do realtime."]],
+ html:`<div class="scr flush">
+  <div class="topbar" style="padding-bottom:11px"><span data-go="timeline">‹</span><b>12 tháng 9, 2026</b>
+    <div class="right"><span style="color:var(--a-muted)">···</span></div></div>
+  <div class="hero ph1">🍜<span class="cnt">1/3</span></div>
+  <div style="padding:14px 16px 92px">
+    <div style="font-size:15px;line-height:1.6">Bún chả ngon nhất từ trước tới giờ. Lần sau đi sớm hơn cho khỏi xếp hàng 🤍</div>
+    <div class="fine" style="display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--a-muted);margin-top:10px">
+      <span>📍 Bún chả Hàng Quạt</span><span>🍜 Ăn uống</span><span>180.000đ · Minh trả · chia đôi</span>
+    </div>
+    <div style="display:flex;gap:18px;font-size:14px;padding:14px 0;border-bottom:1px solid var(--a-line)">
+      <span style="color:var(--a-accent)">❤️ Cả hai đã thả tim</span><span style="color:var(--a-muted)">💬 3</span>
+    </div>
+    <div class="cmt"><span class="av">L</span><div><b>Linh</b><p>Ngon thiệt á, mai đi nữa không 😋</p><time>2 giờ trước</time></div></div>
+    <div class="cmt"><span class="av">M</span><div><b>Minh</b><p>Đi chứ, nhưng đi sớm nha</p><time>2 giờ trước</time></div></div>
+    <div class="cmt" style="border-bottom:none"><span class="av">L</span><div><b>Linh</b><p>Ok 🤍</p><time>1 giờ trước</time></div></div>
+    <div class="addrow" style="margin-top:14px"><i>Viết bình luận…</i><b>↑</b></div>
+  </div>
+ </div>`},
+
+{id:"compose",phase:2,code:"P2-07",name:"Soạn bài",title:"Đăng một kỉ niệm",
+ src:"steps/b-post.md · P2-05 → P2-09",
+ desc:"Một màn hình duy nhất, không chia nhiều bước. Từ bấm (+) tới bấm Đăng phải dưới 30 giây.",
+ rules:[["Chỉ caption là cần gõ","Mọi trường khác tuỳ chọn và có giá trị đoán sẵn. Bắt điền nhiều trường = không ai đăng."],
+        ["Ngày tự điền từ EXIF","Đọc EXIF TRƯỚC khi nén — Canvas xoá sạch EXIF, kể cả hướng xoay ảnh."],
+        ["Nén ở client trước khi upload","Cạnh dài 1920px, JPEG ~0.8. Đây là khác biệt giữa 6 năm và 5 tháng free tier."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <span style="color:var(--a-muted)" data-go="home-p2">Huỷ</span>
+    <b style="font-size:16px">Kỉ niệm mới</b>
+    <span style="color:var(--a-accent);font-weight:600" data-go="timeline">Đăng</span>
+  </div>
+  <div class="tray">
+    <div class="ph ph1">🍜<span class="x">×</span></div>
+    <div class="ph ph3">☕<span class="x">×</span></div>
+    <div class="ph ph6">🍰<span class="x">×</span></div>
+  </div>
+  <label class="fld"><span>CAPTION</span><i class="dim">Hôm nay tụi mình…</i></label>
+  <label class="fld"><span>NGÀY · tự điền từ ảnh</span><i>12 / 09 / 2026</i></label>
+  <label class="fld"><span>ĐỊA ĐIỂM · tuỳ chọn</span><i class="dim">Gợi ý: Hàng Quạt · Đà Lạt · CGV Vincom</i></label>
+  <div class="fld"><span>HOẠT ĐỘNG · tuỳ chọn</span>
+    <div class="pills"><i class="on">🍜</i><i>🍰</i><i>✈️</i><i>🎬</i><i>🏠</i><i>☕</i></div>
+  </div>
+  <div class="fold" style="margin-top:14px"><span>💰 Thêm chi phí</span><span>+</span></div>
+ </div>`},
+
+{id:"eat-list",phase:2,code:"P2-21",name:"Ăn gì — danh sách",title:"Danh sách quán muốn thử",
+ src:"steps/e-eat-tonight.md · P2-21",
+ desc:"Thêm một mục chỉ tốn MỘT ô nhập: cái tên. Đây là chỗ tính năng này sống hoặc chết.",
+ rules:[["Đừng bắt chọn món/quán lúc thêm","Mặc định là quán, sửa sau. Một câu hỏi thêm là một lý do để không nhập."],
+        ["Số lần ăn và giá tự tính","Nhưng phải chờ Phase 5, vì cần bảng chi tiêu."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+    <span data-go="eat-spin" style="color:var(--a-muted)">‹</span><b style="font-size:19px">Danh sách</b>
+    <span class="chip on" style="margin-left:auto">Muốn thử</span><span class="chip">Đã đi</span>
+  </div>
+  <div class="addrow"><i>Thêm quán hoặc món…</i><b>+</b></div>
+  <div class="item"><span class="em">🍲</span><span><b>Lẩu Phan Đình Phùng</b><small>Linh thêm · từ TikTok</small></span><span class="new">chưa thử</span></div>
+  <div class="item"><span class="em">🍜</span><span><b>Bún chả Hàng Quạt</b><small>Minh thêm · có bản đồ</small></span></div>
+  <div class="item"><span class="em">🍕</span><span><b>Pizza 4P's Xuân Thuỷ</b><small>Linh thêm</small></span><span class="new">chưa thử</span></div>
+  <div class="item"><span class="em">🍚</span><span><b>Cơm tấm</b><small>Minh thêm · món</small></span><span class="new">chưa thử</span></div>
+  <div class="item"><span class="em">☕</span><span><b>Cà phê Giảng</b><small>Linh thêm · gần nhà</small></span></div>
+  <div class="item" style="border-bottom:none"><span class="em">🥘</span><span><b>Bò né Hàng Bún</b><small>Minh thêm · rẻ</small></span><span class="new">chưa thử</span></div>
+  <div class="spacer"></div>
+ </div>`},
+
+{id:"eat-spin",phase:2,code:"P2-23",name:"Ăn gì — quay",title:"Vòng quay có luật",
+ src:"steps/e-eat-tonight.md · P2-23, P2-24",
+ desc:"Tính năng duy nhất giải quyết một vấn đề đang xảy ra, thay vì lưu lại quá khứ. Bấm nút quay để xem thử.",
+ rules:[["Không phải random() thuần","Ưu tiên chỗ chưa thử. Phase 5 thêm: loại chỗ vừa ăn 14 ngày, loại chỗ ai đó chê."],
+        ["Hoạt ảnh không quá 1.5 giây","Lần thứ ba là đã thấy phiền."],
+        ["Danh sách rỗng thì mời thêm quán","Đừng hiện lỗi."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">
+    <span data-go="home-p2" style="color:var(--a-muted)">‹</span>
+    <b style="font-size:19px">Tối nay ăn gì?</b>
+    <span style="margin-left:auto;font-size:12.5px;color:var(--a-accent)" data-go="eat-list">Danh sách ›</span>
+  </div>
+  <div style="display:flex;gap:7px;margin:12px 0 6px"><span class="chip">Món</span><span class="chip on">Quán</span><span class="chip">Cả hai</span></div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap"><span class="chip">gần nhà</span><span class="chip">rẻ</span><span class="chip">lẩu</span></div>
+  <div class="wheel" id="wheel">
+    <span class="em" id="w-em">🍲</span>
+    <div class="name" id="w-name">Lẩu Phan Đình Phùng</div>
+    <div class="det" id="w-det">Chưa thử lần nào · Linh thêm từ TikTok</div>
+  </div>
+  <div class="two">
+    <button class="btn outline" id="spin">Quay lại</button>
+    <button class="btn">Chốt! 🎉</button>
+  </div>
+  <div class="spacer"></div>
+  <p style="font-size:12px;color:var(--a-muted);text-align:center;margin:0">
+    Vòng quay ưu tiên chỗ hai đứa chưa từng thử.</p>
+ </div>`},
+
+/* ---------------- PHASE 3 ---------------- */
+{id:"home-p3",phase:3,code:"P3-01",name:"Home — Phase 3",title:"Home có khối Sắp tới",
+ src:"docs/features/p3-events-reminders.md",
+ desc:"Khối SẮP TỚI là lý do mở app hằng ngày. Mốc ngày yêu tự sinh, không cần người dùng tạo.",
+ rules:[["Mốc tự sinh không xoá được","Nhưng tắt nhắc được. Tròn tháng chỉ hiện, không nhắc — nếu không sẽ ồn."],
+        ["Đây là chỗ widget để lại khoảng trống","PWA không có widget, nên vai trò nhắc nhớ chuyển hết sang push."]],
+ html:`<div class="scr flush">${COVER}
+  <div class="body">
+    <div class="sec">Sắp tới <span data-go="events">Xem tất cả</span></div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div class="evt" style="--p:88%"><div class="ring"><span>12<small>ngày</small></span></div>
+        <div><b>🎂 Sinh nhật Linh</b><small>24/09 · nhắc trước 7 ngày</small></div></div>
+      <div class="evt" style="--p:60%"><div class="ring"><span>41<small>ngày</small></span></div>
+        <div><b>💕 Kỉ niệm 2 năm</b><small>23/10 · hằng năm</small></div><span class="sys">hệ thống</span></div>
+    </div>
+    <button class="eatcard" data-go="eat-spin"><span class="em">🍜</span>
+      <span><b>Tối nay ăn gì?</b><small>23 chỗ đang muốn thử</small></span><span class="ar">›</span></button>
+    <div class="sec">Kỉ niệm gần đây <span data-go="timeline">Xem tất cả</span></div>
+    <div class="thumbs"><div class="ph ph1" data-go="post">🍜</div><div class="ph ph2">✈️</div>
+      <div class="ph ph3">🍰</div><div class="ph ph4">🎬</div></div>
+  </div>${TABS('home')}</div>`},
+
+{id:"events",phase:3,code:"P3-02",name:"Sự kiện",title:"Kế hoạch — tab Sự kiện",
+ src:"docs/features/p3-events-reminders.md",
+ desc:"Danh sách sắp tới, sắp theo số ngày còn lại tăng dần. Mục Đã qua gập lại ở cuối.",
+ rules:[["Vòng tròn đếm ngược mã hoá thời gian","Nhìn là biết gấp hay chưa, không phải đọc số."],
+        ["Cần chốt khi đặc tả","Sự kiện hằng năm rơi vào 29/2 thì nhắc ngày nào? Yêu xa thì nhắc theo múi giờ của ai?"]],
+ html:`<div class="scr flush">${BAR('Kế hoạch','home-p3','<span class="chip on">Sự kiện</span><span class="chip" data-go="goals">Mục tiêu</span>')}
+  <div class="body" style="padding-top:4px">
+    <div class="sec">Sắp tới</div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div class="evt" style="--p:88%"><div class="ring"><span>12<small>ngày</small></span></div>
+        <div><b>🎂 Sinh nhật Linh</b><small>24/09/2026 · hằng năm</small></div></div>
+      <div class="evt" style="--p:60%"><div class="ring"><span>41<small>ngày</small></span></div>
+        <div><b>💕 Kỉ niệm 2 năm</b><small>23/10/2026</small></div><span class="sys">hệ thống</span></div>
+      <div class="evt" style="--p:30%"><div class="ring"><span>88<small>ngày</small></span></div>
+        <div><b>🤍 Mốc 500 ngày</b><small>09/12/2026</small></div><span class="sys">hệ thống</span></div>
+      <div class="evt" style="--p:14%"><div class="ring"><span>134<small>ngày</small></span></div>
+        <div><b>🏔 Đi Hà Giang</b><small>24/01/2027 · một lần</small></div></div>
+    </div>
+    <div class="sec" style="margin-top:6px">Đã qua (7) ▾</div>
+    <button class="btn" data-go="event-new">+ Sự kiện mới</button>
+  </div>${TABS('plan')}</div>`},
+
+{id:"event-new",phase:3,code:"P3-03",name:"Tạo sự kiện",title:"Tạo / sửa sự kiện",
+ src:"docs/features/p3-events-reminders.md",
+ desc:"Tên, ngày, lặp, nhắc trước. Nhắc trên cả hai máy — không phải nhắc riêng người tạo.",
+ rules:[["Nhắc cả hai máy","Đây là điểm phân biệt với app lịch thông thường."],
+        ["Gợi ý hành động kèm theo","Còn 7 ngày là kỉ niệm — đặt bàn chưa? → tạo nhanh một mục tiêu."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <span style="color:var(--a-muted)" data-go="events">Huỷ</span><b style="font-size:16px">Sự kiện mới</b>
+    <span style="color:var(--a-accent);font-weight:600" data-go="events">Lưu</span></div>
+  <label class="fld"><span>TÊN SỰ KIỆN</span><i>Kỉ niệm ngày gặp mặt đầu tiên</i></label>
+  <label class="fld"><span>NGÀY</span><i>02 / 11 / 2026</i></label>
+  <div class="fld"><span>LẶP LẠI</span>
+    <div class="split"><button>Một lần</button><button class="on">Hằng năm</button><button>Hằng tháng</button></div></div>
+  <div class="fld"><span>NHẮC TRƯỚC</span>
+    <div class="split"><button>1 ngày</button><button class="on">3 ngày</button><button class="on">7 ngày</button><button>30 ngày</button></div></div>
+  <label class="fld"><span>GHI CHÚ · tuỳ chọn</span><i class="dim">Năm nay thử đặt lại đúng quán cũ</i></label>
+  <div class="streak" style="margin-top:6px">🔔 <span>Cả Minh và Linh đều nhận được nhắc.</span></div>
+  <div class="spacer"></div>
+ </div>`},
+
+{id:"lock",phase:3,code:"P3-04",name:"Màn hình khoá",title:"Push thay cho widget",
+ src:"docs/decisions/distribution.md · p1-notifications.md",
+ desc:"Vì PWA trên iOS không có widget, toàn bộ vai trò nhắc nhớ chuyển sang push. Đây là thứ người dùng thấy mỗi ngày mà không mở app.",
+ rules:[["Push hằng ngày là thứ thay thế widget","Cùng mục đích nhắc nhớ, rẻ hơn nhiều — và bật/tắt được."],
+        ["Giờ yên lặng","22:00–08:00 thì hoãn thông báo không khẩn tới sáng."],
+        ["Chạm vào mở đúng màn hình","Không phải mở về Home."]],
+ html:`<div class="lock">
+  <div class="stat" style="color:#fff;opacity:.8"><span>9:41</span><span>◍ ⏻</span></div>
+  <div class="clock">9:41</div>
+  <div class="date">Thứ Bảy, 12 tháng 9</div>
+  <div class="noti"><span class="ic">🤍</span><div><b>COUPLE SPACE</b><p>Hôm nay là ngày thứ 412 của hai đứa 💕</p></div></div>
+  <div class="noti"><span class="ic">🎂</span><div><b>COUPLE SPACE · 7 giờ trước</b><p>Còn 12 ngày là sinh nhật Linh — nghĩ quà chưa?</p></div></div>
+  <div class="noti"><span class="ic">📷</span><div><b>COUPLE SPACE · hôm qua</b><p>Linh vừa thêm một kỉ niệm</p></div></div>
+  <div class="spacer"></div>
+  <p style="text-align:center;font-size:12px;opacity:.5;margin:0">Bấm để mở app</p>
+ </div>`},
+
+/* ---------------- PHASE 4 ---------------- */
+{id:"home-p4",phase:4,code:"P4-01",name:"Home — đầy đủ",title:"Home khi đã đủ tính năng",
+ src:"docs/features/p1-home-dashboard.md",
+ desc:"Bản Home cuối cùng: mọi khối đã có tính năng tương ứng. Mỗi khối là một lối tắt, không khối nào chỉ để trang trí.",
+ rules:[["Mở app là thấy hết","Không cần chạm gì. Đây là lúc nguyên tắc đó thành hình đầy đủ."],
+        ["Thứ tự khối theo mức độ cần gấp","Ăn gì trước Kỉ niệm; việc sắp tới trước thống kê."]],
+ html:`<div class="scr flush">${COVER}
+  <div class="body">
+    <div class="sec">Sắp tới <span data-go="events">Xem tất cả</span></div>
+    <div class="evt" style="--p:88%"><div class="ring"><span>12<small>ngày</small></span></div>
+      <div><b>🎂 Sinh nhật Linh</b><small>24/09 · nhắc trước 7 ngày</small></div></div>
+    <button class="eatcard" data-go="eat-spin"><span class="em">🍜</span>
+      <span><b>Tối nay ăn gì?</b><small>23 chỗ · ăn nhiều nhất: Bún chả Hàng Quạt</small></span><span class="ar">›</span></button>
+    <div class="sec">Kỉ niệm gần đây <span data-go="timeline">Xem tất cả</span></div>
+    <div class="thumbs"><div class="ph ph1" data-go="post">🍜</div><div class="ph ph2">✈️</div>
+      <div class="ph ph3">🍰</div><div class="ph ph4">🎬</div></div>
+    <div class="sec">Tháng này <span data-go="expenses">Chi tiết</span></div>
+    <div class="mini">
+      <div class="row big"><span>8 buổi hẹn</span><b>2.450.000đ</b></div>
+      <div class="row"><span style="color:var(--a-muted);font-size:13px">Đi ăn 12 lần · nhiều nhất tháng này</span></div>
+    </div>
+    <div class="sec">Mục tiêu <span data-go="goals">Xem tất cả</span></div>
+    <div class="mini"><div class="row"><span>Đi Đà Lạt</span><small style="color:var(--a-muted)">8/10 bước</small></div>
+      <div class="bar"><i></i></div></div>
+  </div>${TABS('home')}</div>`},
+
+{id:"expenses",phase:4,code:"P4-02",name:"Chi tiêu tháng",title:"Chi tiêu chung theo tháng",
+ src:"docs/features/p4-expenses.md",
+ desc:"Chi tiêu kế thừa từ bài Timeline, không nhập lại. Khoản nào sinh từ kỉ niệm có icon 📷, chạm vào mở bài đó.",
+ rules:[["Không nhập hai lần","Đây là lý do Timeline phải làm trước Chi tiêu."],
+        ["KHÔNG ghi nợ nhau","Đã bỏ số dư nợ và nút đã thanh toán — biến tình yêu thành sổ nợ là chỗ app này không đi. Chỉ ghi lại đã tiêu gì, ai trả, để nhìn lại."],
+        ["Ai trả chỉ để thống kê","Không dùng để tính ai phải trả lại ai."]],
+ html:`<div class="scr flush">${BAR('◀  Tháng 9, 2026  ▶','home-p4','')}
+  <div class="body" style="padding-top:4px">
+    <div class="mini"><div class="row big"><span>Tổng chi</span><b>2.450.000đ</b></div>
+      <div class="row"><span style="font-size:13px;color:var(--a-muted)">Minh trả</span><span style="font-size:13px">1.850.000đ</span></div>
+      <div class="row"><span style="font-size:13px;color:var(--a-muted)">Linh trả</span><span style="font-size:13px">600.000đ</span></div>
+      <div class="row"><span style="font-size:13px;color:var(--a-muted)">Trung bình mỗi buổi hẹn</span><span style="font-size:13px">306.000đ</span></div>
+    </div>
+    <div class="owe"><span>Tháng này tụi mình <b>đi ăn 12 lần</b> — nhiều hơn tháng trước 4 lần.</span></div>
+    <div class="mini" style="display:flex;gap:16px;align-items:center">
+      <div class="donut"><b>2,45tr</b></div>
+      <div class="legend">
+        <div><i style="background:#C2415B"></i>Ăn uống<span>1.030k</span></div>
+        <div><i style="background:#C9A227"></i>Cà phê<span>490k</span></div>
+        <div><i style="background:#4A7DA8"></i>Giải trí<span>490k</span></div>
+        <div><i style="background:#6B8E5A"></i>Khác<span>440k</span></div>
+      </div>
+    </div>
+    <div class="sec">Chi tiết</div>
+    <div class="mini">
+      <div class="exp"><span class="d">12/09</span><div><b>🍜 Bún chả Hàng Quạt 📷</b><small>Minh trả</small></div><span class="amt">180.000đ</span></div>
+      <div class="exp"><span class="d">10/09</span><div><b>🎬 Xem phim CGV 📷</b><small>Linh trả</small></div><span class="amt">240.000đ</span></div>
+      <div class="exp"><span class="d">08/09</span><div><b>☕ Cà phê Giảng</b><small>Minh trả</small></div><span class="amt">90.000đ</span></div>
+      <div class="exp"><span class="d">05/09</span><div><b>🛒 Đi chợ nấu ăn</b><small>Minh trả</small></div><span class="amt">320.000đ</span></div>
+    </div>
+    <button class="btn" data-go="expense-new">+ Khoản chi mới</button>
+  </div>${TABS('money')}</div>`},
+
+{id:"expense-new",phase:4,code:"P4-03",name:"Thêm chi tiêu",title:"Ghi một khoản chi",
+ src:"docs/features/p4-expenses.md",
+ desc:"Số tiền, nội dung, danh mục, ai trả. Không có phần chia tiền — app không ghi nợ.",
+ rules:[["Tiền lưu dạng số nguyên","amount_minor. Không bao giờ dùng số thực cho tiền."],
+        ["Gắn được vào một kỉ niệm","Nếu hôm đó đã đăng bài, chọn bài thay vì gõ lại tên và ngày."],
+        ["Bốn trường là hết","Bỏ cách chia đi thì màn hình này ngắn lại một nửa — và ai cũng chịu ghi."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <span style="color:var(--a-muted)" data-go="expenses">Huỷ</span><b style="font-size:16px">Khoản chi mới</b>
+    <span style="color:var(--a-accent);font-weight:600" data-go="expenses">Lưu</span></div>
+  <label class="fld"><span>SỐ TIỀN</span><i style="font-size:26px;font-weight:700;font-variant-numeric:tabular-nums">180.000 đ</i></label>
+  <label class="fld"><span>NỘI DUNG</span><i>Bún chả Hàng Quạt</i></label>
+  <div class="fld"><span>DANH MỤC</span>
+    <div class="pills"><i class="on">🍜</i><i>☕</i><i>🎬</i><i>🛒</i><i>✈️</i><i>🎁</i></div></div>
+  <div class="fld"><span>AI TRẢ</span>
+    <div class="split"><button class="on">Minh</button><button>Linh</button></div></div>
+  <div class="fold"><span>📷 Gắn vào kỉ niệm hôm nay</span><span>+</span></div>
+  <div class="streak">📊 <span>Tháng 9 tới giờ: <b>2.630.000đ</b> · 9 buổi hẹn</span></div>
+  <div class="spacer"></div>
+ </div>`},
+
+{id:"goals",phase:4,code:"P4-04",name:"Mục tiêu",title:"Kế hoạch — tab Mục tiêu",
+ src:"docs/features/p4-goals.md",
+ desc:"Bucket list những điều muốn làm cùng nhau. Hoàn thành thì tự sinh một bài Timeline — vòng lặp khép kín giữa các tính năng.",
+ rules:[["Quá hạn thì im lặng","Không nhắc. Nguyên tắc: không biến tình yêu thành KPI."],
+        ["Cần chốt khi đặc tả","Mục tiêu kiểu số tiền có tự lấy tiến độ từ Chi tiêu không?"]],
+ html:`<div class="scr flush">${BAR('Kế hoạch','home-p4','<span class="chip" data-go="events">Sự kiện</span><span class="chip on">Mục tiêu</span>')}
+  <div class="body" style="padding-top:4px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="goal" data-go="goal-detail">
+        <div class="hd"><b>🏔 Đi Đà Lạt</b><small>8/10 bước</small></div>
+        <div class="bar"><i style="width:80%"></i></div></button>
+      <button class="goal">
+        <div class="hd"><b>💰 Quỹ chung 10 triệu</b><small>6,2/10 triệu</small></div>
+        <div class="bar"><i style="width:62%"></i></div></button>
+      <button class="goal">
+        <div class="hd"><b>🎬 Xem hết phim Ghibli</b><small>9/22 phim</small></div>
+        <div class="bar"><i style="width:41%"></i></div></button>
+      <button class="goal">
+        <div class="hd"><b>🍳 Học nấu 10 món</b><small>3/10 món</small></div>
+        <div class="bar"><i style="width:30%"></i></div></button>
+    </div>
+    <div class="sec" style="margin-top:6px">Đã hoàn thành (4) ▾</div>
+    <button class="btn">+ Mục tiêu mới</button>
+  </div>${TABS('plan')}</div>`},
+
+{id:"goal-detail",phase:4,code:"P4-05",name:"Chi tiết mục tiêu",title:"Mục tiêu + các bước con",
+ src:"docs/features/p4-goals.md",
+ desc:"Tích bước cuối cùng thì chúc mừng và hỏi Đăng lên kỉ niệm? — nhảy thẳng vào flow đăng bài với caption điền sẵn.",
+ rules:[["Vòng lặp khép kín","Mục tiêu xong → bài Timeline → ảnh → Wrapped cuối năm. Đây là điểm mạnh của app."]],
+ html:`<div class="scr flush">${BAR('Đi Đà Lạt','goals','')}
+  <div class="body" style="padding-top:4px">
+    <div class="mini">
+      <div class="row big"><span>Tiến độ</span><b>80%</b></div>
+      <div class="bar"><i style="width:80%"></i></div>
+      <div class="row" style="margin-top:8px"><span style="font-size:13px;color:var(--a-muted)">Hạn</span>
+        <span style="font-size:13px">24/01/2027 · còn 134 ngày</span></div>
+    </div>
+    <div class="sec">Các bước</div>
+    <div class="mini">
+      <div class="check done"><span class="box on">✓</span><span>Chốt ngày đi</span></div>
+      <div class="check done"><span class="box on">✓</span><span>Đặt vé xe</span></div>
+      <div class="check done"><span class="box on">✓</span><span>Đặt homestay</span></div>
+      <div class="check done"><span class="box on">✓</span><span>Xin nghỉ phép</span></div>
+      <div class="check"><span class="box"></span><span>Lên danh sách quán ăn</span></div>
+      <div class="check"><span class="box"></span><span>Mượn máy ảnh của Nam</span></div>
+    </div>
+    <div class="streak">🎉 <span>Tích nốt 2 bước là tụi mình sẽ hỏi: <b>đăng lên kỉ niệm?</b></span></div>
+  </div>${TABS('plan')}</div>`},
+
+/* ---------------- PHASE 5 ---------------- */
+{id:"question",phase:5,code:"P5-01",name:"Câu hỏi — chưa mở",title:"Câu hỏi mỗi ngày (chưa trả lời)",
+ src:"docs/features/p5-daily-question.md",
+ desc:"Chỉ thấy câu trả lời của đối phương sau khi mình đã trả lời. Cơ chế này tạo lý do mở app mỗi ngày.",
+ rules:[["Che thật, không che giả","Nếu chỉ ẩn ở app thì dữ liệu vẫn đọc được qua API — phải chặn bằng RLS."],
+        ["Cần chốt khi đặc tả","Ngân hàng câu hỏi lấy từ đâu? Không trả lời cả tuần thì dồn câu cũ hay bỏ qua?"]],
+ html:`<div class="scr flush">${BAR('Câu hỏi hôm nay','home-p4','')}
+  <div class="body" style="padding-top:8px">
+    <div class="qcard">
+      <div class="sec" style="margin-bottom:8px">Thứ Bảy, 12/09</div>
+      <div class="q">Điều gì ở anh/em khiến bạn thấy an toàn nhất?</div>
+    </div>
+    <label class="fld"><span>CÂU TRẢ LỜI CỦA BẠN</span>
+      <i class="dim" style="min-height:96px">Viết gì đó…</i></label>
+    <div class="hidden-ans">
+      <div class="blur" style="font-size:14px;margin-bottom:10px">Là lúc anh không nói gì mà vẫn biết em đang mệt</div>
+      🔒 Linh đã trả lời rồi. Trả lời của bạn để mở khoá.
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" data-go="question-open">Gửi câu trả lời</button>
+  </div></div>`},
+
+{id:"question-open",phase:5,code:"P5-02",name:"Câu hỏi — đã mở",title:"Câu hỏi mỗi ngày (đã mở khoá)",
+ src:"docs/features/p5-daily-question.md",
+ desc:"Trả lời xong thì mở khoá cả hai. Lưu lại thành cuốn sách hỏi đáp của hai người.",
+ rules:[["Nội dung cảm xúc thật","Đây là nguồn nội dung duy nhất không cần ảnh — dùng được cả những ngày không đi đâu."]],
+ html:`<div class="scr flush">${BAR('Câu hỏi hôm nay','home-p4','<span class="chip">Sách hỏi đáp</span>')}
+  <div class="body" style="padding-top:8px">
+    <div class="qcard">
+      <div class="sec" style="margin-bottom:8px">Thứ Bảy, 12/09</div>
+      <div class="q">Điều gì ở anh/em khiến bạn thấy an toàn nhất?</div>
+    </div>
+    <div style="display:flex;gap:9px;margin-bottom:12px"><span class="av">M</span>
+      <div style="flex:1"><b style="font-size:13px">Minh</b>
+        <div class="ansbox" style="margin-top:4px">Là em luôn hỏi lại &ldquo;anh ổn không&rdquo; trước khi giận.</div></div></div>
+    <div style="display:flex;gap:9px"><span class="av">L</span>
+      <div style="flex:1"><b style="font-size:13px">Linh</b>
+        <div class="ansbox" style="margin-top:4px">Là lúc anh không nói gì mà vẫn biết em đang mệt.</div></div></div>
+    <div class="streak" style="margin-top:16px">📖 <span>Đã trả lời <b>87</b> câu cùng nhau</span></div>
+    <div class="spacer"></div>
+  </div></div>`},
+
+{id:"letters",phase:5,code:"P5-03",name:"Thư tương lai",title:"Thư gửi tương lai",
+ src:"docs/features/p5-future-letter.md",
+ desc:"Viết một lá thư, hẹn ngày mở. Chi phí kỹ thuật gần như bằng 0, giá trị cảm xúc rất cao.",
+ rules:[["Khoá phải là khoá thật","RLS chặn theo ngày, hoặc mã hoá. Ẩn ở app thôi thì vẫn đọc được qua API."],
+        ["Cần chốt khi đặc tả","Huỷ ghép đôi rồi thì thư chưa mở xử lý thế nào?"]],
+ html:`<div class="scr flush">${BAR('Thư gửi tương lai','home-p4','')}
+  <div class="body" style="padding-top:8px">
+    <div class="sec">Sắp mở</div>
+    <div class="letter sealed"><span class="em">🔒</span><div><b>Gửi tụi mình của 1 năm sau</b>
+      <small>Minh viết 23/10/2025 · mở sau 41 ngày</small></div></div>
+    <div class="letter sealed"><span class="em">🔒</span><div><b>Đọc vào sinh nhật em nhé</b>
+      <small>Minh viết 02/09/2026 · mở sau 12 ngày</small></div></div>
+    <div class="letter sealed"><span class="em">🔒</span><div><b>Mười năm nữa</b>
+      <small>Linh viết 15/03/2026 · mở năm 2036</small></div></div>
+    <div class="sec" style="margin-top:6px">Đã mở</div>
+    <div class="letter"><span class="em">💌</span><div><b>Gửi anh của ngày kỉ niệm 1 năm</b>
+      <small>Linh viết 15/03/2024 · đã mở 15/03/2025</small></div></div>
+    <div class="spacer"></div>
+    <button class="btn">✍️ Viết một lá thư</button>
+  </div></div>`},
+
+{id:"mood",phase:5,code:"P5-04",name:"Tâm trạng",title:"Check-in tâm trạng hằng ngày",
+ src:"docs/features/p5-mood-checkin.md",
+ desc:"Một chạm chọn tâm trạng, người kia thấy ngay. Biểu đồ theo tháng giúp nhìn ra tuần này em không ổn.",
+ rules:[["Streak nhưng không gây áp lực","Streak đứt thì đừng nhắc — trái nguyên tắc không biến tình yêu thành KPI."],
+        ["Hai người, hai màu","Đọc được cả hai đường trên cùng biểu đồ mới thấy được sự lệch nhau."]],
+ html:`<div class="scr flush">${BAR('Tâm trạng','home-p4','')}
+  <div class="body" style="padding-top:8px">
+    <div class="qcard" style="margin-bottom:12px">
+      <div class="sec" style="margin-bottom:6px">Hôm nay bạn thế nào?</div>
+      <div class="faces"><button>😞</button><button>😕</button><button>😐</button><button class="on">🙂</button><button>😍</button></div>
+      <label class="fld" style="margin:0"><i class="dim">Thêm một dòng… (tuỳ chọn)</i></label>
+    </div>
+    <div class="streak">🔥 <span><b>23 ngày</b> cả hai cùng check-in</span></div>
+    <div class="sec" style="margin-top:16px">7 ngày qua</div>
+    <div class="mini">
+      <div class="moods">
+        <div><div class="pair"><i class="m" style="height:60%"></i><i class="l" style="height:80%"></i></div><u>T2</u></div>
+        <div><div class="pair"><i class="m" style="height:80%"></i><i class="l" style="height:40%"></i></div><u>T3</u></div>
+        <div><div class="pair"><i class="m" style="height:80%"></i><i class="l" style="height:30%"></i></div><u>T4</u></div>
+        <div><div class="pair"><i class="m" style="height:60%"></i><i class="l" style="height:30%"></i></div><u>T5</u></div>
+        <div><div class="pair"><i class="m" style="height:100%"></i><i class="l" style="height:60%"></i></div><u>T6</u></div>
+        <div><div class="pair"><i class="m" style="height:100%"></i><i class="l" style="height:100%"></i></div><u>T7</u></div>
+        <div><div class="pair"><i class="m" style="height:80%"></i><i class="l" style="height:80%"></i></div><u>CN</u></div>
+      </div>
+      <div class="legend" style="flex-direction:row;gap:16px;font-size:12px;margin-top:4px">
+        <div style="flex:none"><i style="background:var(--a-accent)"></i>Minh</div>
+        <div style="flex:none"><i style="background:#4A7DA8"></i>Linh</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--a-muted);margin:12px 2px 0">Giữa tuần Linh có vẻ đuối. Cuối tuần thì cả hai đều ổn.</p>
+    <div class="spacer"></div>
+    <button class="btn outline" data-go="nudge">💗 Gửi Linh một cái chạm</button>
+  </div></div>`},
+
+{id:"nudge",phase:5,code:"P5-05",name:"Nhắc nhẹ",title:"Nudge — thả thính",
+ src:"docs/features/p5-nudge.md",
+ desc:"Gửi một cái chạm, không cần chat đầy đủ. Chỉ là một push notification — nhưng đúng lúc thì có giá trị.",
+ rules:[["Không cạnh tranh với Messenger","Đây là lý do app không làm chat. Nudge lấy 20% giá trị với 2% chi phí."],
+        ["Cần chốt khi đặc tả","Giới hạn bao nhiêu lần một ngày để không thành spam?"]],
+ html:`<div class="scr flush" style="background:rgba(28,20,25,.45)">
+  <div style="flex:1"></div>
+  <div class="sheet">
+    <div style="width:38px;height:4px;border-radius:99px;background:var(--a-line);margin:0 auto 16px"></div>
+    <b style="font-size:17px">Gửi Linh một cái chạm</b>
+    <p style="font-size:13px;color:var(--a-muted);margin:4px 0 0">Linh sẽ nhận được ngay một thông báo.</p>
+    <div class="nudges">
+      <button>🤍<br>Nhớ em</button>
+      <button>🏠<br>Về chưa?</button>
+      <button>🍜<br>Đi ăn không?</button>
+      <button>☕<br>Nghỉ tí đi</button>
+    </div>
+    <button class="btn ghost" data-go="mood" style="margin-top:12px">Đóng</button>
+  </div></div>`},
+
+{id:"eat-rate",phase:5,code:"P5-06",name:"Ăn gì — phần B",title:"Ăn gì đầy đủ: đánh giá + thống kê",
+ src:"docs/features/p2-eat-tonight.md mục 4, 8",
+ desc:"Phần B phải chờ tới đây vì giá trung bình và số lần ăn chỉ tự tính được khi đã có bảng chi tiêu.",
+ rules:[["Ba mức, không phải 5 sao","Thang 1–5 tạo do dự mà không thêm thông tin dùng được."],
+        ["Mỗi người đánh giá riêng","Em thích, anh không là thông tin thật. Vòng quay chỉ chọn chỗ cả hai đều không chê."],
+        ["Ba dòng tự tính","Số lần ăn, giá trung bình, lần cuối — phần thưởng của việc làm Timeline và Chi tiêu tử tế."]],
+ html:`<div class="scr flush">${BAR('Bún chả Hàng Quạt','eat-list','')}
+  <div class="body" style="padding-top:4px">
+    <div class="mini">
+      <div class="kv"><span>Số lần ăn</span><b>4 lần</b></div>
+      <div class="kv"><span>Giá trung bình</span><b>180.000đ</b></div>
+      <div class="kv"><span>Lần cuối</span><b>12/09 · 2 tháng trước</b></div>
+      <div class="kv"><span>Minh · Linh</span><b>😍 · 🙂</b></div>
+    </div>
+    <p style="font-size:11.5px;color:var(--a-muted);margin:8px 2px 0">
+      Ba dòng đầu <b>tự tính</b> từ Timeline và Chi tiêu — không ai phải nhập.</p>
+    <div class="sec" style="margin-top:18px">Vừa đi về — ngon không?</div>
+    <div class="qcard" style="margin:0">
+      <div style="font-size:14px">Đánh giá của bạn cho lần ghé <b>12/09</b></div>
+      <div class="verd">
+        <button class="on">😍<small>Ăn lại</small></button>
+        <button>🙂<small>Cũng được</small></button>
+        <button>😕<small>Thôi</small></button>
+      </div>
+      <p style="font-size:11.5px;color:var(--a-muted);margin:10px 0 0;text-align:center">
+        Chọn 😕 thì chỗ này bị loại khỏi vòng quay.</p>
+    </div>
+    <div class="spacer"></div>
+  </div>${TABS('home')}</div>`},
+
+/* ---------------- PHASE 6 ---------------- */
+{id:"map",phase:6,code:"P6-01",name:"Bản đồ dấu chân",title:"Bản đồ dấu chân",
+ src:"docs/features/p6-footprint-map.md",
+ desc:"Thay cho chia sẻ vị trí realtime (đã loại). Gắn địa điểm thủ công vào mỗi bài, rồi dựng nên bản đồ những nơi hai người đã đi.",
+ rules:[["80% giá trị, 2% chi phí","Không tốn pin, không xin quyền chạy nền, không tạo cảm giác giám sát."],
+        ["Cần chốt khi đặc tả","Địa điểm nhập tự do hay chuẩn hoá theo tỉnh/thành để đếm được?"]],
+ html:`<div class="scr flush">${BAR('Dấu chân','home-p4','')}
+  <div class="body" style="padding-top:4px">
+    <div class="mapbox">
+      <div class="dot" style="left:44%;top:14%"><b>Hà Nội · 41</b></div>
+      <div class="dot" style="left:56%;top:29%"><b>Ninh Bình · 3</b></div>
+      <div class="dot" style="left:38%;top:47%"><b>Đà Nẵng · 2</b></div>
+      <div class="dot" style="left:60%;top:64%"><b>Đà Lạt · 1</b></div>
+      <div class="dot" style="left:34%;top:78%"><b>Sài Gòn · 2</b></div>
+      <div class="dot ghost" style="left:22%;top:22%"></div>
+      <div class="dot ghost" style="left:70%;top:40%"></div>
+      <div class="dot ghost" style="left:26%;top:60%"></div>
+    </div>
+    <div class="mini" style="margin-top:12px">
+      <div class="kv"><span>Tỉnh thành đã đi cùng nhau</span><b>5 / 63</b></div>
+      <div class="kv"><span>Địa điểm đã ghé</span><b>49</b></div>
+      <div class="kv"><span>Đi xa nhất</span><b>Đà Lạt · 1.480 km</b></div>
+    </div>
+    <p style="font-size:13px;color:var(--a-muted);margin:12px 2px 0">
+      Còn <b>58 tỉnh thành</b> hai đứa chưa đặt chân tới.</p>
+    <div class="spacer"></div>
+  </div>${TABS('home')}</div>`},
+
+{id:"wrapped",phase:6,code:"P6-02",name:"Tổng kết năm",title:"Wrapped — tổng kết năm",
+ src:"docs/features/p6-wrapped.md",
+ desc:"Xuất ảnh đẹp để chia sẻ lên mạng xã hội. Đây là kênh tăng trưởng miễn phí nếu sau này phát hành.",
+ rules:[["Cho chọn thứ muốn khoe","Ảnh xuất ra có thể lộ nội dung riêng tư."],
+        ["Cặp mới yêu 2 tháng vẫn phải có gì để kể","Đừng thiết kế chỉ cho trường hợp dữ liệu đầy."]],
+ html:`<div class="scr">
+  <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
+  <div class="wrapd">
+    <div class="yr">Couple Space · 2026</div>
+    <div class="hero2">126</div>
+    <div class="cap2">buổi hẹn của Minh &amp; Linh</div>
+    <div class="wgrid">
+      <div><b>5</b><small>tỉnh thành đã đi</small></div>
+      <div><b>892</b><small>tấm ảnh</small></div>
+      <div><b>31,2tr</b><small>đã tiêu cùng nhau</small></div>
+      <div><b>11</b><small>mục tiêu hoàn thành</small></div>
+      <div><b>Tháng 8</b><small>nhiều ảnh nhất</small></div>
+      <div><b>Bún chả<br>Hàng Quạt</b><small>quán ăn nhiều nhất</small></div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:var(--a-muted);text-align:center;margin:16px 10px 0">
+    Năm nay tụi mình đi ăn <b>67 lần</b>, xem <b>14 bộ phim</b>, và cãi nhau đúng <b>0 lần</b> trên app này.</p>
+  <div class="spacer"></div>
+  <div class="two"><button class="btn outline">Xem lại</button><button class="btn">Chia sẻ ảnh</button></div>
+ </div>`},
+
+{id:"albums",phase:6,code:"P6-03",name:"Album & xuất",title:"Album & sao lưu",
+ src:"docs/features/p6-albums-export.md",
+ desc:"Album theo chuyến đi, xuất PDF để in. Và xuất toàn bộ dữ liệu — vừa là tính năng, vừa là chỗ dựa cho flow huỷ ghép đôi.",
+ rules:[["Xuất dữ liệu là quyền của người dùng","Không phải tính năng cao cấp. Đây cũng là nút đặt trước ô xác nhận huỷ ghép đôi."],
+        ["Cần chốt khi đặc tả","Xuất PDF chạy ở client hay server? Vài trăm ảnh thì client sẽ đuối."]],
+ html:`<div class="scr flush">${BAR('Album','timeline','')}
+  <div class="body" style="padding-top:4px">
+    <div class="mini">
+      <div class="alb"><span class="cv ph2">✈️</span><div><b>Đà Lạt, tháng 8</b><small>64 ảnh · 4 ngày</small></div></div>
+      <div class="alb"><span class="cv ph5">🏔</span><div><b>Ninh Bình</b><small>31 ảnh · 2 ngày</small></div></div>
+      <div class="alb"><span class="cv ph6">🎂</span><div><b>Sinh nhật Linh 2025</b><small>22 ảnh</small></div></div>
+      <div class="alb"><span class="cv ph1">🍜</span><div><b>Tụi mình đi ăn</b><small>187 ảnh · tự gom theo hoạt động</small></div></div>
+    </div>
+    <button class="btn outline" style="margin-top:14px">+ Album mới</button>
+    <div class="sec" style="margin-top:20px">Xuất ra</div>
+    <div class="mini">
+      <div class="kv"><span>📕 Cuốn sách tình yêu (PDF)</span><b style="color:var(--a-accent);font-weight:500">Tạo</b></div>
+      <div class="kv"><span>💾 Toàn bộ dữ liệu (ZIP)</span><b style="color:var(--a-accent);font-weight:500">Tải</b></div>
+    </div>
+    <p style="font-size:12px;color:var(--a-muted);margin:10px 2px 0">
+      Bản ZIP gồm mọi ảnh gốc, caption, chi tiêu và sự kiện — đọc được mà không cần app.</p>
+    <div class="spacer"></div>
+  </div>${TABS('mem')}</div>`},
+
+{id:"wishlist",phase:6,code:"P6-04",name:"Wishlist quà",title:"Wishlist quà tặng",
+ src:"docs/features/p6-gift-wishlist.md",
+ desc:"Mỗi người liệt kê thứ mình thích. Người kia xem được nhưng không biết mình đã xem gì — giữ được bất ngờ.",
+ rules:[["Ngoại lệ duy nhất của luật riêng tư","App không có khu vực riêng tư (D3). Đây chỉ giấu một việc rất hẹp: ai đã xem mục nào."],
+        ["RLS khác khuôn mẫu thường","Không dùng được policy couple_id thông thường — cần thiết kế riêng."]],
+ html:`<div class="scr flush">${BAR('Wishlist','home-p4','<span class="chip on">Của Linh</span><span class="chip">Của bạn</span>')}
+  <div class="body" style="padding-top:4px">
+    <div class="streak" style="margin-bottom:6px">🤫 <span>Linh <b>không biết</b> bạn đang xem mục nào.</span></div>
+    <div class="mini">
+      <div class="wish"><span class="em">🎧</span><div><b>Tai nghe Sony WH-1000XM5</b><small>~8.500.000đ · có link</small></div></div>
+      <div class="wish"><span class="em">📚</span><div><b>Bộ truyện Ghibli artbook</b><small>~1.200.000đ</small></div></div>
+      <div class="wish"><span class="em">🌿</span><div><b>Cây trầu bà cho ban công</b><small>rẻ thôi, mà thích</small></div></div>
+      <div class="wish"><span class="em">👟</span><div><b>Giày chạy bộ size 37</b><small>~2.000.000đ · màu trắng nha</small></div></div>
+    </div>
+    <div class="sec" style="margin-top:18px">Sinh nhật Linh còn 12 ngày</div>
+    <div class="evt" style="--p:88%"><div class="ring"><span>12<small>ngày</small></span></div>
+      <div><b>🎂 24/09</b><small>Chọn trước một món cho đỡ vội</small></div></div>
+    <div class="spacer"></div>
+  </div>${TABS('home')}</div>`}
+
+];
+
+const box=document.getElementById("box"), code=document.getElementById("code");
+let cur=0;
+
+function render(i){
+  cur=(i+S.length)%S.length;
+  const s=S[cur];
+  box.innerHTML=s.html; box.scrollTop=0;
+  code.textContent=s.code;
+  document.getElementById("n-title").textContent=s.title;
+  document.getElementById("n-src").textContent=s.src;
+  document.getElementById("n-desc").textContent=s.desc;
+  const pre = s.phase>=3
+    ? `<div class="rule" style="border-color:var(--w-dim)"><b>Phase ${s.phase} chưa chia task</b>Prototype đi trước để chốt hướng — đặc tả đầy đủ và <span class="mono">steps/</span> viết sau khi bạn duyệt.</div>`
+    : "";
+  document.getElementById("n-rules").innerHTML=pre+s.rules.map(r=>
+    `<div class="rule"><b>${r[0]}</b>${r[1]}</div>`).join("");
+  document.querySelectorAll(".rail button").forEach(b=>
+    b.setAttribute("aria-current", b.dataset.i==String(cur)));
+  if(s.id==="eat-spin") wireSpin();
+}
+
+const PHASES={1:"Phase 1 — Nền móng",2:"Phase 2 — Kỉ niệm",3:"Phase 3 — Nhịp sống",
+              4:"Phase 4 — Cùng nhau",5:"Phase 5 — Gắn kết",6:"Phase 6 — Lan truyền"};
+function buildRail(){
+  const rail=document.getElementById("rail");
+  rail.innerHTML=Object.keys(PHASES).map(p=>{
+    const items=S.map((s,i)=>s.phase!=p?"":
+      `<li><button data-i="${i}"><span class="num mono">${s.code}</span>${s.name}</button></li>`).join("");
+    return items? `<h2>${PHASES[p]}</h2><ol>${items}</ol>`:"";
+  }).join("");
+  rail.querySelectorAll("button").forEach(b=>
+    b.addEventListener("click",()=>render(+b.dataset.i)));
+}
+
+box.addEventListener("click",e=>{
+  const t=e.target.closest("[data-go]"); if(!t) return;
+  const i=S.findIndex(s=>s.id===t.dataset.go);
+  if(i>-1) render(i);
+});
+document.getElementById("next").addEventListener("click",()=>render(cur+1));
+document.getElementById("prev").addEventListener("click",()=>render(cur-1));
+
+const PICKS=[["🍲","Lẩu Phan Đình Phùng","Chưa thử lần nào · Linh thêm từ TikTok"],
+             ["🍕","Pizza 4P's Xuân Thuỷ","Chưa thử lần nào · Linh thêm"],
+             ["🍚","Cơm tấm","Chưa thử lần nào · Minh thêm"],
+             ["🥘","Bò né Hàng Bún","Chưa thử lần nào · thẻ: rẻ"],
+             ["🍜","Bún chả Hàng Quạt","Đã đi 3 lần · lần cuối 2 tháng trước"]];
+function wireSpin(){
+  const btn=document.getElementById("spin"), w=document.getElementById("wheel"),
+        em=document.getElementById("w-em"), nm=document.getElementById("w-name"),
+        dt=document.getElementById("w-det");
+  btn.addEventListener("click",()=>{
+    if(w.classList.contains("spin")) return;
+    w.classList.add("spin"); dt.textContent="Đang chọn…";
+    const t=setInterval(()=>{const p=PICKS[Math.floor(Math.random()*PICKS.length)];
+      em.textContent=p[0]; nm.textContent=p[1];},95);
+    setTimeout(()=>{clearInterval(t); w.classList.remove("spin");
+      const p=PICKS[Math.floor(Math.random()*(PICKS.length-1))];
+      em.textContent=p[0]; nm.textContent=p[1]; dt.textContent=p[2];},1500);
+  });
+}
+
+const root=document.documentElement;
+document.getElementById("theme").addEventListener("click",()=>{
+  const dark=root.getAttribute("data-theme")==="dark"
+    || (!root.hasAttribute("data-theme") && matchMedia("(prefers-color-scheme:dark)").matches);
+  root.setAttribute("data-theme", dark?"light":"dark");
+});
+
+buildRail(); render(0);
+</script>

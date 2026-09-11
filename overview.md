@@ -41,7 +41,7 @@ không bỏ lỡ điều gì.
 | [Dòng thời gian](docs/features/p2-timeline.md) | Một timeline chung, cả hai cùng đăng ảnh/caption/địa điểm. | 2 |
 | [Tối nay ăn gì?](docs/features/p2-eat-tonight.md) ⭐ | Danh sách quán + quay ngẫu nhiên có luật. Tần suất dùng cao nhất app. | 2 → 5 |
 | [Sự kiện & nhắc nhở](docs/features/p3-events-reminders.md) | Sinh nhật, kỉ niệm, đếm ngược, nhắc cả hai máy. | 3 |
-| [Chi tiêu chung](docs/features/p4-expenses.md) | Ai trả, chia đôi, số dư nợ nhau, thống kê tháng. | 4 |
+| [Chi tiêu chung](docs/features/p4-expenses.md) | Ghi lại đã tiêu gì, thống kê theo tháng và danh mục. **Không ghi nợ nhau.** | 4 |
 | [Mục tiêu chung](docs/features/p4-goals.md) | Bucket list "những điều muốn làm cùng nhau". | 4 |
 
 ### Tầng 2 — Làm app "dính"
