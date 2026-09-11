@@ -112,5 +112,6 @@ Chi tiết và lý do: [docs/decisions/](docs/decisions/) và [docs/design/backe
 
 ---
 
-*Trạng thái: đã chốt nền tảng công nghệ và phạm vi MVP. Đang hoàn thiện đặc tả
-tính năng cho Phase 1–2 trước khi viết dòng code đầu tiên.*
+*Trạng thái: đã viết code một lượt cho cả 6 phase — toàn bộ màn hình, migration
+và Edge Function đều build sạch. Chưa chạy trên Supabase thật, chưa deploy.
+Task còn dở của từng phase ghi trong [tasks/](tasks/README.md).*
