@@ -151,9 +151,29 @@ export function HomeScreen() {
           </div>
         ) : null}
 
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { to: '/question', emoji: '💭', label: 'Câu hỏi' },
+            { to: '/mood', emoji: '🌤️', label: 'Tâm trạng' },
+            { to: '/letters', emoji: '💌', label: 'Thư' },
+            { to: '/eat/spin', emoji: '🎲', label: 'Quay ăn' },
+          ].map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-surface py-3 text-[11.5px] font-medium text-muted"
+            >
+              <span aria-hidden className="text-xl">
+                {item.emoji}
+              </span>
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
         <Link
           to="/eat"
-          className="flex w-full items-center gap-3.5 rounded-2xl border border-border bg-surface p-3.5 text-left"
+          className="mt-3 flex w-full items-center gap-3.5 rounded-2xl border border-border bg-surface p-3.5 text-left"
         >
           <span aria-hidden className="text-2xl">
             🍜

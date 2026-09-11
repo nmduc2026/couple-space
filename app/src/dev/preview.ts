@@ -357,3 +357,66 @@ export function previewGoals() {
     },
   ]
 }
+
+/* ---------- Dữ liệu giả cho Phase 5 ---------- */
+
+export function previewAnswers() {
+  const today = new Date().toISOString().slice(0, 10)
+  return [
+    {
+      id: 'a1',
+      user_id: ME,
+      body: 'Lúc em nhắn "về tới nhà chưa" mà anh còn đang kẹt xe.',
+      asked_on: today,
+      created_at: new Date().toISOString(),
+      edited_at: null,
+    },
+  ]
+}
+
+export function previewMoods() {
+  const out: Array<{
+    id: string
+    user_id: string
+    mood_date: string
+    mood: number
+    note: string | null
+  }> = []
+  const mine = [4, 3, 5, 4, 2, 4, 5]
+  const theirs = [3, 3, 4, 5, 3, 4, 4]
+  for (let i = 0; i < 7; i++) {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    const ymd = d.toISOString().slice(0, 10)
+    out.push({ id: `m${i}a`, user_id: ME, mood_date: ymd, mood: mine[i], note: null })
+    out.push({ id: `m${i}b`, user_id: PARTNER, mood_date: ymd, mood: theirs[i], note: null })
+  }
+  return out
+}
+
+export function previewLetters() {
+  return [
+    {
+      id: 'l1',
+      author_id: ME,
+      title: 'Gửi tụi mình của 5 năm sau',
+      body: null,
+      open_on: '2031-09-11',
+    },
+    {
+      id: 'l2',
+      author_id: PARTNER,
+      title: 'Đọc khi nào thấy mệt nhé',
+      body: null,
+      open_on: '2027-01-01',
+    },
+    {
+      id: 'l3',
+      author_id: PARTNER,
+      title: 'Ngày đầu tiên tụi mình dọn về chung',
+      body:
+        'Nếu anh đang đọc cái này thì chắc tụi mình đã qua được đoạn khó nhất rồi. Em viết lúc 2 giờ sáng, mai còn phải đi làm, mà không ngủ được vì vui quá.',
+      open_on: '2026-07-01',
+    },
+  ]
+}
