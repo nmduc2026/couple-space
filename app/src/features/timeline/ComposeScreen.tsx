@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { MEDIA_BUCKET } from '../../hooks/usePosts'
 import { ACTIVITY_LABELS } from '../../lib/activities'
+import { categoryFromActivity } from '../../lib/money'
 import { todayYmd } from '../../lib/dateCount'
 import { compressImage, readExifDate } from '../../lib/image'
 import { notifyPartner } from '../../lib/notify'
@@ -29,16 +30,19 @@ const MAX_PHOTOS = 8
 
 export function ComposeScreen() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const queryClient = useQueryClient()
   const { user } = useSession()
   const { couple } = useCouple()
   const fileInput = useRef<HTMLInputElement>(null)
 
   const [photos, setPhotos] = useState<Picked[]>([])
-  const [caption, setCaption] = useState('')
+  // Vào từ màn chúc mừng mục tiêu thì caption đã điền sẵn
+  const [caption, setCaption] = useState(() => params.get('caption') ?? '')
   const [happenedOn, setHappenedOn] = useState(todayYmd())
   const [placeName, setPlaceName] = useState('')
   const [activity, setActivity] = useState<string | null>(null)
+  const [addExpense, setAddExpense] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [progress, setProgress] = useState('')
@@ -138,6 +142,18 @@ export function ComposeScreen() {
           : `${myName} vừa thêm một kỉ niệm`,
       path: `/timeline/${created.id}`,
     })
+
+    if (addExpense) {
+      // Danh mục đoán sẵn theo hoạt động của bài — 🍜 thì là ăn uống
+      navigate(
+        `/expenses/new?post=${created.id}` +
+          `&category=${categoryFromActivity(activity)}` +
+          `&date=${happenedOn}` +
+          `&note=${encodeURIComponent(placeName.trim() || caption.trim().slice(0, 40))}`,
+        { replace: true },
+      )
+      return
+    }
 
     navigate(`/timeline/${created.id}`, { replace: true })
   }
@@ -245,6 +261,36 @@ export function ComposeScreen() {
               </div>
             </Field>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setAddExpense((v) => !v)}
+            className={`mt-4 flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition ${
+              addExpense ? 'border-accent bg-soft' : 'border-border bg-surface'
+            }`}
+          >
+            <span aria-hidden className="text-xl">
+              💰
+            </span>
+            <span className="min-w-0 flex-1">
+              <b className="block text-[15px] font-semibold text-text">
+                Thêm chi phí
+              </b>
+              <small className="block text-[12.5px] text-muted">
+                Ghi luôn khoản chi cho buổi này
+              </small>
+            </span>
+            <span
+              aria-hidden
+              className={`grid h-6 w-6 place-items-center rounded-full border text-xs ${
+                addExpense
+                  ? 'border-accent bg-accent text-on-accent'
+                  : 'border-border'
+              }`}
+            >
+              {addExpense ? '✓' : ''}
+            </span>
+          </button>
 
           {status === 'error' ? <ErrorText>{errorMessage}</ErrorText> : null}
           {progress ? (

@@ -247,3 +247,113 @@ export function previewAgenda() {
     mk('ev3', 'Kỉ niệm ngày cưới ba mẹ', '💍', -12),
   ]
 }
+
+/* ---------- Dữ liệu giả cho Phase 4 ---------- */
+
+export function previewExpenses(month: string) {
+  const ym = month.slice(0, 7)
+  const mk = (
+    id: string,
+    amount: number,
+    category: string,
+    note: string,
+    day: string,
+    payer: string,
+    post: string | null = null,
+  ) => ({
+    id,
+    amount_minor: amount,
+    category,
+    note,
+    spent_on: `${ym}-${day}`,
+    paid_by: payer,
+    post_id: post,
+  })
+
+  const expenses = [
+    mk('x1', 480_000, 'food', 'Lẩu ở Ba Toa', '09', ME, 'preview-post-1'),
+    mk('x2', 120_000, 'cafe', 'Cà phê sáng', '08', PARTNER),
+    mk('x3', 260_000, 'movie', 'Vé xem phim', '06', PARTNER),
+    mk('x4', 85_000, 'travel', 'Xăng xe', '04', ME),
+    mk('x5', 1_200_000, 'gift', 'Quà sinh nhật', '02', ME),
+    mk('x6', 320_000, 'food', 'Ăn tối', '01', PARTNER),
+  ]
+
+  const total = expenses.reduce((s, e) => s + e.amount_minor, 0)
+  const byCategory: Record<string, number> = {}
+  const byPayer: Record<string, number> = {}
+  for (const e of expenses) {
+    byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount_minor
+    byPayer[e.paid_by] = (byPayer[e.paid_by] ?? 0) + e.amount_minor
+  }
+
+  return {
+    expenses,
+    summary: {
+      total_minor: total,
+      outing_count: expenses.length,
+      avg_outing_minor: Math.round(total / expenses.length),
+      by_category: byCategory,
+      by_payer: byPayer,
+    },
+    isLoading: false,
+  }
+}
+
+export function previewGoals() {
+  return [
+    {
+      id: 'g1',
+      title: 'Đi Đà Lạt mùa hoa',
+      description: null,
+      emoji: '🌸',
+      kind: 'checklist' as const,
+      target_count: null,
+      target_minor: null,
+      current_count: 0,
+      due_date: null,
+      status: 'active' as const,
+      celebrated_post_id: null,
+      goal_steps: [
+        { id: 's1', title: 'Đặt vé xe', is_done: true, sort_order: 0 },
+        { id: 's2', title: 'Đặt homestay', is_done: true, sort_order: 1 },
+        { id: 's3', title: 'Lên lịch đi đâu', is_done: false, sort_order: 2 },
+        { id: 's4', title: 'Xin nghỉ phép', is_done: false, sort_order: 3 },
+      ],
+      goal_contributions: [],
+    },
+    {
+      id: 'g2',
+      title: 'Xem hết phim Ghibli',
+      description: null,
+      emoji: '🎬',
+      kind: 'count' as const,
+      target_count: 22,
+      target_minor: null,
+      current_count: 9,
+      due_date: null,
+      status: 'active' as const,
+      celebrated_post_id: null,
+      goal_steps: [],
+      goal_contributions: [],
+    },
+    {
+      id: 'g3',
+      title: 'Quỹ mua xe',
+      description: null,
+      emoji: '🛵',
+      kind: 'amount' as const,
+      target_count: null,
+      target_minor: 30_000_000,
+      current_count: 0,
+      due_date: '2027-06-30',
+      status: 'active' as const,
+      celebrated_post_id: null,
+      goal_steps: [],
+      goal_contributions: [
+        { amount_minor: 5_000_000 },
+        { amount_minor: 3_500_000 },
+      ],
+    },
+  ]
+}

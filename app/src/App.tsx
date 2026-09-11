@@ -23,6 +23,9 @@ import { PostDetailScreen } from './features/timeline/PostDetailScreen'
 import { ComposeScreen } from './features/timeline/ComposeScreen'
 import { PlanScreen } from './features/plan/PlanScreen'
 import { EventFormScreen } from './features/plan/EventFormScreen'
+import { GoalDetailScreen } from './features/goals/GoalDetailScreen'
+import { ExpensesScreen } from './features/expenses/ExpensesScreen'
+import { ExpenseFormScreen } from './features/expenses/ExpenseFormScreen'
 import { EatScreen } from './features/eat/EatScreen'
 import { SpinScreen } from './features/eat/SpinScreen'
 import { SettingsScreen } from './features/settings/SettingsScreen'
@@ -84,6 +87,7 @@ export default function App() {
               <Route path="/" element={<HomeScreen />} />
               <Route path="/timeline" element={<TimelineScreen />} />
               <Route path="/plan" element={<PlanScreen />} />
+              <Route path="/expenses" element={<ExpensesScreen />} />
               <Route path="/eat" element={<EatScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
             </Route>
@@ -94,6 +98,8 @@ export default function App() {
             <Route path="/timeline/:id" element={<PostDetailScreen />} />
             <Route path="/plan/new" element={<EventFormScreen />} />
             <Route path="/plan/:id" element={<EventFormScreen />} />
+            <Route path="/plan/goals/:id" element={<GoalDetailScreen />} />
+            <Route path="/expenses/new" element={<ExpenseFormScreen />} />
             <Route path="/eat/spin" element={<SpinScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>

@@ -51,3 +51,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 |---|---|---|---|
 | 2026-09-11 | Tạo khung phase | Chưa bắt đầu | Chờ phase trước đạt DoD |
 | 2026-09-11 | Chốt **D6: không ghi nợ nhau** — gỡ số dư, tất toán, cách chia khỏi đặc tả, schema và prototype. Viết đặc tả đầy đủ cho `p4-expenses.md` và `p4-goals.md` | Phase 4 đã có đặc tả, chưa chia task | Chờ Phase 3 đạt DoD |
+| 2026-09-11 | Phase 4: migration `expenses`/`goals`/`goal_steps`/`goal_contributions` + RLS + hàm `expense_summary` (loại khoản bất thường khỏi trung bình). Frontend: tab Chi tiêu theo tháng + biểu đồ tròn conic-gradient, form ghi khoản có bàn phím số, Kế hoạch tách 2 tab con Sự kiện/Mục tiêu, mục tiêu 3 kiểu checklist/count/amount, màn chúc mừng nối sang soạn bài, khối Tháng này + Mục tiêu trên Home | Build/lint/test sạch, đã xem ảnh chụp. Chưa `db push` | P4-20 dải nhận xét · P4-22/23 sửa-xoá khoản chi · P4-35 gợi ý từ sự kiện |

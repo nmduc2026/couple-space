@@ -9,6 +9,10 @@ import { Loading } from '../../components/ui'
 import { usePosts } from '../../hooks/usePosts'
 import { useAgenda } from '../../hooks/useAgenda'
 import { countdownLabel } from '../../lib/recurrence'
+import { useExpenses } from '../../hooks/useExpenses'
+import { goalProgress, useGoals } from '../../hooks/useGoals'
+import { formatShortVnd } from '../../lib/money'
+import { todayYmd } from '../../lib/dateCount'
 
 /** Ảnh bìa mặc định khi đôi chưa đặt ảnh riêng — lấy từ prototype. */
 const DEFAULT_COVER =
@@ -19,6 +23,9 @@ export function HomeScreen() {
   const { couple, refetch, isLoading, isFetching } = useCouple()
   const { posts } = usePosts()
   const { agenda } = useAgenda(2)
+  const { summary } = useExpenses(`${todayYmd().slice(0, 7)}-01`)
+  const { goals } = useGoals()
+  const activeGoal = goals.find((g) => g.status === 'active')
   const [offline, setOffline] = useState(!navigator.onLine)
   const [inviteCode, setInviteCode] = useState<string | null>(null)
 
@@ -195,6 +202,59 @@ export function HomeScreen() {
               ))}
             </ul>
           </section>
+        ) : null}
+
+        {summary && summary.outing_count > 0 ? (
+          <Link
+            to="/expenses"
+            className="mt-6 flex items-center gap-4 rounded-2xl border border-border bg-surface p-4"
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+                Tháng này
+              </span>
+              <span className="mt-1 block text-[13.5px] text-muted">
+                <b className="text-[17px] font-bold text-text">
+                  {summary.outing_count}
+                </b>{' '}
+                khoản ·{' '}
+                <b className="text-[17px] font-bold text-text">
+                  {formatShortVnd(summary.total_minor)}
+                </b>
+              </span>
+            </span>
+            <span aria-hidden className="text-muted">
+              ›
+            </span>
+          </Link>
+        ) : null}
+
+        {activeGoal ? (
+          <Link
+            to={`/plan/goals/${activeGoal.id}`}
+            className="mt-3 block rounded-2xl border border-border bg-surface p-4"
+          >
+            <span className="block text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+              Mục tiêu
+            </span>
+            <span className="mt-1.5 flex items-center gap-2">
+              <span aria-hidden>{activeGoal.emoji ?? '✨'}</span>
+              <b className="min-w-0 flex-1 truncate text-[15px] font-semibold text-text">
+                {activeGoal.title}
+              </b>
+              <span className="shrink-0 text-[12.5px] text-muted tabular-nums">
+                {goalProgress(activeGoal).label}
+              </span>
+            </span>
+            <span className="mt-2 block h-[7px] overflow-hidden rounded-full bg-soft">
+              <span
+                className="block h-full rounded-full bg-accent"
+                style={{
+                  width: `${Math.round(goalProgress(activeGoal).ratio * 100)}%`,
+                }}
+              />
+            </span>
+          </Link>
         ) : null}
 
         <section className="mt-6">

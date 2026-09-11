@@ -1,14 +1,24 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
 import { useAgenda, type AgendaItem } from '../../hooks/useAgenda'
 import { countdownLabel } from '../../lib/recurrence'
 import { formatDay } from '../../lib/formatDate'
 import { btn } from '../../lib/ui-classes'
+import { GoalsScreen } from '../goals/GoalsScreen'
 
 export function PlanScreen() {
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'goals' ? 'goals' : 'events'
   const { agenda, isLoading } = useAgenda(30)
   const [showPast, setShowPast] = useState(false)
+
+  function setTab(next: 'events' | 'goals') {
+    const p = new URLSearchParams(params)
+    if (next === 'goals') p.set('tab', 'goals')
+    else p.delete('tab')
+    setParams(p, { replace: true })
+  }
 
   const upcoming = agenda.filter((a) => a.days_away >= 0)
   const past = agenda.filter((a) => a.days_away < 0)
@@ -18,16 +28,45 @@ export function PlanScreen() {
       <TopHeader
         title="Kế hoạch"
         right={
-          <Link
-            to="/plan/new"
-            className="rounded-full bg-accent px-3 py-1 text-sm font-semibold text-on-accent"
-          >
-            + Thêm
-          </Link>
+          tab === 'events' ? (
+            <Link
+              to="/plan/new"
+              className="rounded-full bg-accent px-3 py-1 text-sm font-semibold text-on-accent"
+            >
+              + Thêm
+            </Link>
+          ) : undefined
         }
       />
 
-      <div className="flex-1 px-4 py-3">
+      <div className="px-4 pt-3">
+        <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+          {(
+            [
+              ['events', 'Sự kiện'],
+              ['goals', 'Mục tiêu'],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTab(value)}
+              className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
+                tab === value ? 'bg-accent text-on-accent' : 'text-muted'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tab === 'goals' ? <GoalsScreen /> : null}
+
+      <div
+        className="flex-1 px-4 py-3"
+        hidden={tab !== 'events'}
+      >
         {isLoading ? (
           <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
         ) : upcoming.length === 0 ? (

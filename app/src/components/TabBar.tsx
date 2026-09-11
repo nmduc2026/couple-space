@@ -23,10 +23,10 @@ const TABS: Tab[] = [
     match: (p) => p.startsWith('/plan'),
   },
   {
-    to: '/eat',
-    label: 'Ăn gì',
-    emoji: '🍜',
-    match: (p) => p.startsWith('/eat'),
+    to: '/expenses',
+    label: 'Chi tiêu',
+    emoji: '💰',
+    match: (p) => p.startsWith('/expenses'),
   },
 ]
 
