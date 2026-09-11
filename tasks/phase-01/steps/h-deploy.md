@@ -33,7 +33,7 @@ Chi tiết cách phân phối: [distribution.md](../../../docs/decisions/distrib
    | Output Directory | `dist` |
 
 4. Thêm biến môi trường trong Vercel (Settings → Environment Variables):
-   `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_VAPID_PUBLIC_KEY`.
+   `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_VAPID_PUBLIC_KEY`.
 
 5. Deploy. Vercel trả về link dạng `https://couple-space-xxx.vercel.app`.
 

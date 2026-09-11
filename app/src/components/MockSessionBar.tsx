@@ -1,7 +1,17 @@
 import { Link } from 'react-router'
 import { useMockSession } from '../lib/mock-session'
+import { useUiStore, type Theme } from '../lib/store'
+import { SessionProbe } from './SessionProbe'
 
-/** Thanh giả lập trạng thái - chỉ dùng lúc dựng khung, bỏ khi có auth thật. */
+const THEME_CYCLE: Theme[] = ['system', 'light', 'dark']
+
+const themeLabel: Record<Theme, string> = {
+  system: 'theo máy',
+  light: 'sáng',
+  dark: 'tối',
+}
+
+/** Thanh giả lập - chỉ dùng lúc dựng khung, bỏ khi có auth thật. */
 export function MockSessionBar() {
   const {
     isAuthenticated,
@@ -9,6 +19,8 @@ export function MockSessionBar() {
     setAuthenticated,
     setHasCouple,
   } = useMockSession()
+  const theme = useUiStore((s) => s.theme)
+  const setTheme = useUiStore((s) => s.setTheme)
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface pb-safe">
@@ -35,6 +47,17 @@ export function MockSessionBar() {
         >
           Ghép đôi: {hasCouple ? 'bật' : 'tắt'}
         </button>
+        <button
+          type="button"
+          className="rounded bg-bg px-2 py-1 text-text"
+          onClick={() => {
+            const i = THEME_CYCLE.indexOf(theme)
+            setTheme(THEME_CYCLE[(i + 1) % THEME_CYCLE.length])
+          }}
+        >
+          Theme: {themeLabel[theme]}
+        </button>
+        <SessionProbe />
         <nav className="flex flex-wrap gap-2">
           <Link className="underline" to="/welcome">
             chào mừng

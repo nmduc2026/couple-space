@@ -179,16 +179,16 @@ Safari → Chia sẻ → thấy **"Thêm vào Màn hình chính"**; cài xong m�
 1. Vào [supabase.com](https://supabase.com), tạo tài khoản và một project mới.
    **Chọn region Singapore** — gần Việt Nam nhất, ảnh hưởng trực tiếp tới tốc độ.
 
-2. Lưu lại hai giá trị trong Project Settings → API:
+2. Lấy hai giá trị từ nút **Connect** (hoặc Settings → API Keys):
    - `Project URL`
-   - `anon public key`
+   - **Publishable key** (`sb_publishable_...`) — key phía trình duyệt
 
 3. Cài client: `npm install @supabase/supabase-js`
 
 4. Tạo `app/.env.local` (**không** commit lên GitHub):
    ```
    VITE_SUPABASE_URL=https://xxxx.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGci...
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
    ```
 
 5. Tạo `src/lib/supabase.ts` khởi tạo client **một lần duy nhất** rồi export dùng chung.
@@ -198,9 +198,9 @@ Safari → Chia sẻ → thấy **"Thêm vào Màn hình chính"**; cài xong m�
 **Xong khi:** console in ra kết quả hợp lệ (session rỗng cũng được), không lỗi mạng.
 
 **Bẫy**
-- `anon key` là khoá **công khai**, lộ ra không sao — an toàn dựa vào RLS (P1-10), không
-  dựa vào việc giấu khoá. Nhưng `service_role key` thì **tuyệt đối không** để trong code
-  app: nó bỏ qua toàn bộ RLS.
+- Publishable key là khoá **công khai**, lộ ra không sao — an toàn dựa vào RLS (P1-10),
+  không dựa vào việc giấu khoá. Nhưng **secret** / `service_role` thì **tuyệt đối không**
+  để trong code app: chúng bỏ qua toàn bộ RLS.
 - Thêm `.env.local` vào `.gitignore` **trước** khi commit lần đầu.
 
 ---

@@ -3,7 +3,7 @@
 > **Mục tiêu:** hai máy nhìn thấy nhau. Đăng nhập được, ghép đôi được, mở app thấy
 > số ngày yêu, và người kia nhận được thông báo.
 
-**Trạng thái:** 🔲 Chưa bắt đầu — mọi quyết định chặn đã được gỡ, **có thể bắt đầu ngay**
+**Trạng thái:** 🔄 Đang làm — nhóm A (khởi tạo) xong, tiếp nhóm B (database)
 **Ước lượng:** 2–3 tuần (vừa học vừa làm)
 **Nền tảng:** Vite + React + TypeScript + Tailwind → PWA · Supabase · Web Push
 **Task:** [tasks.md](tasks.md) · **Hướng dẫn từng bước:** [steps/](steps/)
@@ -43,13 +43,13 @@ Timeline · ảnh · chi tiêu · sự kiện · mục tiêu · widget · theme 
 ## 3. Tiến độ
 
 ### ✅ Đã xong
-*(chưa có)*
+- Nhóm A (P1-01 → P1-05b): Vite/React/TS, Tailwind + theme, PWA, React Router khung 3 trạng thái, Supabase client (`PUBLISHABLE_KEY`), TanStack Query + Zustand
 
 ### 🔄 Đang làm
-*(chưa bắt đầu)*
+*(sẵn sàng bắt đầu nhóm B)*
 
 ### 🔲 Chưa làm
-Toàn bộ — xem [tasks.md](tasks.md).
+Nhóm B trở đi — xem [tasks.md](tasks.md).
 
 ## 4. Quyết định đã chốt
 
@@ -81,3 +81,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | 2026-09-11 | Tổ chức lại toàn bộ tài liệu: tách `docs/features/`, đổi `others/` → `decisions/`, dựng `tasks/`, viết `AGENTS.md` | Đặc tả Phase 1–2 xong, chưa có dòng code nào | Chốt các quyết định đang treo |
 | 2026-09-11 | Chốt D1–D5. Đổi nền tảng sang **Vite + React (bỏ Expo)**, viết lại `tech-stack.md` và `distribution.md`. Đánh số file feature theo phase (`p1-`, `p2-`…). Viết 8 file hướng dẫn từng bước trong `steps/` | Tài liệu đã đủ để bắt đầu code | **Bắt đầu P1-01** — theo [steps/a-setup.md](steps/a-setup.md) |
 | 2026-09-11 | Viết nốt đặc tả Phase 3–6, chốt D6 (không ghi nợ), lưu prototype 36 màn hình vào `docs/design/frontend/ui/` | Không đổi gì trong phase này | Không đổi |
+| 2026-09-11 | Làm xong nhóm A (P1-01→P1-05b): scaffold app, Tailwind/theme, PWA+logo, router+mock guards, Supabase `PUBLISHABLE_KEY`, Query+Zustand theme | Kết thúc [a-setup.md](steps/a-setup.md) | **P1-06** — [b-database.md](steps/b-database.md) |
