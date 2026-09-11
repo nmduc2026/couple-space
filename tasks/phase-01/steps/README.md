@@ -12,7 +12,7 @@ Trong file, mỗi task có một mục riêng theo cùng khuôn:
 
 | File | Nhóm | Task |
 |---|---|---|
-| [a-setup.md](a-setup.md) | Khởi tạo dự án | P1-01 → P1-05 |
+| [a-setup.md](a-setup.md) | Khởi tạo dự án | P1-01 → P1-05b |
 | [b-database.md](b-database.md) | Database | P1-06 → P1-10 |
 | [c-auth.md](c-auth.md) | Đăng nhập | P1-11 → P1-14 |
 | [d-pairing.md](d-pairing.md) | Ghép đôi | P1-15 → P1-20 |

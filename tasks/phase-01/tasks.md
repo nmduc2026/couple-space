@@ -15,6 +15,7 @@ Web Push (VAPID). Xem [tech-stack.md](../../docs/decisions/tech-stack.md).
 - [ ] **P1-03** Cài `vite-plugin-pwa`: manifest, icon, service worker, vùng an toàn iPhone
 - [ ] **P1-04** Cài React Router, dựng khung điều hướng 3 trạng thái
 - [ ] **P1-05** Tạo project Supabase, cài client, biến môi trường, kết nối thử
+- [ ] **P1-05b** Cài TanStack Query + Zustand, tách dữ liệu server khỏi state UI
 
 ## B. Database → [steps/b-database.md](steps/b-database.md)
 

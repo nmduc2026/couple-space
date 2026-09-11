@@ -1,4 +1,4 @@
-# A. Khởi tạo dự án — P1-01 → P1-05
+# A. Khởi tạo dự án — P1-01 → P1-05b
 
 Nhóm này chỉ dựng bộ khung, chưa có tính năng nào. Nhưng **hai quyết định ở đây theo dự án
 tới cuối**: biến màu (P1-02) và cấu trúc thư mục (P1-01).
@@ -202,3 +202,58 @@ Safari → Chia sẻ → thấy **"Thêm vào Màn hình chính"**; cài xong m�
   dựa vào việc giấu khoá. Nhưng `service_role key` thì **tuyệt đối không** để trong code
   app: nó bỏ qua toàn bộ RLS.
 - Thêm `.env.local` vào `.gitignore` **trước** khi commit lần đầu.
+
+---
+
+## P1-05b · TanStack Query + Zustand
+
+**Mục tiêu:** có sẵn chỗ để **dữ liệu từ server** và **state của giao diện** ở riêng nhau,
+trước khi viết tính năng đầu tiên.
+
+Hai thư viện này đã chốt ở [tech-stack.md](../../../docs/decisions/tech-stack.md) và được
+dùng từ P1-14 trở đi ([c-auth.md](c-auth.md), [f-home.md](f-home.md)). Cài luôn ở đây để
+sau không phải dừng giữa chừng.
+
+**Ranh giới giữa hai thứ — quyết định một lần, theo tới cuối dự án:**
+
+| Loại dữ liệu | Ai giữ | Ví dụ trong app này |
+|---|---|---|
+| Thứ **Supabase là nguồn thật** | TanStack Query | hồ sơ đôi, ngày bắt đầu yêu, bài timeline, danh sách sự kiện |
+| Thứ **chỉ tồn tại trên máy này** | Zustand | theme sáng/tối, bottom sheet đang mở, nội dung đang gõ dở |
+
+> Đừng chép dữ liệu server vào Zustand. Đó là lỗi phổ biến nhất khi dùng cặp thư viện này:
+> hai bản sao rồi lệch nhau, và chẳng bản nào đúng.
+
+**Các bước**
+
+1. Cài:
+   ```powershell
+   npm install @tanstack/react-query zustand
+   ```
+
+2. Tạo `src/lib/query-client.ts`, khởi tạo `QueryClient` **một lần duy nhất** (giống cách
+   làm với supabase client ở P1-05). Đặt mặc định hợp với app này:
+   - `staleTime` khoảng 1–5 phút — dữ liệu cặp đôi đổi chậm, không cần gọi lại liên tục.
+   - `refetchOnWindowFocus: true` — mở lại PWA từ màn hình chính thì dữ liệu tự mới.
+   - `retry` 1 lần là đủ. Mạng điện thoại chập chờn, thử lại nhiều lần chỉ làm app treo lâu hơn.
+
+3. Bọc `<QueryClientProvider>` quanh app trong `src/main.tsx`, **bên ngoài** router.
+
+4. Tạo `src/lib/store.ts` với một store Zustand nhỏ cho state UI. Giai đoạn này chỉ cần
+   `theme` (`'light' | 'dark' | 'system'`) nối với class `dark` ở P1-02 — đủ để kiểm chứng
+   là store chạy.
+
+5. Không cài React Query Devtools nếu chưa thấy cần. Thêm sau một dòng là xong.
+
+**Xong khi:** đổi `theme` trong store thì app đổi sáng/tối; và một `useQuery` thử nghiệm gọi
+`supabase.auth.getSession()` trả về dữ liệu, đổi tab rồi quay lại **không** thấy gọi lại
+ngay lập tức (đúng như `staleTime` đã đặt).
+
+**Bẫy**
+- **Tạo `QueryClient` bên trong component** → mỗi lần render lại là một client mới, cache
+  mất sạch. Phải tạo ở ngoài, ở cấp module.
+- Chưa vội chia `queryKey` cho đẹp. Nhưng ngay khi có dữ liệu theo space, **`queryKey`
+  phải chứa `couple_id`** — nếu không, lúc huỷ ghép đôi (P1-33) cache của space cũ vẫn còn
+  nằm đó.
+- Zustand không tự lưu xuống đĩa. Muốn nhớ theme sau khi đóng app thì thêm middleware
+  `persist`.
