@@ -157,6 +157,10 @@ export function HomeScreen() {
             { to: '/mood', emoji: '🌤️', label: 'Tâm trạng' },
             { to: '/letters', emoji: '💌', label: 'Thư' },
             { to: '/eat/spin', emoji: '🎲', label: 'Quay ăn' },
+            { to: '/map', emoji: '🗺️', label: 'Dấu chân' },
+            { to: '/wishlist', emoji: '🎁', label: 'Wishlist' },
+            { to: '/wrapped', emoji: '🎊', label: 'Tổng kết' },
+            { to: '/timeline?view=grid', emoji: '🖼️', label: 'Album' },
           ].map((item) => (
             <Link
               key={item.to}

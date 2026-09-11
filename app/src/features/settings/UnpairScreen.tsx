@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { supabase } from '../../lib/supabase'
+import { PREVIEW } from '../../dev/preview'
 import {
   ErrorText,
   Field,
@@ -44,6 +45,28 @@ export function UnpairScreen() {
   const [phrase, setPhrase] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [exporting, setExporting] = useState(false)
+
+  /** Tải ZIP toàn bộ dữ liệu. Chạy được cả khi space đã `archived` —
+   *  đó chính là lúc cần nó nhất. */
+  async function exportData() {
+    if (PREVIEW) return
+    setExporting(true)
+    setErrorMessage('')
+    const { data, error } = await supabase.functions.invoke('export-data')
+    setExporting(false)
+    if (error) {
+      setStatus('error')
+      setErrorMessage('Không xuất được. Mỗi giờ chỉ xuất một lần.')
+      return
+    }
+    const url = URL.createObjectURL(data as Blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `couple-space-${new Date().toISOString().slice(0, 10)}.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const pending = (couple?.members.length ?? 0) < 2
 
@@ -86,8 +109,13 @@ export function UnpairScreen() {
         )}
 
         {/* Nút tải dữ liệu đặt TRƯỚC ô xác nhận — nhiều người bấm huỷ lúc xúc động */}
-        <button type="button" disabled className={`${btn.outline} mt-4`}>
-          ⬇ Tải toàn bộ dữ liệu về máy (Phase 6)
+        <button
+          type="button"
+          onClick={() => void exportData()}
+          disabled={exporting}
+          className={`${btn.outline} mt-4`}
+        >
+          {exporting ? 'Đang đóng gói...' : '⬇ Tải toàn bộ dữ liệu về máy'}
         </button>
 
         <Spacer />

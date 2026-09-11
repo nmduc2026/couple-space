@@ -49,3 +49,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 |---|---|---|---|
 | 2026-09-11 | Tạo khung phase | Chưa bắt đầu | Chờ phase trước đạt DoD |
 | 2026-09-11 | Viết đặc tả đầy đủ 4 tính năng Phase 6 + dựng 4 màn hình prototype | Đã có đặc tả, chưa chia task | Chờ Phase 5 đạt DoD |
+| 2026-09-11 | Phase 6: migration `place_aliases`/`wrapped_reports`/`albums`/`wishlist_items`/`wishlist_marks`/`export_runs` + hàm `wrapped_stats`, `suggested_trips`, `archive_wish`. Frontend: Dấu chân (lưới 63 tỉnh theo miền, có test chuẩn hoá tên), Wrapped vẽ ảnh bằng Canvas + chọn dòng khoe, Wishlist bất đối xứng. Edge Function `export-data` đóng ZIP kèm `ky-niem.html` + README, nối vào nút đã chừa sẵn ở màn huỷ ghép đôi | Build/lint/test sạch (37 test). Chưa `db push`, chưa deploy function | P6-01 SVG bản đồ thật · P6-22→26 giao diện album · P6-27→31 xuất PDF · P6-48 thử wishlist bằng 2 tài khoản |

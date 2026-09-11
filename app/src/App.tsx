@@ -29,6 +29,9 @@ import { ExpenseFormScreen } from './features/expenses/ExpenseFormScreen'
 import { QuestionScreen } from './features/question/QuestionScreen'
 import { LettersScreen } from './features/letters/LettersScreen'
 import { MoodScreen } from './features/mood/MoodScreen'
+import { MapScreen } from './features/map/MapScreen'
+import { WrappedScreen } from './features/wrapped/WrappedScreen'
+import { WishlistScreen } from './features/wishlist/WishlistScreen'
 import { EatScreen } from './features/eat/EatScreen'
 import { SpinScreen } from './features/eat/SpinScreen'
 import { SettingsScreen } from './features/settings/SettingsScreen'
@@ -93,6 +96,9 @@ export default function App() {
               <Route path="/question" element={<QuestionScreen />} />
               <Route path="/letters" element={<LettersScreen />} />
               <Route path="/mood" element={<MoodScreen />} />
+              <Route path="/map" element={<MapScreen />} />
+              <Route path="/wrapped" element={<WrappedScreen />} />
+              <Route path="/wishlist" element={<WishlistScreen />} />
               <Route path="/expenses" element={<ExpensesScreen />} />
               <Route path="/eat" element={<EatScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />

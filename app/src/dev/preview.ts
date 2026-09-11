@@ -420,3 +420,69 @@ export function previewLetters() {
     },
   ]
 }
+
+/* ---------- Dữ liệu giả cho Phase 6 ---------- */
+
+export function previewWrapped() {
+  return {
+    year: new Date().getFullYear(),
+    posts: 68,
+    photos: 214,
+    days_with_memory: 52,
+    provinces: 7,
+    spend_minor: 24_600_000,
+    expense_entries: 96,
+    eat_visits: 41,
+    eat_places: 23,
+    goals_done: 4,
+    question_days: 88,
+    mood_days: 140,
+    mood_avg: 4.1,
+    top_place: 'Lẩu bò Ba Toa',
+    top_place_visits: 6,
+  }
+}
+
+export function previewWishlist(myId: string) {
+  const other = myId === ME ? PARTNER : ME
+  return {
+    items: [
+      {
+        id: 'w1',
+        owner_id: other,
+        title: 'Tai nghe Sony WH-1000XM5',
+        url: 'https://example.com/sony-xm5',
+        note: null,
+        status: 'open' as const,
+      },
+      {
+        id: 'w2',
+        owner_id: other,
+        title: 'Máy ảnh film Olympus',
+        url: null,
+        note: null,
+        status: 'open' as const,
+      },
+      {
+        id: 'w3',
+        owner_id: other,
+        title: 'Sách "Người trong muôn nghề"',
+        url: null,
+        note: null,
+        status: 'archived' as const,
+      },
+      {
+        id: 'w4',
+        owner_id: myId,
+        title: 'Giày chạy bộ',
+        url: null,
+        note: null,
+        status: 'open' as const,
+      },
+    ],
+    marks: [
+      { item_id: 'w1', state: 'planned' as const },
+      { item_id: 'w3', state: 'bought' as const },
+    ],
+  }
+}
