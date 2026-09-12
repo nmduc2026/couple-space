@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes, useSearchParams } from 'react-router'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import {
   GuestOnly,
   RequireAuth,
@@ -15,33 +15,44 @@ import { EmailScreen } from './features/auth/EmailScreen'
 import { OtpScreen } from './features/auth/OtpScreen'
 import { ChoiceScreen } from './features/pairing/ChoiceScreen'
 import { SetupScreen } from './features/pairing/SetupScreen'
-import { WaitingScreen } from './features/pairing/WaitingScreen'
-import { JoinScreen } from './features/pairing/JoinScreen'
 import { HomeScreen } from './features/home/HomeScreen'
 import { TimelineScreen } from './features/timeline/TimelineScreen'
-import { PostDetailScreen } from './features/timeline/PostDetailScreen'
-import { ComposeScreen } from './features/timeline/ComposeScreen'
 import { PlanScreen } from './features/plan/PlanScreen'
-import { EventFormScreen } from './features/plan/EventFormScreen'
-import { GoalDetailScreen } from './features/goals/GoalDetailScreen'
 import { ExpensesScreen } from './features/expenses/ExpensesScreen'
-import { ExpenseFormScreen } from './features/expenses/ExpenseFormScreen'
-import { EatDetailScreen } from './features/eat/EatDetailScreen'
-import { AlbumsScreen } from './features/albums/AlbumsScreen'
-import { AlbumDetailScreen } from './features/albums/AlbumDetailScreen'
-import { ExportPdfScreen } from './features/albums/ExportPdfScreen'
-import { QuestionScreen } from './features/question/QuestionScreen'
-import { LettersScreen } from './features/letters/LettersScreen'
-import { MoodScreen } from './features/mood/MoodScreen'
-import { MapScreen } from './features/map/MapScreen'
-import { WrappedScreen } from './features/wrapped/WrappedScreen'
-import { WishlistScreen } from './features/wishlist/WishlistScreen'
 import { EatScreen } from './features/eat/EatScreen'
-import { SpinScreen } from './features/eat/SpinScreen'
-import { SettingsScreen } from './features/settings/SettingsScreen'
-import { UnpairScreen } from './features/settings/UnpairScreen'
 import { useCouple } from './hooks/useCouple'
 import { useSession } from './hooks/useSession'
+
+/*
+ * Tách gói theo màn hình.
+ *
+ * Trước đây cả app nằm trong MỘT tệp 721KB: mở lần đầu là tải hết, kể cả màn
+ * Tổng kết năm (có canvas) hay xuất PDF mà cả năm mới dùng một lần. Trên 4G thì
+ * đó là vài giây trắng màn hình trước khi thấy gì.
+ *
+ * Giữ tải sẵn: màn đăng nhập, ghép đôi, và bốn màn có trong thanh tab — đó là
+ * những thứ luôn cần ngay. Còn lại tải khi nào mở tới.
+ */
+const JoinScreen = lazy(() => import('./features/pairing/JoinScreen').then((m) => ({ default: m.JoinScreen })))
+const WaitingScreen = lazy(() => import('./features/pairing/WaitingScreen').then((m) => ({ default: m.WaitingScreen })))
+const PostDetailScreen = lazy(() => import('./features/timeline/PostDetailScreen').then((m) => ({ default: m.PostDetailScreen })))
+const ComposeScreen = lazy(() => import('./features/timeline/ComposeScreen').then((m) => ({ default: m.ComposeScreen })))
+const EventFormScreen = lazy(() => import('./features/plan/EventFormScreen').then((m) => ({ default: m.EventFormScreen })))
+const GoalDetailScreen = lazy(() => import('./features/goals/GoalDetailScreen').then((m) => ({ default: m.GoalDetailScreen })))
+const ExpenseFormScreen = lazy(() => import('./features/expenses/ExpenseFormScreen').then((m) => ({ default: m.ExpenseFormScreen })))
+const EatDetailScreen = lazy(() => import('./features/eat/EatDetailScreen').then((m) => ({ default: m.EatDetailScreen })))
+const AlbumsScreen = lazy(() => import('./features/albums/AlbumsScreen').then((m) => ({ default: m.AlbumsScreen })))
+const AlbumDetailScreen = lazy(() => import('./features/albums/AlbumDetailScreen').then((m) => ({ default: m.AlbumDetailScreen })))
+const ExportPdfScreen = lazy(() => import('./features/albums/ExportPdfScreen').then((m) => ({ default: m.ExportPdfScreen })))
+const QuestionScreen = lazy(() => import('./features/question/QuestionScreen').then((m) => ({ default: m.QuestionScreen })))
+const LettersScreen = lazy(() => import('./features/letters/LettersScreen').then((m) => ({ default: m.LettersScreen })))
+const MoodScreen = lazy(() => import('./features/mood/MoodScreen').then((m) => ({ default: m.MoodScreen })))
+const MapScreen = lazy(() => import('./features/map/MapScreen').then((m) => ({ default: m.MapScreen })))
+const WrappedScreen = lazy(() => import('./features/wrapped/WrappedScreen').then((m) => ({ default: m.WrappedScreen })))
+const WishlistScreen = lazy(() => import('./features/wishlist/WishlistScreen').then((m) => ({ default: m.WishlistScreen })))
+const SpinScreen = lazy(() => import('./features/eat/SpinScreen').then((m) => ({ default: m.SpinScreen })))
+const SettingsScreen = lazy(() => import('./features/settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen })))
+const UnpairScreen = lazy(() => import('./features/settings/UnpairScreen').then((m) => ({ default: m.UnpairScreen })))
 
 function JoinEntry() {
   const [params] = useSearchParams()
@@ -76,7 +87,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeSync />
-      <Routes>
+      <Suspense fallback={<Loading />}>
+        <Routes>
         <Route element={<GuestOnly />}>
           <Route path="/welcome" element={<WelcomeScreen />} />
           <Route path="/login" element={<EmailScreen />} />
@@ -127,7 +139,8 @@ export default function App() {
         </Route>
 
         <Route path="*" element={<Navigate to="/welcome" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }

@@ -286,6 +286,83 @@ async function main() {
     check('A không lấp được câu của 30 ngày trước', !!error, error?.code ?? '')
   }
 
+  // ------------------------------------- ghi vào bảng đã tách policy FOR ALL
+  //
+  // 17 bảng từng có một policy `FOR ALL` bị tách thành INSERT/UPDATE/DELETE
+  // riêng. Tách sai một vế thì ĐỌC vẫn chạy bình thường, chỉ GHI mới hỏng —
+  // nên phải thử đủ cả ba lệnh bằng phiên thật, không chỉ thử đọc.
+  console.log('\nGhi được vào các bảng đã tách policy:')
+  {
+    const today = new Date().toISOString().slice(0, 10)
+    const cases = [
+      {
+        table: 'eat_items',
+        row: { couple_id: couple.id, name: 'Quán thử nghiệm', added_by: A.userId },
+        patch: { name: 'Quán thử nghiệm đã sửa' },
+      },
+      {
+        table: 'goals',
+        row: {
+          couple_id: couple.id,
+          title: 'Mục tiêu thử nghiệm',
+          created_by: A.userId,
+        },
+        patch: { title: 'Mục tiêu thử nghiệm đã sửa' },
+      },
+      {
+        table: 'expenses',
+        row: {
+          couple_id: couple.id,
+          amount_minor: 1000,
+          spent_on: today,
+          paid_by: A.userId,
+          created_by: A.userId,
+        },
+        patch: { amount_minor: 2000 },
+      },
+      {
+        table: 'albums',
+        row: {
+          couple_id: couple.id,
+          title: 'Album thử nghiệm',
+          created_by: A.userId,
+        },
+        patch: { title: 'Album thử nghiệm đã sửa' },
+      },
+    ]
+
+    for (const c of cases) {
+      const { data: made, error: insErr } = await A.client
+        .from(c.table)
+        .insert(c.row)
+        .select('id')
+        .single()
+      check(`${c.table}: thêm được`, !insErr && !!made, insErr?.message ?? '')
+      if (!made) continue
+
+      const { error: updErr } = await A.client
+        .from(c.table)
+        .update(c.patch)
+        .eq('id', made.id)
+      check(`${c.table}: sửa được`, !updErr, updErr?.message ?? '')
+
+      const { data: seenByB } = await B.client
+        .from(c.table)
+        .select('id')
+        .eq('id', made.id)
+      check(`${c.table}: người kia đọc được`, (seenByB ?? []).length === 1)
+
+      const { error: delErr } = await A.client
+        .from(c.table)
+        .delete()
+        .eq('id', made.id)
+      check(`${c.table}: xoá được`, !delErr, delErr?.message ?? '')
+
+      // Dọn sạch kể cả khi xoá bằng quyền người dùng thất bại
+      await admin.from(c.table).delete().eq('id', made.id)
+    }
+  }
+
   console.log(
     failed === 0
       ? '\nTất cả đều đạt.\n'

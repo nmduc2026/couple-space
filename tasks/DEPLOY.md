@@ -548,6 +548,9 @@ ra khi chạy trên hệ thống thật.
 | `WORKER_RESOURCE_LIMIT` | Đổi ảnh cả cuốn sách trong một lượt là hết bộ nhớ. Phải thu nhỏ ảnh trước **và** chia đợt qua nhiều lượt gọi |
 | `Invalid Compact JWS` | Khoá `service_role` dạng `sb_secret_` không phải JWT; Storage chỉ nhận nó ở header `apikey` |
 | `try/catch` quá rộng | Bọc chung cả giải mã lẫn tải lên đã giấu mất lỗi trên suốt một vòng gỡ lỗi |
+| Link ký cất vào DB | `cover_url` từng lưu link ký hạn 1 năm — hết hạn là ảnh bìa biến mất, không gì ký lại. Lưu **đường dẫn**, ký lúc đọc |
+| `auth.uid()` trong policy | Gọi thẳng thì Postgres tính lại **mỗi dòng**. Bọc `(select auth.uid())` mới thành InitPlan, tính một lần |
+| Policy `FOR ALL` + policy `SELECT` | Hai policy permissive cùng phủ SELECT là mỗi lượt đọc chạy cả hai rồi OR. Tách `FOR ALL` thành INSERT/UPDATE/DELETE |
 | `ReturnType<typeof createClient>` | Suy ra kiểu bảng là `never` → toàn bộ lời gọi DB trong file đó không hề được kiểm kiểu. Dùng thẳng `SupabaseClient` |
 | Port `543xx` trên Windows | Dải 54306–54405 nằm trong danh sách Hyper-V giữ sẵn nên `supabase start` không bind được. `config.toml` đã dời sang `553xx` |
 
