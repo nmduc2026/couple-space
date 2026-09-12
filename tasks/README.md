@@ -11,6 +11,12 @@
 — mở bằng trình duyệt. Sửa tính năng thì **sửa prototype cùng lúc với đặc tả**, để nó không
 lệch khỏi tài liệu.
 
+## Đưa lên thật
+
+Bước đang chặn mọi thứ còn lại: **[DEPLOY.md](DEPLOY.md)** — thứ tự bắt buộc
+(secrets → deploy function → DB settings → `db push`), kèm những việc phải
+kiểm chứng bằng tay sau đó.
+
 ## Phase đang chạy
 
 > ### 🔄 **Cả 6 phase đã viết code xong một lượt**
