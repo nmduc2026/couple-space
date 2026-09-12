@@ -61,7 +61,7 @@ npx supabase functions deploy export-pdf
 wasm). Deploy xong kiểm tra chúng thật sự đi kèm:
 
 ```bash
-curl -X POST "https://<ref>.supabase.co/functions/v1/export-pdf"   -H "Authorization: Bearer <token người dùng>"   -H "Content-Type: application/json" -d '{"export_id":"<id vừa tạo>"}'
+curl -X POST "https://<ref>.supabase.co/functions/v1/export-pdf" \n  -H "Authorization: Bearer <token người dùng>" \n  -H "Content-Type: application/json" \n  -d '{"export_id":"<id vừa tạo>"}'
 ```
 
 Lỗi `NotFound` khi đọc `assets/...` nghĩa là Supabase không đóng gói file
