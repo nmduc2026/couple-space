@@ -14,7 +14,7 @@ export function Screen({
   className?: string
 }) {
   return (
-    <main className={`flex min-h-svh flex-col bg-bg pb-safe ${className}`}>
+    <main className={`flex min-h-app flex-col bg-bg pb-safe ${className}`}>
       {children}
     </main>
   )
@@ -179,7 +179,7 @@ export function Spacer() {
 /** Màn chờ dùng chung cho mọi chỗ đang tải dữ liệu. */
 export function Loading({ text = 'Đang tải...' }: { text?: string }) {
   return (
-    <main className="flex min-h-svh items-center justify-center bg-bg">
+    <main className="flex min-h-app items-center justify-center bg-bg">
       <p className="animate-pulse text-sm text-muted">{text}</p>
     </main>
   )

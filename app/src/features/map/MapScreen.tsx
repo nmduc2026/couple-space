@@ -227,7 +227,7 @@ function AskProvince({
       onClick={onDone}
     >
       <div
-        className="flex max-h-[80svh] w-full flex-col rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
+        className="flex max-h-sheet w-full flex-col rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-[17px] font-semibold text-text">
@@ -331,7 +331,7 @@ function ProvinceDrill({
       onClick={onClose}
     >
       <div
-        className="max-h-[80svh] w-full overflow-y-auto rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
+        className="max-h-sheet w-full overflow-y-auto rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-[17px] font-semibold text-text">{name}</p>

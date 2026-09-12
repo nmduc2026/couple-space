@@ -245,7 +245,7 @@ export function SettingsScreen() {
   }
 
   return (
-    <main className="min-h-svh bg-bg pb-safe">
+    <main className="min-h-app bg-bg pb-safe">
       <TopBar to="/" />
       <div className="mx-auto w-full max-w-[calc(28rem/var(--ui-scale))] px-4 pb-16">
         <h1 className="px-1 pt-1 pb-5 text-[23px] font-bold tracking-[-0.02em] text-text">

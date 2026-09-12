@@ -5,7 +5,9 @@ const BTN =
   'flex h-13 w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45'
 
 export const btn = {
-  primary: `${BTN} bg-accent text-on-accent shadow-[0_12px_28px_-14px_var(--color-accent)]`,
+  // Bóng đổ nhẹ thôi. Bản cũ toả rộng 28px làm nút trông như đang phát sáng,
+  // nhoè hẳn ra nền — nhất là sau khi cả app đã thu nhỏ.
+  primary: `${BTN} bg-accent text-on-accent shadow-[0_6px_14px_-10px_var(--color-accent)]`,
   outline: `${BTN} border border-border bg-surface text-text`,
   ghost: `${BTN} font-medium text-muted`,
   danger: `${BTN} border border-accent bg-transparent text-accent`,

@@ -1,25 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ACTIVITY_LABELS } from '../../lib/activities'
-import { btn } from '../../lib/ui-classes'
 
 /*
  * Hai bộ lọc cho Timeline: thời gian (chọn một) và hoạt động (chọn nhiều).
  *
- * Trước đây là một dải chip cuộn ngang. Dải đó có hai vấn đề: mỗi lần chỉ lọc
- * được đúng một thứ, và khi đã đi được vài năm thì chip năm đẩy chip hoạt động
- * ra khỏi màn hình — muốn lọc "ăn uống" phải vuốt ngang đi tìm.
+ * Dạng dropdown thả ngay dưới nút, không phải tấm trượt từ đáy màn hình. Tấm
+ * trượt hợp với việc dài hơi (chọn ngày, chọn giờ, đọc rồi quyết); còn lọc là
+ * việc bấm nhanh rồi nhìn kết quả ngay — đẩy nó xuống đáy màn hình làm mất
+ * chính cái danh sách mà người ta đang muốn xem đổi thế nào.
  */
 
 export type TimeFilter = { kind: 'all' } | { kind: 'year'; year: string }
 
-const chevron = (
-  <span aria-hidden className="ml-auto text-[11px] text-muted">
-    ▾
-  </span>
-)
-
 const trigger =
-  'flex flex-1 items-center gap-2 rounded-2xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-text'
+  'flex w-full items-center gap-2 rounded-2xl border bg-surface px-3.5 py-2.5 text-[13.5px] text-text'
 
 export function TimelineFilters({
   years,
@@ -34,7 +28,7 @@ export function TimelineFilters({
   activities: string[]
   onActivities: (next: string[]) => void
 }) {
-  const [sheet, setSheet] = useState<'time' | 'activity' | null>(null)
+  const [open, setOpen] = useState<'time' | 'activity' | null>(null)
 
   const timeLabel = time.kind === 'all' ? 'Mọi lúc' : `Năm ${time.year}`
   const activityLabel =
@@ -52,107 +46,135 @@ export function TimelineFilters({
     )
 
   return (
-    <>
-      <div className="flex gap-2 px-4 py-3">
-        <button type="button" onClick={() => setSheet('time')} className={trigger}>
-          <span aria-hidden>🗓️</span>
-          <span className="truncate">{timeLabel}</span>
-          {chevron}
-        </button>
-        <button
-          type="button"
-          onClick={() => setSheet('activity')}
-          className={`${trigger} ${activities.length ? 'border-accent' : ''}`}
+    <div className="flex gap-2 px-4 py-3">
+      <Dropdown
+        icon="🗓️"
+        label={timeLabel}
+        active={time.kind !== 'all'}
+        open={open === 'time'}
+        onOpen={() => setOpen(open === 'time' ? null : 'time')}
+        onClose={() => setOpen(null)}
+      >
+        <Option
+          active={time.kind === 'all'}
+          onClick={() => {
+            onTime({ kind: 'all' })
+            setOpen(null)
+          }}
         >
-          <span aria-hidden>🏷️</span>
-          <span className="truncate">{activityLabel}</span>
-          {chevron}
-        </button>
-      </div>
-
-      {sheet === 'time' ? (
-        <Sheet title="Thời gian" onClose={() => setSheet(null)}>
+          Mọi lúc
+        </Option>
+        {years.map((y) => (
           <Option
-            active={time.kind === 'all'}
+            key={y}
+            active={time.kind === 'year' && time.year === y}
             onClick={() => {
-              onTime({ kind: 'all' })
-              setSheet(null)
+              onTime({ kind: 'year', year: y })
+              setOpen(null)
             }}
           >
-            Mọi lúc
+            Năm {y}
           </Option>
-          {years.map((y) => (
-            <Option
-              key={y}
-              active={time.kind === 'year' && time.year === y}
-              onClick={() => {
-                onTime({ kind: 'year', year: y })
-                setSheet(null)
-              }}
-            >
-              Năm {y}
-            </Option>
-          ))}
-        </Sheet>
-      ) : null}
+        ))}
+      </Dropdown>
 
-      {sheet === 'activity' ? (
-        <Sheet title="Hoạt động" onClose={() => setSheet(null)}>
-          {Object.entries(ACTIVITY_LABELS).map(([key, meta]) => (
-            <Option
-              key={key}
-              active={activities.includes(key)}
-              multi
-              onClick={() => toggle(key)}
-            >
-              <span aria-hidden className="mr-1.5">
-                {meta.emoji}
-              </span>
-              {meta.label}
-            </Option>
-          ))}
-          {activities.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => onActivities([])}
-              className={`${btn.ghost} mt-2`}
-            >
-              Bỏ chọn hết
-            </button>
-          ) : null}
-        </Sheet>
-      ) : null}
-    </>
+      <Dropdown
+        icon="🏷️"
+        label={activityLabel}
+        active={activities.length > 0}
+        open={open === 'activity'}
+        onOpen={() => setOpen(open === 'activity' ? null : 'activity')}
+        onClose={() => setOpen(null)}
+      >
+        {/* Chọn nhiều nên KHÔNG đóng sau mỗi lần bấm */}
+        {Object.entries(ACTIVITY_LABELS).map(([key, meta]) => (
+          <Option
+            key={key}
+            active={activities.includes(key)}
+            multi
+            onClick={() => toggle(key)}
+          >
+            <span aria-hidden className="mr-1.5">
+              {meta.emoji}
+            </span>
+            {meta.label}
+          </Option>
+        ))}
+        {activities.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => onActivities([])}
+            className="w-full py-2.5 text-center text-[13px] font-medium text-muted"
+          >
+            Bỏ chọn hết
+          </button>
+        ) : null}
+      </Dropdown>
+    </div>
   )
 }
 
-function Sheet({
-  title,
-  children,
+function Dropdown({
+  icon,
+  label,
+  active,
+  open,
+  onOpen,
   onClose,
+  children,
 }: {
-  title: string
-  children: React.ReactNode
+  icon: string
+  label: string
+  active: boolean
+  open: boolean
+  onOpen: () => void
   onClose: () => void
+  children: React.ReactNode
 }) {
+  const box = useRef<HTMLDivElement>(null)
+
+  // Bấm ra ngoài hoặc Esc thì đóng — cách cư xử mà ai cũng chờ đợi ở dropdown
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (!box.current?.contains(e.target as Node)) onClose()
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open, onClose])
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      onClick={onClose}
-    >
-      <div
-        className="max-h-[80svh] w-full overflow-y-auto rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
-        onClick={(e) => e.stopPropagation()}
+    <div ref={box} className="relative flex-1">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-expanded={open}
+        className={`${trigger} ${active || open ? 'border-accent' : 'border-border'}`}
       >
-        <p className="text-[17px] font-semibold text-text">{title}</p>
-        <div className="mt-3">{children}</div>
-        <button type="button" onClick={onClose} className={`${btn.ghost} mt-2`}>
-          Xong
-        </button>
-      </div>
+        <span aria-hidden>{icon}</span>
+        <span className="truncate">{label}</span>
+        <span
+          aria-hidden
+          className={`ml-auto text-[11px] text-muted transition-transform ${
+            open ? 'rotate-180' : ''
+          }`}
+        >
+          ▾
+        </span>
+      </button>
+
+      {open ? (
+        <div className="absolute top-full right-0 left-0 z-30 mt-1.5 max-h-72 overflow-y-auto rounded-2xl border border-border bg-surface p-1 shadow-xl">
+          {children}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -173,11 +195,13 @@ function Option({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="flex w-full items-center gap-3 border-b border-border py-3 text-left text-[15px] text-text last:border-b-0"
+      className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[14px] transition ${
+        active ? 'bg-soft font-semibold text-accent' : 'text-text'
+      }`}
     >
       <span
         aria-hidden
-        className={`grid h-5 w-5 flex-none place-items-center border text-[11px] ${
+        className={`grid h-4.5 w-4.5 flex-none place-items-center border text-[10px] ${
           multi ? 'rounded-md' : 'rounded-full'
         } ${
           active

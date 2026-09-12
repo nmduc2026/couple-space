@@ -93,7 +93,7 @@ export function HomeScreen() {
   return (
     <div className="flex-1">
       <header
-        className="top-safe relative flex min-h-[44svh] flex-col justify-end px-5 pb-7 text-center text-white"
+        className="top-safe relative flex min-h-[calc(44svh/var(--ui-scale))] flex-col justify-end px-5 pb-7 text-center text-white"
         style={
           couple.cover_url
             ? {

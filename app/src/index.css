@@ -77,6 +77,18 @@
   );
 }
 
+/* Chiều cao theo màn hình, đã bù `--ui-scale`.
+   `100svh` trả về chiều cao THẬT của màn hình, nhưng bên trong vùng đã `zoom`
+   thì con số đó bị nhân với tỉ lệ thu nhỏ — khung chỉ còn cao 80% màn hình và
+   thanh tab dưới đáy treo lơ lửng giữa trang. Chia lại cho đúng. */
+@utility min-h-app {
+  min-height: calc(100svh / var(--ui-scale));
+}
+
+@utility max-h-sheet {
+  max-height: calc(80svh / var(--ui-scale));
+}
+
 /* Chừa chỗ cho status bar mà vẫn giữ padding riêng của phần tử */
 @utility top-safe {
   padding-top: calc(

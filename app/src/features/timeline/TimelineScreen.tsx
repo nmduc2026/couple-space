@@ -1,8 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
-import { groupByMonth, usePosts, type Post } from '../../hooks/usePosts'
-import { usePlaceResolution } from '../../hooks/usePlaceResolution'
+import {
+  groupByMonth,
+  useInfinitePosts,
+  usePostYears,
+  type Post,
+} from '../../hooks/usePosts'
 import { provinceByCode } from '../../lib/provinces'
 import { TimelineFilters, type TimeFilter } from './TimelineFilters'
 import { ACTIVITY_LABELS } from '../../lib/activities'
@@ -14,9 +18,6 @@ type View = 'cards' | 'grid'
 export function TimelineScreen() {
   const [params, setParams] = useSearchParams()
   const view: View = params.get('view') === 'grid' ? 'grid' : 'cards'
-  const { posts, isLoading } = usePosts()
-  const { provinceOf } = usePlaceResolution(posts)
-
   const [time, setTime] = useState<TimeFilter>({ kind: 'all' })
   const [activities, setActivities] = useState<string[]>([])
 
@@ -25,32 +26,43 @@ export function TimelineScreen() {
   const province = params.get('province')
   const place = params.get('place')
 
+  const years = usePostYears()
+  const {
+    posts,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfinitePosts({
+    year: time.kind === 'year' ? time.year : null,
+    activities,
+    place,
+    province,
+  })
+
+  // Tải thêm khi chạm đáy. Dùng IntersectionObserver chứ không nghe sự kiện
+  // cuộn: trình duyệt tự báo, không phải tính toán ở mỗi khung hình.
+  const sentinel = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const node = sentinel.current
+    if (!node || !hasNextPage) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingNextPage) void fetchNextPage()
+      },
+      // Nạp trước khi người dùng chạm đáy hẳn, để cuộn không bị khựng
+      { rootMargin: '400px' },
+    )
+    io.observe(node)
+    return () => io.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
   function clearPlaceFilter() {
     const p = new URLSearchParams(params)
     p.delete('province')
     p.delete('place')
     setParams(p, { replace: true })
   }
-
-  const years = useMemo(
-    () =>
-      [...new Set(posts.map((p) => p.happened_on.slice(0, 4)))].sort().reverse(),
-    [posts],
-  )
-
-  const filtered = useMemo(
-    () =>
-      posts.filter((p) => {
-        if (activities.length > 0 && !activities.includes(p.activity ?? ''))
-          return false
-        if (time.kind === 'year' && !p.happened_on.startsWith(time.year))
-          return false
-        if (place && p.place_name?.trim() !== place) return false
-        if (province && provinceOf.get(p.id) !== province) return false
-        return true
-      }),
-    [posts, activities, time, place, province, provinceOf],
-  )
 
   function setView(next: View) {
     const p = new URLSearchParams(params)
@@ -108,7 +120,7 @@ export function TimelineScreen() {
         </div>
       ) : null}
 
-      {posts.length > 0 ? (
+      {years.length > 0 ? (
         <TimelineFilters
           years={years}
           time={time}
@@ -121,13 +133,22 @@ export function TimelineScreen() {
       <div className="flex-1 px-4 pb-8">
         {isLoading ? (
           <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
-        ) : filtered.length === 0 ? (
-          <EmptyState hasPosts={posts.length > 0} />
+        ) : posts.length === 0 ? (
+          // `posts` giờ là kết quả ĐÃ LỌC nên luôn rỗng ở nhánh này; `years`
+          // lấy từ toàn bộ bài nên mới phân biệt được "chưa có kỉ niệm nào"
+          // với "lọc không ra gì".
+          <EmptyState hasPosts={years.length > 0} />
         ) : view === 'grid' ? (
-          <GridView posts={filtered} />
+          <GridView posts={posts} />
         ) : (
-          <CardView posts={filtered} />
+          <CardView posts={posts} />
         )}
+
+        {/* Mốc chạm đáy: thấy nó là nạp trang tiếp theo */}
+        <div ref={sentinel} aria-hidden className="h-px" />
+        {isFetchingNextPage ? (
+          <p className="py-6 text-center text-sm text-muted">Đang tải thêm...</p>
+        ) : null}
       </div>
     </>
   )

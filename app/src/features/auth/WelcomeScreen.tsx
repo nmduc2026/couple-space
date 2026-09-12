@@ -3,7 +3,7 @@ import { btn } from '../../lib/ui-classes'
 
 export function WelcomeScreen() {
   return (
-    <main className="relative flex min-h-svh flex-col overflow-hidden bg-bg pb-safe">
+    <main className="relative flex min-h-app flex-col overflow-hidden bg-bg pb-safe">
       {/* Quầng màu chủ đạo — không khí, không phải card */}
       <div
         aria-hidden

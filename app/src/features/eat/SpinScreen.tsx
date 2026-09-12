@@ -7,6 +7,7 @@ import { PREVIEW, previewEatItems } from '../../dev/preview'
 import type { EatItem } from '../../hooks/useEatItems'
 import { ConfirmSheet, Screen, Stage, Sub, Title, TopBar } from '../../components/ui'
 import { btn } from '../../lib/ui-classes'
+import { Fireworks } from './Fireworks'
 
 type Candidate = {
   id: string
@@ -19,17 +20,13 @@ type Candidate = {
 type Mode = 'reel' | 'box'
 type Phase = 'idle' | 'running' | 'done' | 'empty'
 
-/** Bề rộng một ô trên dải, tính bằng px trong khung toạ độ của app. */
-const CARD_W = 132
-const CARD_GAP = 10
-const SLOT = CARD_W + CARD_GAP
+/** Bao nhiêu bước nhảy trước khi dừng — cảm giác "quay" nằm ở nhịp chậm dần. */
+const REEL_STEPS = 26
 
-/** Dải phải đủ dài để lướt cho đã mắt, kể cả khi chỉ có 3 quán. */
-const MIN_STRIP = 40
-const REEL_MS = 3600
+/** Số hộp tối đa. Nhiều hơn ngần này thì mỗi hộp bé quá, bấm không trúng. */
+const MAX_BOXES = 9
 
-/** Số món bỏ vào hộp bí mật. Ít hơn thì hết bất ngờ, nhiều hơn thì loãng. */
-const BOX_SIZE = 3
+const CONFETTI = ['#c2415b', '#e8a0ae', '#f0c27b', '#3f7d63', '#6b4e7d']
 
 function shuffle<T>(list: T[]): T[] {
   const out = [...list]
@@ -45,16 +42,12 @@ export function SpinScreen() {
   const queryClient = useQueryClient()
   const { couple } = useCouple()
 
-  const [mode, setMode] = useState<Mode>('reel')
+  const [mode, setMode] = useState<Mode | null>(null)
   const [phase, setPhase] = useState<Phase>('idle')
+  const [items, setItems] = useState<Candidate[]>([])
+  const [cursor, setCursor] = useState(0)
   const [winner, setWinner] = useState<Candidate | null>(null)
   const [askCompose, setAskCompose] = useState(false)
-
-  // --- dải lướt ---
-  const [strip, setStrip] = useState<Candidate[]>([])
-  const [offset, setOffset] = useState(0)
-  const [gliding, setGliding] = useState(false)
-  const [landing, setLanding] = useState(-1)
 
   // --- hộp bí mật ---
   const [boxes, setBoxes] = useState<Candidate[]>([])
@@ -66,6 +59,11 @@ export function SpinScreen() {
     const pending = timers.current
     return () => pending.forEach(window.clearTimeout)
   }, [])
+
+  function clearTimers() {
+    timers.current.forEach(window.clearTimeout)
+    timers.current = []
+  }
 
   async function loadCandidates(): Promise<Candidate[]> {
     if (PREVIEW) {
@@ -87,61 +85,63 @@ export function SpinScreen() {
     return (data ?? []) as Candidate[]
   }
 
-  function reset() {
-    setPhase('idle')
-    setWinner(null)
-    setOpened(null)
-    setGliding(false)
-    setOffset(0)
-  }
-
-  async function start() {
+  /** Chọn kiểu quay → nạp danh sách luôn, để thấy có gì trước khi quay. */
+  async function chooseMode(next: Mode) {
     const list = await loadCandidates()
+    setMode(next)
     if (list.length === 0) {
       setPhase('empty')
       return
     }
+    setItems(shuffle(list))
+    setCursor(0)
+    setPhase('idle')
+    setWinner(null)
+    setOpened(null)
+  }
+
+  /** Lùi về bước chọn kiểu — KHÔNG rời màn hình.
+   *  Trước đây nút Huỷ nhảy thẳng hai bước ra ngoài. */
+  function backToModes() {
+    clearTimers()
+    setMode(null)
+    setPhase('idle')
+    setWinner(null)
+    setOpened(null)
+    setShuffling(false)
+  }
+
+  function start() {
+    if (items.length === 0) return
     setWinner(null)
     setOpened(null)
     setPhase('running')
 
-    // RPC đã xáo sẵn và ưu tiên quán chưa thử, nên phần tử đầu chính là
-    // kết quả. Phần dưới đây chỉ là cách KỂ ra kết quả đó.
-    const picked = list[0]
+    const target = Math.floor(Math.random() * items.length)
 
     if (mode === 'reel') {
-      const filler: Candidate[] = []
-      while (filler.length < MIN_STRIP) filler.push(...shuffle(list))
-      // Đặt người thắng ở gần cuối dải để còn chỗ lướt trước khi dừng
-      const landing = filler.length - 4
-      filler[landing] = picked
-      setStrip(filler)
-      setLanding(landing)
-
-      setOffset(0)
-      setGliding(false)
-      // Đợi một khung hình để trình duyệt ghi nhận vị trí đầu, nếu không thì
-      // nó gộp hai lần đặt lại thành một và hoạt ảnh không chạy.
-      timers.current.push(
-        window.setTimeout(() => {
-          setGliding(true)
-          setOffset(landing * SLOT)
-        }, 30),
-      )
-      timers.current.push(
-        window.setTimeout(() => {
-          setWinner(picked)
+      // Nhảy nhanh rồi chậm dần lại — cảm giác quay nằm ở nhịp
+      let step = 0
+      const tick = () => {
+        step++
+        setCursor((c) => (c + 1) % items.length)
+        if (step < REEL_STEPS) {
+          const progress = step / REEL_STEPS
+          timers.current.push(
+            window.setTimeout(tick, 45 + progress * progress * 260),
+          )
+        } else {
+          setCursor(target)
+          setWinner(items[target])
           setPhase('done')
-        }, REEL_MS + 120),
-      )
+        }
+      }
+      timers.current.push(window.setTimeout(tick, 60))
       return
     }
 
-    // Hộp bí mật: bốc vài món, xáo, rồi để người dùng tự chọn hộp mà mở
-    const chosen = shuffle(list).slice(0, Math.min(BOX_SIZE, list.length))
-    // Người thắng phải nằm trong số hộp, nếu không thì mở hộp nào cũng vô nghĩa
-    if (!chosen.some((c) => c.id === picked.id)) chosen[0] = picked
-    setBoxes(shuffle(chosen))
+    // Hộp bí mật: MỖI MÓN MỘT HỘP, không phải cố định ba cái
+    setBoxes(shuffle(items).slice(0, MAX_BOXES))
     setShuffling(true)
     timers.current.push(window.setTimeout(() => setShuffling(false), 900))
   }
@@ -150,7 +150,7 @@ export function SpinScreen() {
     if (shuffling || opened !== null) return
     setOpened(index)
     setWinner(boxes[index])
-    timers.current.push(window.setTimeout(() => setPhase('done'), 420))
+    timers.current.push(window.setTimeout(() => setPhase('done'), 380))
   }
 
   /** Chốt: ghi một lượt ghé để lần quay sau tránh quán này. */
@@ -173,72 +173,81 @@ export function SpinScreen() {
     setAskCompose(true)
   }
 
-  const busy = phase === 'running'
-  const pickingBox =
-    mode === 'box' && phase === 'running' && !shuffling && opened === null
+  const running = phase === 'running'
+  const pickingBox = mode === 'box' && running && !shuffling && opened === null
 
   return (
     <Screen>
-      <TopBar to="/eat" label="Huỷ" />
+      {mode === null ? (
+        <TopBar to="/eat" label="Huỷ" />
+      ) : (
+        <div className="top-safe px-4 pb-2">
+          <button
+            type="button"
+            onClick={backToModes}
+            className="inline-flex items-center gap-2 text-[14px] font-medium text-muted transition active:scale-95"
+          >
+            <span
+              aria-hidden
+              className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-[16px] text-text"
+            >
+              ←
+            </span>
+            Đổi kiểu quay
+          </button>
+        </div>
+      )}
+
       <Stage className="text-center">
         <Title>Tối nay ăn gì?</Title>
         <Sub>Quay xong thì đi, không cãi nữa.</Sub>
 
-        {phase === 'idle' ? (
-          <div className="mt-5 flex gap-1 rounded-2xl border border-border bg-surface p-1">
-            {(
-              [
-                ['reel', '🎞️ Dải quay'],
-                ['box', '🎁 Hộp bí mật'],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setMode(value)}
-                className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                  mode === value ? 'bg-accent text-on-accent' : 'text-muted'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+        {mode === null ? (
+          <div className="mt-8 space-y-3">
+            <ModeCard
+              emoji="🎞️"
+              title="Dải quay"
+              desc="Lướt qua danh sách rồi dừng lại ở một món."
+              onClick={() => void chooseMode('reel')}
+            />
+            <ModeCard
+              emoji="🎁"
+              title="Hộp bí mật"
+              desc="Mỗi món một hộp, xáo lên rồi tự chọn hộp mà mở."
+              onClick={() => void chooseMode('box')}
+            />
           </div>
-        ) : null}
-
-        <div className="mt-6 min-h-[13rem]">
-          {phase === 'empty' ? (
-            <p className="grid min-h-[13rem] place-items-center rounded-[1.75rem] bg-soft px-5 text-sm leading-relaxed text-muted">
-              Không còn quán nào để quay.
-              <br />
-              Thêm quán mới, hoặc chờ hết 14 ngày kể từ lần ghé gần nhất.
-            </p>
-          ) : mode === 'reel' ? (
-            <Reel
-              strip={strip}
-              offset={offset}
-              gliding={gliding}
-              idle={phase === 'idle'}
-              landing={phase === 'done' ? landing : -1}
-            />
-          ) : (
-            <Boxes
-              boxes={boxes}
-              shuffling={shuffling}
-              opened={opened}
-              idle={phase === 'idle'}
-              onOpen={openBox}
-            />
-          )}
-        </div>
+        ) : phase === 'empty' ? (
+          <p className="mt-8 rounded-3xl bg-soft px-5 py-10 text-sm leading-relaxed text-muted">
+            Không còn quán nào để quay.
+            <br />
+            Thêm quán mới, hoặc chờ hết 14 ngày kể từ lần ghé gần nhất.
+          </p>
+        ) : mode === 'reel' ? (
+          <Reel
+            items={items}
+            cursor={cursor}
+            done={phase === 'done'}
+            locked={running}
+            onStep={(delta) =>
+              setCursor((c) => (c + delta + items.length) % items.length)
+            }
+          />
+        ) : (
+          <Boxes
+            boxes={boxes}
+            shuffling={shuffling}
+            opened={opened}
+            idle={phase === 'idle'}
+            count={items.length}
+            onOpen={openBox}
+          />
+        )}
 
         {phase === 'done' && winner ? (
-          <div className="mt-5">
-            <p className="text-[24px] leading-tight font-extrabold text-accent">
-              {winner.name}
-            </p>
+          <div className="mt-4">
             {winner.address ? (
-              <p className="mt-1 text-sm text-muted">{winner.address}</p>
+              <p className="text-sm text-muted">{winner.address}</p>
             ) : null}
             {winner.never_tried ? (
               <p className="mt-2 inline-block rounded-full bg-soft px-3 py-1 text-xs text-accent">
@@ -249,7 +258,7 @@ export function SpinScreen() {
         ) : null}
 
         <div className="mt-auto pt-8">
-          {phase === 'done' ? (
+          {mode === null ? null : phase === 'done' ? (
             <>
               <button
                 type="button"
@@ -260,30 +269,24 @@ export function SpinScreen() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  reset()
-                  void start()
-                }}
+                onClick={start}
                 className={`${btn.ghost} mt-1`}
               >
                 Quay lại lần nữa
               </button>
             </>
-          ) : (
-            pickingBox ? (
-            // Xáo xong rồi thì việc cần làm là chạm vào một hộp, không phải
-            // bấm nút dưới — để nút kẹt ở "Đang xáo..." là chỉ sai chỗ.
+          ) : pickingBox ? (
             <p className="py-4 text-center text-[14px] font-medium text-accent">
               Chạm vào một hộp để mở
             </p>
           ) : (
             <button
               type="button"
-              disabled={busy}
-              onClick={() => void start()}
+              disabled={running || phase === 'empty'}
+              onClick={start}
               className={btn.primary}
             >
-              {busy
+              {running
                 ? mode === 'reel'
                   ? 'Đang quay...'
                   : 'Đang xáo...'
@@ -291,7 +294,6 @@ export function SpinScreen() {
                   ? '🎲 Quay đi'
                   : '🎁 Xáo hộp'}
             </button>
-          )
           )}
         </div>
       </Stage>
@@ -315,110 +317,160 @@ export function SpinScreen() {
   )
 }
 
+function ModeCard({
+  emoji,
+  title,
+  desc,
+  onClick,
+}: {
+  emoji: string
+  title: string
+  desc: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-4 rounded-2xl border border-border bg-surface p-4 text-left transition active:scale-[0.98]"
+    >
+      <span aria-hidden className="text-3xl">
+        {emoji}
+      </span>
+      <span className="min-w-0 flex-1">
+        <b className="block text-[15.5px] font-semibold text-text">{title}</b>
+        <small className="block text-[12.5px] leading-relaxed text-muted">
+          {desc}
+        </small>
+      </span>
+      <span aria-hidden className="text-muted">
+        ›
+      </span>
+    </button>
+  )
+}
+
 /**
- * Dải quay ngang.
+ * Ba món một lúc: hai bên mờ, ở giữa là món đang ngắm.
  *
- * Cả dải trượt sang trái bằng MỘT phép biến hình có `transition`, không phải
- * bằng bộ đếm nhảy từng ô: trình duyệt chạy transform trên luồng ghép hình nên
- * mượt kể cả lúc app đang tải dữ liệu, còn `setTimeout` từng bước thì giật
- * ngay khi luồng chính bận.
+ * Không có vạch đỏ — món ở giữa đã to hơn, viền đậm hơn và hai bên đã mờ đi;
+ * thêm một cái vạch nữa chỉ là nói lại điều mắt đã thấy.
  */
 function Reel({
-  strip,
-  offset,
-  gliding,
-  idle,
-  landing,
+  items,
+  cursor,
+  done,
+  locked,
+  onStep,
 }: {
-  strip: Candidate[]
-  offset: number
-  gliding: boolean
-  idle: boolean
-  landing: number
+  items: Candidate[]
+  cursor: number
+  done: boolean
+  locked: boolean
+  onStep: (delta: number) => void
 }) {
-  if (idle || strip.length === 0) {
-    return (
-      <div className="grid min-h-[13rem] place-items-center rounded-[1.75rem] bg-soft">
-        <span className="text-6xl" aria-hidden>
-          🎞️
-        </span>
-      </div>
-    )
-  }
+  if (items.length === 0) return null
+
+  const at = (offset: number) =>
+    items[(cursor + offset + items.length) % items.length]
+
+  const side =
+    'flex h-24 w-[26%] flex-none flex-col justify-center rounded-2xl border border-border bg-surface px-2 opacity-40 blur-[1px]'
 
   return (
-    <div className="relative overflow-hidden rounded-[1.75rem] bg-soft py-7">
-      {/* Vạch ngắm giữa khung — chỗ nào dừng dưới vạch là kết quả */}
-      <span
-        aria-hidden
-        className="absolute inset-y-3 left-1/2 z-10 w-0.5 -translate-x-1/2 rounded-full bg-accent"
-      />
-      <span
-        aria-hidden
-        className="absolute top-1 left-1/2 z-10 -translate-x-1/2 text-[14px] text-accent"
-      >
-        ▼
-      </span>
+    <div className="relative mt-6 overflow-hidden rounded-[1.75rem] bg-soft px-3 py-6">
+      {done ? <Fireworks colors={CONFETTI} /> : null}
 
-      <div
-        className="flex"
-        style={{
-          gap: `${CARD_GAP}px`,
-          // Căn ô đang ngắm vào đúng giữa khung
-          transform: `translateX(calc(50% - ${CARD_W / 2}px - ${offset}px))`,
-          transition: gliding
-            ? `transform ${REEL_MS}ms cubic-bezier(0.12, 0.68, 0.06, 1)`
-            : 'none',
-        }}
-      >
-        {strip.map((item, i) => (
-          <div
-            key={`${item.id}-${i}`}
-            style={{ width: CARD_W }}
-            className={`flex h-24 flex-none flex-col justify-center rounded-2xl border bg-surface px-3 transition ${
-              i === landing ? 'border-accent shadow-lg' : 'border-border'
-            }`}
-          >
-            <b className="line-clamp-2 text-[13.5px] leading-snug font-semibold text-text">
-              {item.name}
-            </b>
-            {item.never_tried ? (
-              <span className="mt-1 text-[11px] text-accent">chưa thử</span>
-            ) : null}
-          </div>
-        ))}
+      <div className="flex items-center justify-center gap-2">
+        <div className={side} aria-hidden>
+          <span className="line-clamp-2 text-[12px] leading-snug text-text">
+            {at(-1).name}
+          </span>
+        </div>
+
+        <div
+          className={`flex h-32 min-w-0 flex-1 flex-col items-center justify-center rounded-2xl border-2 bg-surface px-3 transition ${
+            done ? 'border-accent shadow-lg' : 'border-border'
+          }`}
+        >
+          <b className="line-clamp-3 text-[17px] leading-snug font-bold text-balance text-text">
+            {at(0).name}
+          </b>
+          {at(0).never_tried ? (
+            <span className="mt-1.5 text-[11.5px] text-accent">chưa thử</span>
+          ) : null}
+        </div>
+
+        <div className={side} aria-hidden>
+          <span className="line-clamp-2 text-[12px] leading-snug text-text">
+            {at(1).name}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-center gap-3">
+        <button
+          type="button"
+          aria-label="Món trước"
+          disabled={locked}
+          onClick={() => onStep(-1)}
+          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-text disabled:opacity-30"
+        >
+          ‹
+        </button>
+        <span className="text-[12px] tabular-nums text-muted">
+          {(cursor % items.length) + 1}/{items.length}
+        </span>
+        <button
+          type="button"
+          aria-label="Món sau"
+          disabled={locked}
+          onClick={() => onStep(1)}
+          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-text disabled:opacity-30"
+        >
+          ›
+        </button>
       </div>
     </div>
   )
 }
 
-/** Ba hộp quà: xáo rồi để người dùng tự chọn hộp mà mở. */
+/** Mỗi món một hộp — bỏ bao nhiêu món vào thì bấy nhiêu hộp hiện ra. */
 function Boxes({
   boxes,
   shuffling,
   opened,
   idle,
+  count,
   onOpen,
 }: {
   boxes: Candidate[]
   shuffling: boolean
   opened: number | null
   idle: boolean
+  count: number
   onOpen: (index: number) => void
 }) {
   if (idle || boxes.length === 0) {
     return (
-      <div className="grid min-h-[13rem] place-items-center rounded-[1.75rem] bg-soft">
-        <span className="text-6xl" aria-hidden>
-          🎁
-        </span>
+      <div className="mt-6 grid min-h-52 place-items-center rounded-[1.75rem] bg-soft px-6 text-center">
+        <div>
+          <span className="text-6xl" aria-hidden>
+            🎁
+          </span>
+          <p className="mt-3 text-[13px] leading-relaxed text-muted">
+            {count} món sẽ vào {Math.min(count, MAX_BOXES)} hộp.
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="grid min-h-[13rem] place-items-center rounded-[1.75rem] bg-soft px-4">
-      <div className="flex w-full justify-center gap-3">
+    <div className="relative mt-6 grid min-h-52 place-items-center rounded-[1.75rem] bg-soft p-4">
+      {opened !== null ? <Fireworks colors={CONFETTI} /> : null}
+
+      <div className="grid w-full grid-cols-3 gap-2.5">
         {boxes.map((item, i) => {
           const isOpen = opened === i
           return (
@@ -427,16 +479,16 @@ function Boxes({
               type="button"
               disabled={shuffling || opened !== null}
               onClick={() => onOpen(i)}
-              className={`flex h-28 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl border bg-surface px-2 transition ${
-                isOpen ? 'border-accent' : 'border-border'
+              className={`flex h-24 flex-col items-center justify-center gap-1 rounded-2xl border bg-surface px-1.5 transition ${
+                isOpen ? 'border-accent shadow-lg' : 'border-border'
               } ${shuffling ? 'animate-pulse' : ''} ${
-                opened !== null && !isOpen ? 'opacity-40' : ''
+                opened !== null && !isOpen ? 'opacity-35' : ''
               }`}
             >
-              <span aria-hidden className="text-3xl">
+              <span aria-hidden className="text-2xl">
                 {isOpen ? '🎉' : '🎁'}
               </span>
-              <span className="line-clamp-2 text-[12px] leading-tight font-semibold text-text">
+              <span className="line-clamp-2 text-[11.5px] leading-tight font-semibold text-text">
                 {isOpen ? item.name : shuffling ? '...' : 'Mở?'}
               </span>
             </button>
