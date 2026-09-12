@@ -177,6 +177,7 @@ export function LettersScreen() {
   return (
     <>
       <TopHeader
+        back="/"
         title="Thư gửi tương lai"
         right={
           <button

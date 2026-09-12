@@ -1,33 +1,33 @@
 import { useEffect } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { useUiStore } from '../lib/store'
 import { applyTheme, watchSystemPreference } from '../lib/theme'
 import { applyCoupleTheme } from '../lib/coupleTheme'
 import { useCouple } from '../hooks/useCouple'
-import { supabase } from '../lib/supabase'
-import { PREVIEW } from '../dev/preview'
+import { useMyProfile } from '../hooks/useMyProfile'
 
 /**
  * Đồng bộ hai lớp theme, ở hai tầng khác nhau:
  *
- *  · sáng / tối / theo máy — lựa chọn của TỪNG NGƯỜI, lưu trong Zustand
- *  · màu nhấn — thuộc về CẶP ĐÔI, lưu trong `couples.theme`
+ *  · sáng / tối / theo máy — lựa chọn THEO MÁY, để trong Zustand. Cùng một
+ *    người có thể thích nền tối trên giường và nền sáng ngoài trời.
+ *  · màu nhấn — lựa chọn THEO NGƯỜI, lưu ở `profiles.color_theme`, nên đổi
+ *    trên điện thoại thì mở trên máy tính cũng thấy vậy.
  *
  * Phải áp cùng chỗ vì màu nhấn có hai bộ mã khác nhau cho nền sáng và nền
  * tối: đổi sáng/tối mà không áp lại màu là màu nhấn lệch tông.
  */
 export function ThemeSync() {
   const mode = useUiStore((s) => s.theme)
+  const { profile } = useMyProfile()
   const { couple } = useCouple()
-  const coupleTheme = couple?.theme
-  const coupleId = couple?.id
-  const queryClient = useQueryClient()
+  // Chưa chọn gì thì dùng màu của space làm điểm xuất phát
+  const color = profile?.color_theme ?? couple?.theme
 
   useEffect(() => {
     const sync = () => {
       applyTheme(mode)
       applyCoupleTheme(
-        coupleTheme,
+        color,
         document.documentElement.classList.contains('dark'),
       )
     }
@@ -35,33 +35,7 @@ export function ThemeSync() {
     sync()
     if (mode !== 'system') return
     return watchSystemPreference(sync)
-  }, [mode, coupleTheme])
-
-  // Người kia đổi theme thì máy này đổi theo ngay — theme thuộc về space,
-  // xem docs/features/p1-couple-profile.md mục 4.
-  useEffect(() => {
-    if (!coupleId || PREVIEW) return
-
-    const channel = supabase
-      .channel(`couple-${coupleId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'couples',
-          filter: `id=eq.${coupleId}`,
-        },
-        () => {
-          void queryClient.invalidateQueries({ queryKey: ['couple'] })
-        },
-      )
-      .subscribe()
-
-    return () => {
-      void supabase.removeChannel(channel)
-    }
-  }, [coupleId, queryClient])
+  }, [mode, color])
 
   return null
 }

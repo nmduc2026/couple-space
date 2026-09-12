@@ -69,7 +69,7 @@ export function QuestionScreen() {
 
   return (
     <>
-      <TopHeader title="Câu hỏi mỗi ngày" />
+      <TopHeader title="Câu hỏi mỗi ngày" back="/" />
 
       <div className="px-4 pt-3">
         <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">

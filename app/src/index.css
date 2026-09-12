@@ -33,6 +33,17 @@
 :root {
   color-scheme: light;
   accent-color: var(--color-accent);
+
+  /* Thu nhỏ toàn bộ giao diện. Đổi đúng một số này là đổi cả app.
+     1 = giữ nguyên, 0.8 = nhỏ còn 80%. */
+  --ui-scale: 0.8;
+}
+
+/* `zoom` thu nhỏ MỌI thứ bên trong — chữ, khoảng cách, viền, ảnh — bằng một
+   dòng. Không dùng `transform: scale` vì transform không chiếm lại chỗ: nó vẽ
+   nhỏ đi nhưng vẫn giữ nguyên kích thước bố cục, gây tràn và cuộn ngang. */
+#root {
+  zoom: var(--ui-scale);
 }
 
 .dark {
@@ -51,17 +62,26 @@
 
 /* Vùng an toàn iPhone (tai thỏ, thanh gạt dưới đáy).
    Dùng calc() để cộng thêm vào padding sẵn có, không đè nhau. */
+/* Vùng an toàn phải CHIA cho tỉ lệ thu nhỏ.
+   `env()` trả về số pixel thật của thiết bị, nhưng bên trong vùng đã `zoom`
+   thì con số đó cũng bị thu nhỏ theo — để nguyên là chữ chui một phần vào
+   dưới tai thỏ. Chia lại cho đúng số pixel ban đầu. */
 @utility pt-safe {
-  padding-top: env(safe-area-inset-top);
+  padding-top: calc(env(safe-area-inset-top) / var(--ui-scale));
 }
 
 @utility pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+  padding-bottom: max(
+    calc(env(safe-area-inset-bottom) / var(--ui-scale)),
+    0.75rem
+  );
 }
 
 /* Chừa chỗ cho status bar mà vẫn giữ padding riêng của phần tử */
 @utility top-safe {
-  padding-top: calc(env(safe-area-inset-top) + var(--top-safe-extra, 0.75rem));
+  padding-top: calc(
+    env(safe-area-inset-top) / var(--ui-scale) + var(--top-safe-extra, 0.75rem)
+  );
 }
 
 html {

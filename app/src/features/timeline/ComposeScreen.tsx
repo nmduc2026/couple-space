@@ -5,7 +5,11 @@ import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { MEDIA_BUCKET } from '../../hooks/usePosts'
 import { ACTIVITY_LABELS } from '../../lib/activities'
-import { categoryFromActivity } from '../../lib/money'
+import {
+  categoryFromActivity,
+  formatAmountInput,
+  parseAmountInput,
+} from '../../lib/money'
 import { todayYmd } from '../../lib/dateCount'
 import { compressImage, readExifDate } from '../../lib/image'
 import { notifyPartner } from '../../lib/notify'
@@ -48,6 +52,11 @@ export function ComposeScreen() {
     () => params.get('activity'),
   )
   const [addExpense, setAddExpense] = useState(false)
+  // Ghi chi phí NGAY TẠI ĐÂY chứ không đẩy sang màn khác: đăng kỉ niệm và ghi
+  // khoản chi là một việc trong đầu người dùng, tách làm hai màn thì nửa số
+  // lần sẽ bỏ dở ở màn thứ hai.
+  const [amount, setAmount] = useState('')
+  const [paidBy, setPaidBy] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [progress, setProgress] = useState('')
@@ -195,16 +204,30 @@ export function ComposeScreen() {
       path: `/timeline/${created.id}`,
     })
 
-    if (addExpense) {
-      // Danh mục đoán sẵn theo hoạt động của bài — 🍜 thì là ăn uống
-      navigate(
-        `/expenses/new?post=${created.id}` +
-          `&category=${categoryFromActivity(activity)}` +
-          `&date=${happenedOn}` +
-          `&note=${encodeURIComponent(placeName.trim() || caption.trim().slice(0, 40))}`,
-        { replace: true },
-      )
-      return
+    // Khoản chi ghi cùng lúc với bài. Hỏng ở bước này thì KHÔNG huỷ bài —
+    // kỉ niệm đã đăng rồi, bắt làm lại từ đầu là mất cả ảnh vừa tải lên.
+    const minor = parseAmountInput(amount)
+    if (addExpense && minor > 0) {
+      const { error: expErr } = await supabase.from('expenses').insert({
+        couple_id: couple.id,
+        post_id: created.id,
+        amount_minor: minor,
+        // Danh mục đoán sẵn theo hoạt động của bài — 🍜 thì là ăn uống
+        category: categoryFromActivity(activity),
+        note: placeName.trim() || caption.trim().slice(0, 40) || null,
+        spent_on: happenedOn,
+        paid_by: paidBy || user.id,
+        created_by: user.id,
+      })
+      if (expErr) {
+        setStatus('error')
+        setErrorMessage(
+          `Kỉ niệm đã đăng, nhưng chưa ghi được khoản chi: ${expErr.message}`,
+        )
+        return
+      }
+      await queryClient.invalidateQueries({ queryKey: ['expenses'] })
+      await queryClient.invalidateQueries({ queryKey: ['expense_summary'] })
     }
 
     navigate(`/timeline/${created.id}`, { replace: true })
@@ -342,6 +365,44 @@ export function ComposeScreen() {
               {addExpense ? '✓' : ''}
             </span>
           </button>
+
+          {addExpense ? (
+            <div className="mt-2 space-y-3 rounded-2xl border border-accent/30 bg-soft p-3.5">
+              <Field label="Số tiền">
+                <div className="relative">
+                  <input
+                    inputMode="numeric"
+                    value={amount}
+                    onChange={(e) => setAmount(formatAmountInput(e.target.value))}
+                    placeholder="0"
+                    className={`${input} h-14 pr-10 text-right text-[22px] font-bold tabular-nums`}
+                  />
+                  <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted">
+                    đ
+                  </span>
+                </div>
+              </Field>
+
+              <Field label="Ai trả" hint="Chỉ để thống kê — app không tính nợ.">
+                <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+                  {(couple?.members ?? []).map((m) => (
+                    <button
+                      key={m.user_id}
+                      type="button"
+                      onClick={() => setPaidBy(m.user_id)}
+                      className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
+                        (paidBy || user?.id) === m.user_id
+                          ? 'bg-accent text-on-accent'
+                          : 'text-muted'
+                      }`}
+                    >
+                      {m.nickname ?? 'Người ấy'}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            </div>
+          ) : null}
 
           {status === 'error' ? <ErrorText>{errorMessage}</ErrorText> : null}
           {progress ? (

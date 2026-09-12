@@ -15,3 +15,18 @@ export function formatDateLong(ymd: string) {
   const [y, m, d] = ymd.split('-').map(Number)
   return `${d} tháng ${m}, ${y}`
 }
+
+/** Thời điểm bình luận. Hôm nay thì chỉ cần giờ; khác ngày thì kèm ngày —
+ *  "14:32" đọc nhanh hơn "12/9/2026 14:32" khi cả cuộc trò chuyện ở trong
+ *  cùng một buổi. */
+export function formatCommentTime(iso: string) {
+  const at = new Date(iso)
+  const time = at.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  const sameDay = at.toDateString() === new Date().toDateString()
+  if (sameDay) return time
+  const day = at.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })
+  return `${day} · ${time}`
+}

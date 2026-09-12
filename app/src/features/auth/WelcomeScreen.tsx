@@ -26,7 +26,7 @@ export function WelcomeScreen() {
         </p>
       </div>
 
-      <div className="relative mx-auto w-full max-w-md px-5 pb-10">
+      <div className="relative mx-auto w-full max-w-[calc(28rem/var(--ui-scale))] px-5 pb-10">
         <Link to="/login" className={btn.primary}>
           Bắt đầu
         </Link>

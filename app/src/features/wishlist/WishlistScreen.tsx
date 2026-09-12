@@ -120,7 +120,7 @@ export function WishlistScreen() {
 
   return (
     <>
-      <TopHeader title="Wishlist quà" />
+      <TopHeader title="Wishlist quà" back="/" />
 
       <div className="px-4 pt-3">
         <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">

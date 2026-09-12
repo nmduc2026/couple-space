@@ -103,6 +103,11 @@ function CalendarSheet({
   const total = daysInMonth(view.year, view.month)
   const lead = firstWeekdayIndex(view.year, view.month)
 
+  // LUÔN vẽ 6 hàng. Tháng có 4, 5 hay 6 hàng tuỳ ngày mùng 1 rơi vào thứ mấy;
+  // vẽ đúng số hàng thật thì bấm sang tháng khác là cả hộp cao thấp nhảy lên
+  // nhảy xuống, và mấy nút dưới đáy chạy theo.
+  const trailing = 6 * 7 - lead - total
+
   const shiftMonth = (delta: number) => {
     const index = view.year * 12 + (view.month - 1) + delta
     setView({
@@ -178,7 +183,7 @@ function CalendarSheet({
           ))}
 
           {Array.from({ length: lead }).map((_, i) => (
-            <span key={`lead-${i}`} />
+            <span key={`lead-${i}`} aria-hidden className="h-10" />
           ))}
 
           {Array.from({ length: total }).map((_, i) => {
@@ -194,7 +199,7 @@ function CalendarSheet({
                 disabled={disabled}
                 onClick={() => onPick(day)}
                 aria-current={isToday ? 'date' : undefined}
-                className={`grid aspect-square place-items-center rounded-xl text-[14px] transition ${
+                className={`grid h-10 place-items-center rounded-xl text-[14px] transition ${
                   selected
                     ? 'bg-accent font-bold text-on-accent'
                     : isToday
@@ -206,6 +211,10 @@ function CalendarSheet({
               </button>
             )
           })}
+
+          {Array.from({ length: trailing }).map((_, i) => (
+            <span key={`trail-${i}`} aria-hidden className="h-10" />
+          ))}
         </div>
 
         <div className="mt-4 space-y-2">

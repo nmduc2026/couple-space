@@ -30,22 +30,31 @@ export function Stage({
 }) {
   return (
     <div
-      className={`mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-8 ${className}`}
+      className={`mx-auto flex w-full max-w-[calc(28rem/var(--ui-scale))] flex-1 flex-col px-5 pb-8 ${className}`}
     >
       {children}
     </div>
   )
 }
 
-/** Thanh trên cùng có nút quay lại. Tự chừa chỗ cho tai thỏ. */
+/** Thanh trên cùng có nút quay lại.
+ *
+ *  Mũi tên nằm trong một vòng tròn có viền: chữ "Quay lại" hay "Huỷ" đứng
+ *  trơ một mình trông giống nhãn hơn là nút bấm, và vùng chạm của chữ thì
+ *  hẹp hơn ngón tay. */
 export function TopBar({ to, label = 'Quay lại' }: { to: string; label?: string }) {
   return (
-    <div className="top-safe px-5 pb-2">
+    <div className="top-safe px-4 pb-2">
       <Link
         to={to}
-        className="-ml-2 inline-flex h-9 items-center gap-1 rounded-lg px-2 text-sm text-muted transition hover:text-text"
+        className="inline-flex items-center gap-2 text-[14px] font-medium text-muted transition active:scale-95 hover:text-text"
       >
-        <span aria-hidden>‹</span>
+        <span
+          aria-hidden
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-[16px] text-text"
+        >
+          ←
+        </span>
         {label}
       </Link>
     </div>

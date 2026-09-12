@@ -11,7 +11,7 @@ import { PREVIEW, previewComments } from '../../dev/preview'
 import { ConfirmSheet, Loading, Screen, TopBar } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
-import { formatDay } from '../../lib/formatDate'
+import { formatCommentTime, formatDay } from '../../lib/formatDate'
 import { formatVnd } from '../../lib/money'
 import { DateField } from '../../components/DateField'
 
@@ -135,6 +135,12 @@ export function PostDetailScreen() {
         .eq('post_id', post.id)
         .eq('user_id', user.id)
     }
+
+    // Số tim và `liked_by_me` nằm trong truy vấn ['posts'], không phải ở đây.
+    // Không làm mới nó thì Timeline vẫn hiện số cũ, VÀ lần thả tim sau đọc
+    // phải `liked_by_me` cũ nên lại INSERT — đụng khoá duy nhất rồi tự huỷ,
+    // thành ra "thả tim lần hai không được".
+    await queryClient.invalidateQueries({ queryKey: ['posts'] })
   }
 
   async function sendComment(event: FormEvent) {
@@ -152,6 +158,8 @@ export function PostDetailScreen() {
     if (error) return
     setDraft('')
     await queryClient.invalidateQueries({ queryKey: ['comments', post.id] })
+    // `comment_count` cũng nằm trong ['posts']
+    await queryClient.invalidateQueries({ queryKey: ['posts'] })
     void notifyPartner(couple, user.id, {
       title: nameOf(user.id),
       body,
@@ -384,9 +392,12 @@ export function PostDetailScreen() {
                 {nameOf(c.author_id).slice(0, 1).toUpperCase()}
               </span>
               <div className="min-w-0">
-                <b className="block text-[13px] text-text">
-                  {nameOf(c.author_id)}
-                </b>
+                <span className="flex items-baseline gap-2">
+                  <b className="text-[13px] text-text">{nameOf(c.author_id)}</b>
+                  <span className="text-[11.5px] text-muted">
+                    {formatCommentTime(c.created_at)}
+                  </span>
+                </span>
                 <p className="text-[14px] leading-relaxed text-text">{c.body}</p>
               </div>
             </div>

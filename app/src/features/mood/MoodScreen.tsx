@@ -85,7 +85,7 @@ export function MoodScreen() {
 
   return (
     <>
-      <TopHeader title="Tâm trạng" />
+      <TopHeader title="Tâm trạng" back="/" />
 
       <div className="flex-1 px-4 py-4">
         <section className="rounded-2xl border border-border bg-surface p-4 text-center">

@@ -62,6 +62,7 @@ export function AlbumsScreen() {
   return (
     <>
       <TopHeader
+        back="/"
         title="Album"
         right={
           <>

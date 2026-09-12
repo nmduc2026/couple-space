@@ -57,7 +57,7 @@ export function MapScreen() {
 
   return (
     <>
-      <TopHeader title="Dấu chân" />
+      <TopHeader title="Dấu chân" back="/" />
 
       <div className="flex-1 px-4 py-4">
         {isLoading ? (

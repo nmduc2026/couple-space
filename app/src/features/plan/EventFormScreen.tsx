@@ -17,6 +17,7 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
+import { suggestedEmoji } from '../../lib/eventSuggestion'
 import { DateField } from '../../components/DateField'
 
 const RECURRENCES = [
@@ -54,13 +55,15 @@ export function EventFormScreen() {
     recurrence: row?.recurrence ?? 'yearly',
     remind: row?.remind_days_before ?? [3],
     notes: row?.notes ?? '',
-    emoji: row?.emoji ?? '🎂',
+    emoji: row?.emoji ?? '📅',
   }
   const patch = (next: Partial<typeof value>) =>
     setDraft({ ...value, ...next })
 
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  // Người dùng đã tự bấm chọn biểu tượng thì thôi không đoán nữa
+  const [emojiTouched, setEmojiTouched] = useState(false)
 
   function toggleRemind(days: number) {
     const has = value.remind.includes(days)
@@ -73,7 +76,14 @@ export function EventFormScreen() {
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (!couple || !user || PREVIEW) return
+    if (PREVIEW) return
+    // Trước đây `!couple || !user` cũng lặng lẽ `return` — bấm Lưu mà không có
+    // gì xảy ra, không báo gì cả. Im lặng là kiểu hỏng khó tìm nhất.
+    if (!couple || !user) {
+      setStatus('error')
+      setErrorMessage('Chưa tải xong không gian. Thử lại sau một giây nhé.')
+      return
+    }
     if (!value.title.trim()) {
       setStatus('error')
       setErrorMessage('Đặt tên cho dịp này đã nhé.')
@@ -130,7 +140,11 @@ export function EventFormScreen() {
             <Field label="Tên">
               <input
                 value={value.title}
-                onChange={(e) => patch({ title: e.target.value })}
+                onChange={(e) => {
+                  const title = e.target.value
+                  const guess = emojiTouched ? null : suggestedEmoji(title)
+                  patch(guess ? { title, emoji: guess } : { title })
+                }}
                 placeholder="Sinh nhật Diên"
                 maxLength={80}
                 className={input}
@@ -143,7 +157,10 @@ export function EventFormScreen() {
                   <button
                     key={e}
                     type="button"
-                    onClick={() => patch({ emoji: e })}
+                    onClick={() => {
+                      setEmojiTouched(true)
+                      patch({ emoji: e })
+                    }}
                     aria-pressed={value.emoji === e}
                     className={`grid h-11 w-11 place-items-center rounded-xl border text-xl transition ${
                       value.emoji === e

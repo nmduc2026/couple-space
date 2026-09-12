@@ -38,3 +38,28 @@ export function isBirthday(title: string) {
 export function shouldSuggest(daysAway: number) {
   return daysAway >= 0 && daysAway <= 14
 }
+
+/** Biểu tượng đoán từ tên dịp.
+ *
+ *  Bộ chọn biểu tượng mặc định 🎂 và nằm dưới ô tên, nên thêm nhanh ba dịp
+ *  liền là ra ba cái bánh sinh nhật giống hệt nhau. Đoán theo tên thì phần
+ *  lớn trường hợp đã đúng sẵn, ai muốn khác vẫn bấm chọn được.
+ */
+export function suggestedEmoji(title: string): string | null {
+  const key = plain(title)
+  const rules: Array<[RegExp, string]> = [
+    [/sinh nhat|birthday/, '🎂'],
+    [/cuoi|wedding|dam cuoi/, '💍'],
+    [/ki niem|anniversary/, '💍'],
+    [/di |chuyen di|du lich|travel|trip|bay/, '✈️'],
+    [/phim|movie|rap/, '🎬'],
+    [/an |nha hang|quan |lau|tiec/, '🍽️'],
+    [/nha |chuyen nha|tan gia/, '🏠'],
+    [/qua|gift|valentine/, '🎁'],
+    [/hop|deadline|thi |kham/, '📅'],
+  ]
+  for (const [pattern, emoji] of rules) {
+    if (pattern.test(key)) return emoji
+  }
+  return null
+}

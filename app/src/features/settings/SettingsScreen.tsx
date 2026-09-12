@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
+import { useMyProfile } from '../../hooks/useMyProfile'
 import { useSession } from '../../hooks/useSession'
 import { todayYmd } from '../../lib/dateCount'
 import { enablePush, isStandalonePwa } from '../../lib/push'
@@ -60,6 +61,8 @@ export function SettingsScreen() {
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
+  const { profile } = useMyProfile()
+  const myTheme = profile?.color_theme ?? couple?.theme
   const coverInput = useRef<HTMLInputElement>(null)
 
   const prefsQuery = useQuery({
@@ -209,20 +212,19 @@ export function SettingsScreen() {
     setMessage('Đã bỏ ảnh bìa.')
   }
 
-  /** Theme thuộc về space nên ghi thẳng vào `couples`. Máy người kia nhận
-   *  được qua realtime, không cần họ tải lại app. */
+  /** Màu nhấn là lựa chọn của RIÊNG người này — lưu ở `profiles`, không phải
+   *  ở `couples`. Hai người gu khác nhau thì mỗi người một màu. */
   async function pickTheme(key: string) {
-    if (!couple) return
+    if (!user) return
     const { error } = await supabase
-      .from('couples')
-      .update({ theme: key })
-      .eq('id', couple.id)
+      .from('profiles')
+      .update({ color_theme: key })
+      .eq('id', user.id)
     if (error) {
       setMessage(error.message)
       return
     }
-    await queryClient.invalidateQueries({ queryKey: ['couple'] })
-    await refetch()
+    await queryClient.invalidateQueries({ queryKey: ['my_profile'] })
   }
 
   async function onEnablePush() {
@@ -245,7 +247,7 @@ export function SettingsScreen() {
   return (
     <main className="min-h-svh bg-bg pb-safe">
       <TopBar to="/" />
-      <div className="mx-auto w-full max-w-md px-4 pb-16">
+      <div className="mx-auto w-full max-w-[calc(28rem/var(--ui-scale))] px-4 pb-16">
         <h1 className="px-1 pt-1 pb-5 text-[23px] font-bold tracking-[-0.02em] text-text">
           Cài đặt
         </h1>
@@ -348,11 +350,11 @@ export function SettingsScreen() {
           </div>
 
           <p className="mt-4 px-1 text-[12.5px] text-muted">
-            Màu của không gian — đổi thì máy người kia đổi theo.
+            Màu nhấn của riêng bạn. Người kia chọn màu khác cũng được.
           </p>
           <div className="mt-2 flex gap-2">
             {COUPLE_THEMES.map((t) => {
-              const active = (couple?.theme ?? 'rose') === t.key
+              const active = (myTheme ?? 'rose') === t.key
               return (
                 <button
                   key={t.key}
@@ -472,7 +474,7 @@ export function SettingsScreen() {
       {message ? (
         <p
           role="status"
-          className="pb-safe fixed inset-x-0 bottom-0 mx-auto max-w-md px-4"
+          className="pb-safe fixed inset-x-0 bottom-0 mx-auto max-w-[calc(28rem/var(--ui-scale))] px-4"
         >
           <span className="block rounded-2xl bg-text px-4 py-3 text-center text-sm text-bg shadow-lg">
             {message}

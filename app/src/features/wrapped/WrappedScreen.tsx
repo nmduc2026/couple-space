@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { useCouple } from '../../hooks/useCouple'
+import { useMyProfile } from '../../hooks/useMyProfile'
 import { daysTogether, todayYmd } from '../../lib/dateCount'
 import { wrappedSeason } from '../../lib/wrappedSeason'
 import { coupleThemeByKey, coverGradient } from '../../lib/coupleTheme'
@@ -21,6 +22,8 @@ type Line = {
 
 export function WrappedScreen() {
   const { couple } = useCouple()
+  const { profile } = useMyProfile()
+  const myTheme = profile?.color_theme ?? couple?.theme
   // Tháng 1 vẫn xem tổng kết của năm vừa qua, không phải năm mới rỗng không
   const season = wrappedSeason(todayYmd())
   const year = season.visible ? season.year : new Date().getFullYear()
@@ -48,7 +51,7 @@ export function WrappedScreen() {
   if (together < 30) {
     return (
       <>
-        <TopHeader title={`Tổng kết ${year}`} />
+        <TopHeader title={`Tổng kết ${year}`} back="/" />
         <div className="flex-1 px-6 py-16 text-center">
           <p className="text-5xl" aria-hidden>
             🌱
@@ -74,7 +77,7 @@ export function WrappedScreen() {
       year,
       names: couple.members.map((m) => m.nickname ?? '').filter(Boolean),
       lines: shown,
-      cover: coupleThemeByKey(couple.theme).cover,
+      cover: coupleThemeByKey(myTheme).cover,
     })
     const url = canvas.toDataURL('image/png')
     setPngUrl(url)
@@ -90,7 +93,7 @@ export function WrappedScreen() {
 
   return (
     <>
-      <TopHeader title={`Tổng kết ${year}`} />
+      <TopHeader title={`Tổng kết ${year}`} back="/" />
 
       <div className="flex-1 px-4 py-4">
         {season.visible && !season.final ? (
@@ -111,7 +114,7 @@ export function WrappedScreen() {
                 không thì cái nhìn thấy khác cái gửi đi */}
             <section
               className="overflow-hidden rounded-[1.5rem] px-6 py-8 text-center text-white"
-              style={{ backgroundImage: coverGradient(couple?.theme) }}
+              style={{ backgroundImage: coverGradient(myTheme) }}
             >
               <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-90">
                 Couple Space · {year}

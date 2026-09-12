@@ -71,7 +71,7 @@ export function EatScreen() {
 
   return (
     <>
-      <TopHeader title="Tối nay ăn gì?" />
+      <TopHeader title="Tối nay ăn gì?" back="/" />
 
       <div className="px-4 pt-3">
         <Link to="/eat/spin" className={btn.primary}>

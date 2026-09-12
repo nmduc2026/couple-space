@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useCouple } from '../../hooks/useCouple'
+import { useMyProfile } from '../../hooks/useMyProfile'
 import { useSession } from '../../hooks/useSession'
 import { daysTogether, nextMilestone } from '../../lib/dateCount'
 import { shareInvite } from '../../lib/inviteShare'
@@ -19,6 +20,8 @@ import { coverGradient } from '../../lib/coupleTheme'
 export function HomeScreen() {
   const { user } = useSession()
   const { couple, refetch, isLoading, isFetching } = useCouple()
+  const { profile } = useMyProfile()
+  const myTheme = profile?.color_theme ?? couple?.theme
   const { posts } = usePosts()
   const { agenda } = useAgenda(2)
   const { summary } = useExpenses(`${todayYmd().slice(0, 7)}-01`)
@@ -99,7 +102,7 @@ export function HomeScreen() {
                 backgroundPosition: 'center',
               }
             : // Chưa đặt ảnh bìa thì dùng gradient theo màu của space
-              { backgroundImage: coverGradient(couple.theme) }
+              { backgroundImage: coverGradient(myTheme) }
         }
       >
         <Link
@@ -126,7 +129,7 @@ export function HomeScreen() {
         ) : null}
       </header>
 
-      <div className="mx-auto w-full max-w-md px-4 pt-4 pb-6">
+      <div className="mx-auto w-full max-w-[calc(28rem/var(--ui-scale))] px-4 pt-4 pb-6">
         {offline ? (
           <p className="mb-3 rounded-xl bg-soft px-4 py-2.5 text-center text-xs text-muted">
             Đang ngoại tuyến — đang xem dữ liệu đã lưu

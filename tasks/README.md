@@ -66,6 +66,7 @@ Ký hiệu: 🔲 chưa bắt đầu · 🔄 đang làm · ✅ xong · ⏸ tạm 
 | D3 | Có khu vực "chỉ mình thấy" trong không gian chung không? | ✅ **Không có nhật ký riêng.** Mọi thứ trong space là chung. Chỉ 3 ngoại lệ có kiểm soát. | [../overview.md](../overview.md) mục 3 |
 | D4 | Space `archived` giữ ảnh bao lâu? | ✅ **6 tháng** không ai truy cập → báo trước 30 ngày → xoá ảnh, giữ phần chữ | [p1-breakup.md](../docs/features/p1-breakup.md) |
 | D5 | Ảnh do A đăng thì B có tải về được không? | ✅ **Có.** Kỉ niệm là chung — đó là toàn bộ định vị của app. | [p1-breakup.md](../docs/features/p1-breakup.md) |
+| D7 | Theme màu thuộc về space hay từng người? | ✅ **Từng người.** Đặc tả ban đầu xếp nó vào nhóm "thuộc về space" kèm đồng bộ realtime; chủ dự án chốt lại vì hai người có gu khác nhau. Lưu ở `profiles.color_theme`, không phải localStorage — yêu cầu là theo *người dùng*, không theo *máy*. Sáng/tối thì vẫn theo máy. | [p1-couple-profile.md](../docs/features/p1-couple-profile.md) mục 2 |
 | D6 | Chi tiêu có ghi nợ nhau không? | ✅ **Không.** Bỏ số dư nợ, nút "đã thanh toán", và cách chia. Chỉ ghi ai trả để thống kê. Trái định vị sản phẩm, và là nguồn phức tạp lớn nhất của Phase 4. | [p4-expenses.md](../docs/features/p4-expenses.md) mục 1 |
 
 ## Quyết định đang treo
