@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
@@ -6,6 +6,7 @@ import { useSession } from '../../hooks/useSession'
 import { todayYmd } from '../../lib/dateCount'
 import { enablePush, isStandalonePwa } from '../../lib/push'
 import { supabase } from '../../lib/supabase'
+import { notifyPartner } from '../../lib/notify'
 import { useUiStore, type Theme } from '../../lib/store'
 import {
   Group,
@@ -15,6 +16,11 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn } from '../../lib/ui-classes'
+import { DateField } from '../../components/DateField'
+import { COUPLE_THEMES } from '../../lib/coupleTheme'
+import { compressImage } from '../../lib/image'
+import { MEDIA_BUCKET } from '../../hooks/usePosts'
+import { TimeField } from '../../components/TimeField'
 
 /** [cột trong notification_prefs, nhãn, giá trị mặc định] */
 const NOTIFY_TOGGLES: Array<[string, string, boolean]> = [
@@ -33,7 +39,7 @@ const THEMES: Array<[Theme, string]> = [
 
 /** Ô nhập nằm bên phải một hàng cài đặt — không viền, canh phải. */
 const rowInput =
-  'min-w-0 flex-1 bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
+  'flex min-w-0 flex-1 items-center bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
 
 /** Ô giờ thì không giãn: hai ô đứng cạnh nhau trong cùng một hàng. */
 const rowTimeInput =
@@ -53,6 +59,8 @@ export function SettingsScreen() {
   const [draftNickname, setDraftNickname] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const coverInput = useRef<HTMLInputElement>(null)
 
   const prefsQuery = useQuery({
     queryKey: ['notification_prefs', user?.id],
@@ -87,6 +95,14 @@ export function SettingsScreen() {
   async function saveProfile(event: FormEvent) {
     event.preventDefault()
     if (!couple || !user) return
+
+    // Đặc tả mục 3: biệt danh rỗng thì chặn. Không ai bị gọi bằng khoảng trắng.
+    if (!myNickname.trim()) {
+      setMessage('Biệt danh không được để trống.')
+      return
+    }
+
+    const startDateChanged = startDate !== savedStartDate
     setSaving(true)
     setMessage('')
 
@@ -113,6 +129,19 @@ export function SettingsScreen() {
 
     await queryClient.invalidateQueries({ queryKey: ['couple'] })
     await refetch()
+
+    // Đặc tả mục 3: đổi ngày bắt đầu yêu thì phải báo người kia. Đây là con số
+    // cảm xúc nhất trong app — đổi âm thầm sẽ gây hiểu lầm.
+    if (startDateChanged) {
+      const myName =
+        couple.members.find((m) => m.user_id === user.id)?.nickname ?? 'Người ấy'
+      void notifyPartner(couple, user.id, {
+        title: 'Couple Space',
+        body: `${myName} đã đổi ngày bắt đầu yêu`,
+        path: '/settings',
+      })
+    }
+
     setDraftStartDate(null)
     setDraftNickname(null)
     setSaving(false)
@@ -133,6 +162,67 @@ export function SettingsScreen() {
       return
     }
     await prefsQuery.refetch()
+  }
+
+  /** Ảnh bìa dùng chung đường nén với ảnh kỉ niệm, và nằm cùng bucket —
+   *  quy tắc phân quyền ở đó đã dựa trên thư mục đầu là `couple_id`. */
+  async function pickCover(file: File | undefined) {
+    if (!file || !couple) return
+    setUploadingCover(true)
+    setMessage('')
+    try {
+      const { blob, ext } = await compressImage(file)
+      const path = `${couple.id}/cover/${crypto.randomUUID()}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from(MEDIA_BUCKET)
+        .upload(path, blob, { contentType: blob.type, upsert: false })
+      if (upErr) throw upErr
+
+      // Bucket là riêng tư nên không có URL cố định; ký một link dài hạn để
+      // Home hiện được mà không phải ký lại mỗi lần mở app.
+      const { data: signed, error: signErr } = await supabase.storage
+        .from(MEDIA_BUCKET)
+        .createSignedUrl(path, 60 * 60 * 24 * 365)
+      if (signErr || !signed) throw signErr ?? new Error('Không ký được link')
+
+      const { error } = await supabase
+        .from('couples')
+        .update({ cover_url: signed.signedUrl })
+        .eq('id', couple.id)
+      if (error) throw error
+
+      await queryClient.invalidateQueries({ queryKey: ['couple'] })
+      await refetch()
+      setMessage('Đã đổi ảnh bìa.')
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Không tải được ảnh.')
+    } finally {
+      setUploadingCover(false)
+    }
+  }
+
+  async function removeCover() {
+    if (!couple) return
+    await supabase.from('couples').update({ cover_url: null }).eq('id', couple.id)
+    await queryClient.invalidateQueries({ queryKey: ['couple'] })
+    await refetch()
+    setMessage('Đã bỏ ảnh bìa.')
+  }
+
+  /** Theme thuộc về space nên ghi thẳng vào `couples`. Máy người kia nhận
+   *  được qua realtime, không cần họ tải lại app. */
+  async function pickTheme(key: string) {
+    if (!couple) return
+    const { error } = await supabase
+      .from('couples')
+      .update({ theme: key })
+      .eq('id', couple.id)
+    if (error) {
+      setMessage(error.message)
+      return
+    }
+    await queryClient.invalidateQueries({ queryKey: ['couple'] })
+    await refetch()
   }
 
   async function onEnablePush() {
@@ -165,12 +255,11 @@ export function SettingsScreen() {
           <Group>
             <Row className="flex items-center justify-between gap-3">
               <span className="text-[15px] text-text">Ngày bắt đầu yêu</span>
-              <input
-                type="date"
+              <DateField
                 max={todayYmd()}
                 value={startDate}
-                onChange={(e) => setDraftStartDate(e.target.value)}
-                className={rowInput}
+                onChange={setDraftStartDate}
+                className={`${rowInput} justify-end`}
               />
             </Row>
             <Row className="flex items-center justify-between gap-3">
@@ -184,8 +273,47 @@ export function SettingsScreen() {
               />
             </Row>
             <Row className="flex items-center justify-between gap-3">
-              <span className="text-[15px] text-muted">Ảnh bìa · theme màu</span>
-              <span className="text-sm text-muted">Phase 2</span>
+              <span className="shrink-0 text-[15px] text-text">Ảnh bìa</span>
+              <span className="flex items-center gap-3">
+                {couple?.cover_url ? (
+                  <img
+                    src={couple.cover_url}
+                    alt=""
+                    className="h-10 w-16 rounded-lg object-cover"
+                  />
+                ) : null}
+                <button
+                  type="button"
+                  disabled={uploadingCover}
+                  onClick={() => coverInput.current?.click()}
+                  className="text-[14px] font-medium text-accent disabled:opacity-50"
+                >
+                  {uploadingCover
+                    ? 'Đang tải...'
+                    : couple?.cover_url
+                      ? 'Đổi'
+                      : 'Chọn ảnh'}
+                </button>
+                {couple?.cover_url ? (
+                  <button
+                    type="button"
+                    onClick={() => void removeCover()}
+                    className="text-[14px] text-muted"
+                  >
+                    Bỏ
+                  </button>
+                ) : null}
+              </span>
+              <input
+                ref={coverInput}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  void pickCover(e.target.files?.[0])
+                  e.target.value = ''
+                }}
+              />
             </Row>
           </Group>
 
@@ -218,6 +346,34 @@ export function SettingsScreen() {
               </button>
             ))}
           </div>
+
+          <p className="mt-4 px-1 text-[12.5px] text-muted">
+            Màu của không gian — đổi thì máy người kia đổi theo.
+          </p>
+          <div className="mt-2 flex gap-2">
+            {COUPLE_THEMES.map((t) => {
+              const active = (couple?.theme ?? 'rose') === t.key
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => void pickTheme(t.key)}
+                  aria-label={t.label}
+                  aria-pressed={active}
+                  className={`grid h-11 flex-1 place-items-center rounded-xl border-2 transition ${
+                    active ? 'border-accent' : 'border-transparent'
+                  }`}
+                  style={{ background: t.swatch }}
+                >
+                  {active ? (
+                    <span aria-hidden className="text-[15px] text-white">
+                      ✓
+                    </span>
+                  ) : null}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         <div className="mt-7">
@@ -244,20 +400,20 @@ export function SettingsScreen() {
                 Giờ yên lặng
               </span>
               <span className="flex items-center gap-1.5">
-                <input
-                  type="time"
+                <TimeField
+                  label="Bắt đầu giờ yên lặng"
                   value={prefsQuery.data?.quiet_hours_from ?? ''}
-                  onChange={(e) =>
-                    void savePrefs({ quiet_hours_from: e.target.value || null })
+                  onChange={(next) =>
+                    void savePrefs({ quiet_hours_from: next || null })
                   }
                   className={rowTimeInput}
                 />
                 <span className="text-muted">–</span>
-                <input
-                  type="time"
+                <TimeField
+                  label="Kết thúc giờ yên lặng"
                   value={prefsQuery.data?.quiet_hours_to ?? ''}
-                  onChange={(e) =>
-                    void savePrefs({ quiet_hours_to: e.target.value || null })
+                  onChange={(next) =>
+                    void savePrefs({ quiet_hours_to: next || null })
                   }
                   className={rowTimeInput}
                 />

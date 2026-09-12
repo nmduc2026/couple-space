@@ -13,6 +13,7 @@ import { btn, input } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
 import { formatDay } from '../../lib/formatDate'
 import { formatVnd } from '../../lib/money'
+import { DateField } from '../../components/DateField'
 
 type Comment = {
   id: string
@@ -304,12 +305,11 @@ export function PostDetailScreen() {
               placeholder="Địa điểm"
               className={input}
             />
-            <input
-              type="date"
+            <DateField
               value={edit.day}
               max={todayYmd()}
-              onChange={(e) => setEdit({ ...edit, day: e.target.value })}
-              className={input}
+              onChange={(next) => setEdit({ ...edit, day: next })}
+              className={`${input} flex items-center`}
             />
             <div className="flex gap-2">
               <button

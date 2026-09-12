@@ -23,6 +23,7 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
+import { DateField } from '../../components/DateField'
 
 export function ExpenseFormScreen() {
   const { id } = useParams()
@@ -212,12 +213,11 @@ export function ExpenseFormScreen() {
             </Field>
 
             <Field label="Ngày">
-              <input
-                type="date"
+              <DateField
                 value={value.spentOn}
                 max={todayYmd()}
-                onChange={(e) => patch({ spentOn: e.target.value })}
-                className={input}
+                onChange={(next) => patch({ spentOn: next })}
+                className={`${input} flex items-center`}
               />
             </Field>
 

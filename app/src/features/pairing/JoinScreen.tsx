@@ -242,7 +242,7 @@ export function JoinScreen() {
                 maxLength={24}
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                placeholder="Linh"
+                placeholder="Nhập tên đi"
                 className={input}
               />
             </Field>

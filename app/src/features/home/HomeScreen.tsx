@@ -14,10 +14,7 @@ import { goalProgress, useGoals } from '../../hooks/useGoals'
 import { formatShortVnd } from '../../lib/money'
 import { todayYmd } from '../../lib/dateCount'
 import { wrappedSeason } from '../../lib/wrappedSeason'
-
-/** Ảnh bìa mặc định khi đôi chưa đặt ảnh riêng — lấy từ prototype. */
-const DEFAULT_COVER =
-  'linear-gradient(150deg, #e8a0ae, #c2415b 55%, #7c3350)'
+import { coverGradient } from '../../lib/coupleTheme'
 
 export function HomeScreen() {
   const { user } = useSession()
@@ -101,7 +98,8 @@ export function HomeScreen() {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }
-            : { backgroundImage: DEFAULT_COVER }
+            : // Chưa đặt ảnh bìa thì dùng gradient theo màu của space
+              { backgroundImage: coverGradient(couple.theme) }
         }
       >
         <Link

@@ -64,7 +64,7 @@ Web Push (VAPID). Xem [tech-stack.md](../../docs/decisions/tech-stack.md).
 ## G. Cài đặt + huỷ ghép đôi → [steps/g-settings.md](steps/g-settings.md)
 
 - [x] **P1-30** Màn hình Cài đặt
-- [x] **P1-31** Sửa hồ sơ đôi (ngày + biệt danh mình; ảnh bìa/theme đầy đủ để sau)
+- [x] **P1-31** Sửa hồ sơ đôi — **đủ cả**: ngày, biệt danh, **ảnh bìa** và **theme màu**. Theme thuộc về space nên đồng bộ realtime; đổi ngày bắt đầu yêu thì báo người kia
 - [x] **P1-32** Bật/tắt loại "người ấy tham gia" + bật push máy
 - [x] **P1-33** Huỷ ghép đôi bản rút gọn (RPC `unpair`)
 

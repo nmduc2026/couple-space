@@ -4,6 +4,7 @@ import { TopHeader } from '../../components/AppShell'
 import { useCouple } from '../../hooks/useCouple'
 import { daysTogether, todayYmd } from '../../lib/dateCount'
 import { wrappedSeason } from '../../lib/wrappedSeason'
+import { coupleThemeByKey, coverGradient } from '../../lib/coupleTheme'
 import { formatShortVnd } from '../../lib/money'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW, previewWrapped } from '../../dev/preview'
@@ -73,6 +74,7 @@ export function WrappedScreen() {
       year,
       names: couple.members.map((m) => m.nickname ?? '').filter(Boolean),
       lines: shown,
+      cover: coupleThemeByKey(couple.theme).cover,
     })
     const url = canvas.toDataURL('image/png')
     setPngUrl(url)
@@ -105,7 +107,12 @@ export function WrappedScreen() {
           <>
             {/* Bản xem trước dựng từ cùng một danh sách với ảnh xuất ra,
                 nên cái nhìn thấy đúng là cái sẽ gửi đi. */}
-            <section className="overflow-hidden rounded-[1.5rem] bg-[linear-gradient(150deg,#e8a0ae,#c2415b_55%,#7c3350)] px-6 py-8 text-center text-white">
+            {/* Bản xem trước và ảnh xuất ra phải dùng CÙNG một bộ màu, nếu
+                không thì cái nhìn thấy khác cái gửi đi */}
+            <section
+              className="overflow-hidden rounded-[1.5rem] px-6 py-8 text-center text-white"
+              style={{ backgroundImage: coverGradient(couple?.theme) }}
+            >
               <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-90">
                 Couple Space · {year}
               </p>
@@ -297,7 +304,12 @@ function closingLine(stats: Stats | undefined, together: number): string {
 /** Vẽ ảnh chia sẻ bằng Canvas — cùng danh sách `lines` với bản xem trước. */
 function drawCard(
   canvas: HTMLCanvasElement,
-  data: { year: number; names: string[]; lines: Line[] },
+  data: {
+    year: number
+    names: string[]
+    lines: Line[]
+    cover: [string, string, string]
+  },
 ) {
   const W = 1080
   const H = 1350
@@ -307,9 +319,9 @@ function drawCard(
   if (!ctx) return
 
   const grad = ctx.createLinearGradient(0, 0, W, H)
-  grad.addColorStop(0, '#e8a0ae')
-  grad.addColorStop(0.55, '#c2415b')
-  grad.addColorStop(1, '#7c3350')
+  grad.addColorStop(0, data.cover[0])
+  grad.addColorStop(0.55, data.cover[1])
+  grad.addColorStop(1, data.cover[2])
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, W, H)
 

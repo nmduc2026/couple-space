@@ -10,6 +10,7 @@ import { daysUntil } from '../../lib/recurrence'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW, previewLetters } from '../../dev/preview'
 import { btn, input } from '../../lib/ui-classes'
+import { DateField } from '../../components/DateField'
 
 type Letter = {
   id: string
@@ -136,12 +137,12 @@ export function LettersScreen() {
         <p className="mt-4 text-[11px] font-semibold tracking-[0.12em] text-muted uppercase">
           Mở vào ngày
         </p>
-        <input
-          type="date"
+        <DateField
           value={openOn}
           min={today}
-          onChange={(e) => setOpenOn(e.target.value)}
-          className={`${input} mt-2`}
+          placeholder="Chọn ngày mở khoá"
+          onChange={setOpenOn}
+          className={`${input} mt-2 flex items-center`}
         />
 
         {agenda.length > 0 ? (

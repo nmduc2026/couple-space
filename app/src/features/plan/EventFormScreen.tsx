@@ -17,6 +17,7 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
+import { DateField } from '../../components/DateField'
 
 const RECURRENCES = [
   ['none', 'Một lần'],
@@ -157,11 +158,10 @@ export function EventFormScreen() {
             </Field>
 
             <Field label="Ngày">
-              <input
-                type="date"
+              <DateField
                 value={value.event_date}
-                onChange={(e) => patch({ event_date: e.target.value })}
-                className={input}
+                onChange={(next) => patch({ event_date: next })}
+                className={`${input} flex items-center`}
               />
             </Field>
 

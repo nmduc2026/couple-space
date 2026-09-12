@@ -14,6 +14,7 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
+import { DateField } from '../../components/DateField'
 
 export function SetupScreen() {
   const navigate = useNavigate()
@@ -57,13 +58,11 @@ export function SetupScreen() {
 
           <div className="mt-7 space-y-4">
             <Field label="Ngày bắt đầu yêu" hint="Ngày này được tính là ngày thứ 1.">
-              <input
-                type="date"
-                required
+              <DateField
                 max={todayYmd()}
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className={input}
+                onChange={setStartDate}
+                className={`${input} flex items-center`}
               />
             </Field>
 
@@ -73,7 +72,7 @@ export function SetupScreen() {
                 maxLength={24}
                 value={myNickname}
                 onChange={(e) => setMyNickname(e.target.value)}
-                placeholder="Minh"
+                placeholder="Nhập tên đi"
                 className={input}
               />
             </Field>
@@ -84,7 +83,7 @@ export function SetupScreen() {
                 maxLength={24}
                 value={partnerNickname}
                 onChange={(e) => setPartnerNickname(e.target.value)}
-                placeholder="Linh"
+                placeholder="Nhập tên đi"
                 className={input}
               />
             </Field>

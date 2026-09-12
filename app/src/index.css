@@ -22,10 +22,14 @@
     sans-serif;
 }
 
-/* Lịch và đồng hồ của <input type="date"/"time"> do TRÌNH DUYỆT vẽ — bố cục
-   và phông chữ của bảng đó không sửa được từ CSS. Hai thứ sửa được là tông
-   sáng/tối và màu nhấn; không đặt thì bảng luôn ra nền trắng highlight xanh,
-   lạc hẳn khỏi phần còn lại của app và chói mắt ở chế độ tối. */
+/* `color-scheme` cho trình duyệt biết vẽ các thành phần của HỆ ĐIỀU HÀNH theo
+   tông nào: thanh cuộn, ô chọn, con trỏ nhập. Không đặt thì ở chế độ tối chúng
+   vẫn ra nền trắng.
+
+   `accent-color` tô màu nhấn cho checkbox, radio, thanh kéo.
+
+   Ô chọn ngày/giờ KHÔNG còn dùng control của hệ điều hành nữa — xem
+   components/DateField.tsx và TimeField.tsx, ở đó có ghi lý do. */
 :root {
   color-scheme: light;
   accent-color: var(--color-accent);
@@ -94,39 +98,4 @@ textarea:focus-visible {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
-}
-
-/* Ô ngày / giờ: cho giống ô nhập thường của app.
-   `field-sizing` để ô co đúng bề rộng nội dung thay vì rộng cố định. */
-input[type="date"],
-input[type="time"] {
-  font-family: inherit;
-  font-size: inherit;
-  color: inherit;
-  field-sizing: content;
-}
-
-/* Ô giờ chưa đặt hiện "--:--" — làm nó mờ như placeholder, đừng đậm như
-   một giá trị thật. */
-input[type="time"]:not(:focus):invalid,
-input[type="time"][value=""] {
-  color: var(--color-muted);
-}
-
-/* Nút mở lịch/đồng hồ: icon mặc định là glyph xám của hệ điều hành.
-   Tô lại theo màu nhấn và nới vùng chạm cho vừa ngón tay. */
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
-  padding: 4px;
-  margin-inline-start: 6px;
-  border-radius: 8px;
-  cursor: pointer;
-  opacity: 0.55;
-  transition: opacity 0.15s;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover,
-input[type="time"]::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-  background: var(--color-soft);
 }

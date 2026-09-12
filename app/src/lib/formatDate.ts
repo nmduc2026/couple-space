@@ -7,3 +7,11 @@ export function formatDay(ymd: string) {
     year: 'numeric',
   })
 }
+
+/** "2026-03-15" → "15 tháng 3, 2026". Viết đủ chữ "tháng" để không ai đọc
+ *  nhầm thứ tự ngày/tháng như định dạng toàn số — đó chính là lỗi mà
+ *  `<input type="date">` gây ra khi máy để tiếng Anh. */
+export function formatDateLong(ymd: string) {
+  const [y, m, d] = ymd.split('-').map(Number)
+  return `${d} tháng ${m}, ${y}`
+}

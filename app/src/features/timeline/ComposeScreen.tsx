@@ -21,6 +21,7 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
+import { DateField } from '../../components/DateField'
 
 type Picked = {
   file: File
@@ -275,12 +276,11 @@ export function ComposeScreen() {
             </Field>
 
             <Field label="Ngày xảy ra">
-              <input
-                type="date"
+              <DateField
                 value={happenedOn}
                 max={todayYmd()}
-                onChange={(e) => setHappenedOn(e.target.value)}
-                className={input}
+                onChange={setHappenedOn}
+                className={`${input} flex items-center`}
               />
             </Field>
 

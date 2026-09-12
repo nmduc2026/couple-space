@@ -78,8 +78,7 @@ export function GoalsScreen() {
             Những điều muốn làm cùng nhau
           </p>
           <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-            Đi Đà Lạt, xem hết 22 phim Marvel, để dành mua xe — gõ vào ô trên
-            là xong.
+            Đi Đà Lạt, xem hết 22 phim Marvel, để dành mua xe
           </p>
         </div>
       ) : (
