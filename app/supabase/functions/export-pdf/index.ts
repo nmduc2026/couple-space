@@ -27,7 +27,12 @@
 // ---------------------------------------------------------------------------
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+
+/** Khai báo tại chỗ: file .d.ts của `functions-js` kéo theo một phụ thuộc kiểu
+ *  không giải được (`npm:openai`), nên `deno check` không thấy `EdgeRuntime`.
+ *  Chỉ cần đúng một hàm này. */
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { PDFDocument, rgb, type PDFFont, type PDFPage } from "npm:pdf-lib@1.17.1";
 import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
 import decodeWebp, { init as initWebp } from "npm:@jsquash/webp@1.5.0/decode.js";
@@ -64,7 +69,10 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const asset = (name: string) => new URL(`./assets/${name}`, import.meta.url);
 
-type Admin = ReturnType<typeof createClient>;
+/** `ReturnType<typeof createClient>` suy ra kiểu bảng là `never` khi không
+ *  truyền generic Database — nghĩa là MỌI lời gọi DB trong file này lặng lẽ
+ *  không được kiểm kiểu. Khai báo thẳng `SupabaseClient` mới đúng ý. */
+type Admin = SupabaseClient;
 
 type Job = {
   id: string;
@@ -117,7 +125,11 @@ async function putObject(path: string, bytes: Uint8Array, type: string) {
         "Content-Type": type,
         "x-upsert": "true",
       },
-      body: bytes,
+      // TS 5.7 tách `Uint8Array<ArrayBuffer>` khỏi `Uint8Array<ArrayBufferLike>`,
+      // nên union này không khớp `BodyInit` dù `fetch` của Deno nhận BufferSource.
+      // Ép kiểu ở đúng một chỗ, KHÔNG đổi sang Blob: Blob là thêm một bản sao,
+      // mà bước này từng chết vì hết bộ nhớ.
+      body: bytes as unknown as BodyInit,
     },
   );
   if (!res.ok) {
@@ -200,11 +212,19 @@ async function toJpeg(bytes: Uint8Array, maxEdge: number): Promise<Uint8Array | 
   if (!isWebp) return null;
 
   await initCodecs();
-  const decoded = await decodeWebp(
-    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
-  ) as Raw;
+  const slice = bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  ) as ArrayBuffer;
+  const decoded = await decodeWebp(slice) as Raw;
 
-  const jpeg = await encodeJpeg(downscale(decoded, maxEdge), { quality: 80 });
+  // jsquash khai kiểu tham số là `ImageData` (có thêm `colorSpace`), nhưng nó
+  // chỉ đọc `data`/`width`/`height`. Dựng một ImageData thật thì phải chép
+  // thêm một lần nữa, không đáng.
+  const jpeg = await encodeJpeg(
+    downscale(decoded, maxEdge) as unknown as ImageData,
+    { quality: 80 },
+  );
   return new Uint8Array(jpeg);
 }
 

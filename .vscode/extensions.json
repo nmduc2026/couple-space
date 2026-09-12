@@ -1,0 +1,6 @@
+{
+  "recommendations": [
+    // Cần cho mã Edge Function dưới app/supabase/functions — xem settings.json
+    "denoland.vscode-deno"
+  ]
+}

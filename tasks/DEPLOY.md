@@ -29,7 +29,18 @@ SUPABASE_SERVICE_ROLE_KEY=... npm run seed -- --reset
 
 # Kiểm chứng RLS bằng phiên thật của cả hai tài khoản
 SUPABASE_SERVICE_ROLE_KEY=... npm run verify:rls
+
+# Kiểm kiểu cho Edge Function (Deno, không phải tsc của app)
+npm run check:functions
 ```
+
+> `npm run build` KHÔNG kiểm Edge Function: `tsconfig.app.json` chỉ include
+> `src`. Sửa function xong thì chạy `npm run check:functions`, nếu không thì
+> lỗi kiểu chỉ lộ ra lúc chạy thật.
+>
+> Trong VS Code, mã function do **Deno LSP** lo (xem `.vscode/settings.json`);
+> thiếu tiện ích `denoland.vscode-deno` thì editor sẽ báo hàng chục lỗi giả
+> kiểu "Cannot find module 'npm:...'" hay "Cannot find name 'Deno'".
 
 Lấy service role key: Dashboard → Settings → API → **service_role** (bản JWT
 `eyJ...`, KHÔNG phải `sb_secret_...` vì API trả bản đó bị che). Đừng commit.
