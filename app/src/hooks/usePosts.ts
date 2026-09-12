@@ -22,6 +22,10 @@ export type Post = {
   caption: string | null
   happened_on: string
   place_name: string | null
+  place_lat: number | null
+  place_lng: number | null
+  /** Tỉnh/thành đã chốt cho bài này, nếu có. Bản đồ tin cột này trước hết. */
+  province_code: string | null
   activity: string | null
   created_at: string
   media: PostMedia[]
@@ -37,6 +41,9 @@ type Row = {
   caption: string | null
   happened_on: string
   place_name: string | null
+  place_lat: number | null
+  place_lng: number | null
+  province_code: string | null
   activity: string | null
   created_at: string
   post_media: Omit<PostMedia, 'url'>[]
@@ -66,6 +73,9 @@ function toPost(row: Row, urls: Map<string, string>, myId: string): Post {
     caption: row.caption,
     happened_on: row.happened_on,
     place_name: row.place_name,
+    place_lat: row.place_lat,
+    place_lng: row.place_lng,
+    province_code: row.province_code,
     activity: row.activity,
     created_at: row.created_at,
     media: [...row.post_media]
@@ -81,7 +91,8 @@ export async function fetchPosts(coupleId: string, myId: string) {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, couple_id, author_id, caption, happened_on, place_name, activity, created_at,' +
+      'id, couple_id, author_id, caption, happened_on, place_name,' +
+        ' place_lat, place_lng, province_code, activity, created_at,' +
         ' post_media(id, storage_path, width, height, position),' +
         ' reactions(user_id), comments(id)',
     )

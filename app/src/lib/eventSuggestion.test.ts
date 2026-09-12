@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldSuggest, suggestedTask } from './eventSuggestion'
+import { isBirthday, shouldSuggest, suggestedTask } from './eventSuggestion'
 
 describe('suggestedTask', () => {
   it('đoán việc từ tên dịp, không phụ thuộc dấu', () => {
@@ -19,5 +19,17 @@ describe('shouldSuggest', () => {
     expect(shouldSuggest(14)).toBe(true)
     expect(shouldSuggest(15)).toBe(false)
     expect(shouldSuggest(-1)).toBe(false)
+  })
+})
+
+describe('isBirthday', () => {
+  it('nhận ra sinh nhật, có dấu hay không', () => {
+    expect(isBirthday('Sinh nhật Diên')).toBe(true)
+    expect(isBirthday('sinh nhat me')).toBe(true)
+    expect(isBirthday("Diên's birthday")).toBe(true)
+  })
+
+  it('không nhận nhầm dịp khác', () => {
+    expect(isBirthday('Kỉ niệm 1 năm')).toBe(false)
   })
 })

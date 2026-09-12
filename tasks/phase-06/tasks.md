@@ -17,9 +17,9 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 
 - [~] **P6-01** Tìm/dựng file **SVG 63 tỉnh thành Việt Nam** (không dùng Leaflet — xem đặc tả mục 3) — **chưa có SVG thật**; bản đồ hiện là lưới 63 tỉnh xếp theo ba miền
 - [x] **P6-02** Bảng chuẩn hoá địa điểm: tên tự do → tỉnh/thành, có danh sách đồng nghĩa (*Sài Gòn* = *TP.HCM*)
-- [ ] **P6-03** Tra ngược từ toạ độ (bài có link Google Maps) ra tỉnh/thành — **chưa làm** (tra ngược từ toạ độ)
+- [x] **P6-03** Tra ngược từ toạ độ (bài có link Google Maps) ra tỉnh/thành — `provinceByCoords()`, tâm 63 tỉnh gần đúng; lấp lửng hoặc ngoài VN thì trả null chứ không đoán bừa
 - [x] **P6-04** Khớp tên với danh sách 63 tỉnh, xử lý dấu và cách viết
-- [ ] **P6-05** **Hỏi người dùng một lần** với địa điểm không khớp, lưu lại để lần sau tự nhận — **chưa làm**: bảng `place_aliases` đã có, chưa có hộp thoại hỏi
+- [x] **P6-05** **Hỏi người dùng một lần** với địa điểm không khớp, lưu lại để lần sau tự nhận — `usePlaceResolution` + hộp thoại `AskProvince` trên màn Dấu chân
 - [x] **P6-06** Vẽ bản đồ: tỉnh đã đi tô màu, chấm kèm tên và số lần ghé — dạng lưới, chưa phải bản đồ vẽ
 - [x] **P6-07** Chạm vào một nơi → lọc Timeline theo nơi đó
 - [x] **P6-08** Thống kê: `n/63 tỉnh thành` · tổng địa điểm · nơi xa nhất
@@ -38,7 +38,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P6-18** Vẽ ảnh chia sẻ bằng **Canvas** → PNG
 - [x] **P6-19** Bản xem trước **đúng như ảnh sẽ xuất ra**, không phải gần đúng
 - [x] **P6-20** Chia sẻ bằng `navigator.share()`; đường lùi: hiện ảnh để nhấn giữ và lưu
-- [ ] **P6-21** Hiện trên Home từ 15/12, chốt số liệu 31/12 — **chưa làm** (hiện trên Home từ 15/12)
+- [x] **P6-21** Hiện trên Home từ 15/12, chốt số liệu 31/12 — `lib/wrappedSeason.ts`, có test; tháng 1 vẫn xem tổng kết năm trước
 
 ## C. Album → [steps/c-albums-pdf.md](steps/c-albums-pdf.md)
 
@@ -76,7 +76,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P6-44** Đánh dấu `planned` / `bought` — chủ wishlist **không thấy**
 - [x] **P6-45** Chủ wishlist chuyển `archived` → người kia **thấy** + nhận thông báo nếu đã đánh dấu — chủ bỏ món thì người kia thấy + có cảnh báo ở máy họ; **push thì chưa**
 - [x] **P6-46** ⚠️ **Rà toàn bộ push**: không thông báo nào lộ hành vi của người kia trên wishlist
-- [ ] **P6-47** Nối với [sự kiện](../../docs/features/p3-events-reminders.md): sinh nhật gần tới → nhắc xem wishlist — **chưa làm**
+- [x] **P6-47** Nối với [sự kiện](../../docs/features/p3-events-reminders.md): sinh nhật gần tới → nhắc xem wishlist — lối tắt trong dải gợi ý ở tab Sự kiện
 - [ ] **P6-48** Test kỹ "ai thấy gì" bằng hai tài khoản thật trước khi cho dùng — **chưa làm**: phải thử bằng hai tài khoản thật trước khi dùng
 
 ## G. Kết → [steps/e-wishlist.md](steps/e-wishlist.md)

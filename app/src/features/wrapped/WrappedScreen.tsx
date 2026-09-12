@@ -2,7 +2,8 @@ import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { useCouple } from '../../hooks/useCouple'
-import { daysTogether } from '../../lib/dateCount'
+import { daysTogether, todayYmd } from '../../lib/dateCount'
+import { wrappedSeason } from '../../lib/wrappedSeason'
 import { formatShortVnd } from '../../lib/money'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW, previewWrapped } from '../../dev/preview'
@@ -19,7 +20,9 @@ type Line = {
 
 export function WrappedScreen() {
   const { couple } = useCouple()
-  const year = new Date().getFullYear()
+  // Tháng 1 vẫn xem tổng kết của năm vừa qua, không phải năm mới rỗng không
+  const season = wrappedSeason(todayYmd())
+  const year = season.visible ? season.year : new Date().getFullYear()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [pngUrl, setPngUrl] = useState<string | null>(null)
   const [off, setOff] = useState<Set<string>>(new Set())
@@ -88,6 +91,12 @@ export function WrappedScreen() {
       <TopHeader title={`Tổng kết ${year}`} />
 
       <div className="flex-1 px-4 py-4">
+        {season.visible && !season.final ? (
+          <p className="mb-3 rounded-2xl border border-border bg-surface px-4 py-2.5 text-center text-[12.5px] text-muted">
+            Tạm tính tới hôm nay — số liệu chốt vào 31/12.
+          </p>
+        ) : null}
+
         {lines.length === 0 ? (
           <p className="py-16 text-center text-sm leading-relaxed text-muted">
             Năm nay chưa có đủ dữ liệu để tổng kết.

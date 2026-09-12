@@ -1,15 +1,23 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { usePosts } from '../../hooks/usePosts'
+import { useCouple } from '../../hooks/useCouple'
+import {
+  usePlaceResolution,
+  type Unresolved,
+} from '../../hooks/usePlaceResolution'
+import { supabase } from '../../lib/supabase'
+import { PREVIEW } from '../../dev/preview'
 import {
   PROVINCES,
   PROVINCE_COUNT,
-  guessProvince,
+  normalizePlace,
   provinceByCode,
   type Zone,
 } from '../../lib/provinces'
-import { btn } from '../../lib/ui-classes'
+import { btn, input } from '../../lib/ui-classes'
 
 const ZONES: Array<{ key: Zone; label: string }> = [
   { key: 'bac', label: 'Miền Bắc' },
@@ -19,18 +27,8 @@ const ZONES: Array<{ key: Zone; label: string }> = [
 
 export function MapScreen() {
   const { posts, isLoading } = usePosts()
-
-  const { visits, foreign } = useMemo(() => {
-    const visits = new Map<string, number>()
-    let foreign = 0
-    for (const post of posts) {
-      if (!post.place_name) continue
-      const code = guessProvince(post.place_name)
-      if (code) visits.set(code, (visits.get(code) ?? 0) + 1)
-      else foreign++
-    }
-    return { visits, foreign }
-  }, [posts])
+  const { visits, foreign, unresolved } = usePlaceResolution(posts)
+  const [asking, setAsking] = useState<Unresolved | null>(null)
 
   const visitedCount = visits.size
   const topProvince = [...visits.entries()].sort((a, b) => b[1] - a[1])[0]
@@ -74,11 +72,35 @@ export function MapScreen() {
                 {foreign > 0 ? (
                   <span>
                     <b className="font-semibold text-text">{foreign}</b> kỉ niệm
-                    ở nơi chưa nhận ra
+                    ở nước ngoài
                   </span>
                 ) : null}
               </div>
             </section>
+
+            {unresolved.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setAsking(unresolved[0])}
+                className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-accent/30 bg-soft p-3.5 text-left"
+              >
+                <span aria-hidden className="text-xl">
+                  📍
+                </span>
+                <span className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-text">
+                  Chưa nhận ra <b className="font-semibold">
+                    {unresolved[0].placeName}
+                  </b>
+                  {unresolved.length > 1
+                    ? ` và ${unresolved.length - 1} nơi nữa`
+                    : ''}
+                  . Chỉ giúp một lần, lần sau tự nhận.
+                </span>
+                <span aria-hidden className="shrink-0 text-muted">
+                  ›
+                </span>
+              </button>
+            ) : null}
 
             {ZONES.map((zone) => (
               <section key={zone.key} className="mt-5">
@@ -116,7 +138,107 @@ export function MapScreen() {
           </>
         )}
       </div>
+
+      {asking ? (
+        <AskProvince
+          place={asking}
+          onDone={() => setAsking(null)}
+        />
+      ) : null}
     </>
+  )
+}
+
+/** Hỏi đúng một lần cho mỗi tên địa điểm, rồi lưu vào `place_aliases`.
+ *  Lưu theo tên đã chuẩn hoá nên "Đà Lạt" và "da lat" tính là một. */
+function AskProvince({
+  place,
+  onDone,
+}: {
+  place: Unresolved
+  onDone: () => void
+}) {
+  const queryClient = useQueryClient()
+  const { couple } = useCouple()
+  const [term, setTerm] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const needle = normalizePlace(term)
+  const matches = needle
+    ? PROVINCES.filter((p) => normalizePlace(p.name).includes(needle))
+    : PROVINCES
+
+  async function save(provinceCode: string | null) {
+    if (!couple || PREVIEW) return onDone()
+    setSaving(true)
+    await supabase.from('place_aliases').insert({
+      couple_id: couple.id,
+      alias: place.alias,
+      province_code: provinceCode,
+      country: provinceCode ? 'VN' : 'XX',
+    })
+    setSaving(false)
+    await queryClient.invalidateQueries({ queryKey: ['place_aliases'] })
+    onDone()
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Chọn tỉnh thành"
+      onClick={onDone}
+    >
+      <div
+        className="flex max-h-[80svh] w-full flex-col rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-[17px] font-semibold text-text">
+          “{place.placeName}” ở đâu?
+        </p>
+        <p className="mt-1 text-[13px] text-muted">
+          {place.count > 1 ? `${place.count} kỉ niệm · ` : ''}Trả lời một lần,
+          lần sau app tự nhận.
+        </p>
+
+        <input
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder="Gõ tên tỉnh..."
+          className={`${input} mt-4`}
+        />
+
+        <ul className="mt-3 min-h-0 flex-1 overflow-y-auto">
+          {matches.map((p) => (
+            <li key={p.code}>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void save(p.code)}
+                className="w-full border-b border-border px-1 py-3 text-left text-[15px] text-text disabled:opacity-50"
+              >
+                {p.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-3 space-y-2">
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void save(null)}
+            className={btn.outline}
+          >
+            🌏 Ở nước ngoài
+          </button>
+          <button type="button" onClick={onDone} className={btn.ghost}>
+            Để sau
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

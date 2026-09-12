@@ -28,6 +28,12 @@ export function suggestedTask(title: string): string | null {
   return null
 }
 
+/** Dịp này có phải sinh nhật không — sinh nhật thì kèm lối tắt sang
+ *  wishlist, vì đó đúng là lúc wishlist có ích. */
+export function isBirthday(title: string) {
+  return /sinh nhat|birthday/.test(plain(title))
+}
+
 /** Chỉ gợi ý khi dịp đủ gần để làm gì đó, và chưa trôi qua. */
 export function shouldSuggest(daysAway: number) {
   return daysAway >= 0 && daysAway <= 14

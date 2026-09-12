@@ -13,6 +13,7 @@ import { useExpenses } from '../../hooks/useExpenses'
 import { goalProgress, useGoals } from '../../hooks/useGoals'
 import { formatShortVnd } from '../../lib/money'
 import { todayYmd } from '../../lib/dateCount'
+import { wrappedSeason } from '../../lib/wrappedSeason'
 
 /** Ảnh bìa mặc định khi đôi chưa đặt ảnh riêng — lấy từ prototype. */
 const DEFAULT_COVER =
@@ -27,6 +28,7 @@ export function HomeScreen() {
   const { goals } = useGoals()
   const activeGoal = goals.find((g) => g.status === 'active')
   const [offline, setOffline] = useState(!navigator.onLine)
+  const season = wrappedSeason(todayYmd())
   const [inviteCode, setInviteCode] = useState<string | null>(null)
 
   useEffect(() => {
@@ -149,6 +151,30 @@ export function HomeScreen() {
               Mời lại
             </button>
           </div>
+        ) : null}
+
+        {season.visible ? (
+          <Link
+            to="/wrapped"
+            className="mb-3 flex items-center gap-3 rounded-2xl border border-accent/30 bg-soft p-4"
+          >
+            <span aria-hidden className="text-2xl">
+              🎊
+            </span>
+            <span className="min-w-0 flex-1">
+              <b className="block text-[15px] font-semibold text-text">
+                Tổng kết {season.year} đã sẵn sàng
+              </b>
+              <span className="block text-[12.5px] text-muted">
+                {season.final
+                  ? 'Số liệu đã chốt — xem và chia sẻ'
+                  : 'Tạm tính tới hôm nay, chốt vào 31/12'}
+              </span>
+            </span>
+            <span aria-hidden className="shrink-0 text-muted">
+              ›
+            </span>
+          </Link>
         ) : null}
 
         <div className="grid grid-cols-4 gap-2">

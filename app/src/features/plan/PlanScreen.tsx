@@ -6,7 +6,7 @@ import { useAgenda, type AgendaItem } from '../../hooks/useAgenda'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { supabase } from '../../lib/supabase'
-import { shouldSuggest, suggestedTask } from '../../lib/eventSuggestion'
+import { isBirthday, shouldSuggest, suggestedTask } from '../../lib/eventSuggestion'
 import { PREVIEW } from '../../dev/preview'
 import { countdownLabel } from '../../lib/recurrence'
 import { formatDay } from '../../lib/formatDate'
@@ -118,6 +118,14 @@ export function PlanScreen() {
               >
                 Tạo việc cần làm
               </button>
+              {isBirthday(suggestFor.title) ? (
+                <Link
+                  to="/wishlist"
+                  className="rounded-full border border-border px-3.5 py-1.5 text-[13px] font-semibold text-accent"
+                >
+                  🎁 Xem wishlist
+                </Link>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setDismissed((l) => [...l, suggestFor.id])}

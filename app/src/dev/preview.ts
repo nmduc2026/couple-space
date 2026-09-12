@@ -108,6 +108,9 @@ export function previewPosts() {
     {
       caption: 'Hoàng hôn ở Đà Lạt. Diên bảo trời đẹp hơn ảnh.',
       place: 'Đồi chè Cầu Đất',
+      // Toạ độ thật để preview chạy qua đúng đường "tra ngược từ toạ độ"
+      lat: 11.836,
+      lng: 108.531,
       activity: 'travel',
       days: 3,
       photos: [PHOTOS[0], PHOTOS[1]],
@@ -117,6 +120,8 @@ export function previewPosts() {
     {
       caption: 'Quán lẩu mới mở gần nhà, cay xé lưỡi mà ngon.',
       place: 'Lẩu Tứ Xuyên',
+      lat: 21.018,
+      lng: 105.832,
       activity: 'food',
       days: 9,
       photos: [PHOTOS[2]],
@@ -126,6 +131,8 @@ export function previewPosts() {
     {
       caption: 'Đi xem phim tối thứ sáu.',
       place: 'CGV Vincom',
+      lat: 10.788,
+      lng: 106.702,
       activity: 'movie',
       days: 21,
       photos: [PHOTOS[3]],
@@ -150,6 +157,9 @@ export function previewPosts() {
     caption: b.caption,
     happened_on: daysAgoYmd(b.days),
     place_name: b.place,
+    place_lat: 'lat' in b ? (b.lat as number) : null,
+    place_lng: 'lng' in b ? (b.lng as number) : null,
+    province_code: null,
     activity: b.activity,
     created_at: new Date().toISOString(),
     media: b.photos.map((url, p) => ({
