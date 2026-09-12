@@ -27,8 +27,12 @@ const ZONES: Array<{ key: Zone; label: string }> = [
 
 export function MapScreen() {
   const { posts, isLoading } = usePosts()
-  const { visits, foreign, unresolved, toStamp } = usePlaceResolution(posts)
+  const { visits, foreign, unresolved, toStamp, placesByProvince } =
+    usePlaceResolution(posts)
   const [asking, setAsking] = useState<Unresolved | null>(null)
+  // Chạm vào một tỉnh thì mở ra mức chi tiết hơn: những nơi CỤ THỂ đã đi
+  // trong tỉnh đó
+  const [drill, setDrill] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   // Ghi tỉnh đã xác định ngược vào bài. Không có bước này thì
@@ -133,13 +137,14 @@ export function MapScreen() {
                   {PROVINCES.filter((p) => p.zone === zone.key).map((p) => {
                     const count = visits.get(p.code) ?? 0
                     return count > 0 ? (
-                      <Link
+                      <button
                         key={p.code}
-                        to={`/timeline?place=${encodeURIComponent(p.name)}`}
+                        type="button"
+                        onClick={() => setDrill(p.code)}
                         className="rounded-full bg-accent px-2.5 py-1 text-[12px] font-semibold text-on-accent"
                       >
                         {p.name} · {count}
-                      </Link>
+                      </button>
                     ) : (
                       <span
                         key={p.code}
@@ -160,6 +165,14 @@ export function MapScreen() {
           </>
         )}
       </div>
+
+      {drill ? (
+        <ProvinceDrill
+          code={drill}
+          places={placesByProvince.get(drill) ?? []}
+          onClose={() => setDrill(null)}
+        />
+      ) : null}
 
       {asking ? (
         <AskProvince
@@ -285,6 +298,74 @@ function EmptyState({ hasPosts }: { hasPosts: boolean }) {
       >
         {hasPosts ? 'Mở kỉ niệm gần nhất' : 'Thêm kỉ niệm'}
       </Link>
+    </div>
+  )
+}
+
+/**
+ * Mức chi tiết bên trong một tỉnh.
+ *
+ * Cố ý KHÔNG dựng danh sách phường/xã hành chính: app không có dữ liệu đó, mà
+ * kể cả có thì một tỉnh vài trăm phường trong khi cặp đôi mới đi 3 nơi thì
+ * danh sách toàn ô rỗng. Thứ liệt kê ở đây là những địa điểm CÓ THẬT mà hai
+ * người đã gắn vào kỉ niệm — chi tiết hơn tỉnh, và luôn có nội dung.
+ */
+function ProvinceDrill({
+  code,
+  places,
+  onClose,
+}: {
+  code: string
+  places: Array<{ placeName: string; count: number }>
+  onClose: () => void
+}) {
+  const name = provinceByCode(code)?.name ?? code
+  const total = places.reduce((n, p) => n + p.count, 0)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-label={name}
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[80svh] w-full overflow-y-auto rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-[17px] font-semibold text-text">{name}</p>
+        <p className="mt-1 text-[13px] text-muted">
+          {places.length} nơi · {total} kỉ niệm
+        </p>
+
+        <ul className="mt-4">
+          {places.map((p) => (
+            <li key={p.placeName}>
+              <Link
+                to={`/timeline?place=${encodeURIComponent(p.placeName)}`}
+                className="flex items-center gap-3 border-b border-border py-3 text-[15px] text-text last:border-b-0"
+              >
+                <span aria-hidden>📍</span>
+                <span className="min-w-0 flex-1 truncate">{p.placeName}</span>
+                <span className="shrink-0 text-[12.5px] text-muted">
+                  {p.count} lần
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        <Link
+          to={`/timeline?province=${code}`}
+          className={`${btn.outline} mt-4`}
+        >
+          Xem tất cả kỉ niệm ở {name}
+        </Link>
+        <button type="button" onClick={onClose} className={`${btn.ghost} mt-1`}>
+          Đóng
+        </button>
+      </div>
     </div>
   )
 }

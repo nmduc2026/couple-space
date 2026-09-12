@@ -21,7 +21,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P6-04** Khớp tên với danh sách 63 tỉnh, xử lý dấu và cách viết
 - [x] **P6-05** **Hỏi người dùng một lần** với địa điểm không khớp, lưu lại để lần sau tự nhận — `usePlaceResolution` + hộp thoại `AskProvince` trên màn Dấu chân
 - [x] **P6-06** Vẽ bản đồ: tỉnh đã đi tô màu, chấm kèm tên và số lần ghé — dạng lưới, chưa phải bản đồ vẽ
-- [x] **P6-07** Chạm vào một nơi → lọc Timeline theo nơi đó
+- [x] **P6-07** Chạm vào một nơi → lọc Timeline theo nơi đó — chạm tỉnh mở danh sách địa điểm cụ thể trong tỉnh, chạm địa điểm mới lọc. Trước đây bản đồ trỏ `?place=` mà Timeline không hề đọc tham số đó nên **không lọc gì cả**
 - [x] **P6-08** Thống kê: `n/63 tỉnh thành` · tổng địa điểm · nơi xa nhất
 - [x] **P6-09** Địa điểm nước ngoài đếm riêng, không cố vẽ lên bản đồ Việt Nam
 - [x] **P6-10** Trạng thái rỗng: nút mở bài gần nhất để bổ sung địa điểm

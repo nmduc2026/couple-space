@@ -24,7 +24,14 @@ export type Unresolved = {
   count: number
 }
 
+export type PlaceCount = { placeName: string; count: number }
+
 export type Resolution = {
+  /** Bài nào thuộc tỉnh nào. Timeline dùng để lọc theo tỉnh. */
+  provinceOf: Map<string, string>
+  /** Tỉnh → những địa điểm CỤ THỂ đã đi trong tỉnh đó, nhiều lần nhất trước.
+   *  Đây là mức chi tiết hơn tỉnh mà app thật sự có dữ liệu. */
+  placesByProvince: Map<string, PlaceCount[]>
   /** Bài đã xác định được tỉnh nhưng cột `province_code` còn trống.
    *  Ghi ngược lại mới có dữ liệu cho `suggested_trips()`. */
   toStamp: Array<{ id: string; code: string }>
@@ -75,7 +82,17 @@ export function usePlaceResolution(posts: Post[]): Resolution {
     const visits = new Map<string, number>()
     const pending = new Map<string, Unresolved>()
     const toStamp: Array<{ id: string; code: string }> = []
+    const provinceOf = new Map<string, string>()
+    const placeTally = new Map<string, Map<string, number>>()
     let foreign = 0
+
+    const note = (code: string, post: Post) => {
+      provinceOf.set(post.id, code)
+      const inside = placeTally.get(code) ?? new Map<string, number>()
+      const name = post.place_name!.trim()
+      inside.set(name, (inside.get(name) ?? 0) + 1)
+      placeTally.set(code, inside)
+    }
 
     for (const post of posts) {
       if (!post.place_name) continue
@@ -88,6 +105,7 @@ export function usePlaceResolution(posts: Post[]): Resolution {
             known.province_code,
             (visits.get(known.province_code) ?? 0) + 1,
           )
+          note(known.province_code, post)
           if (!post.province_code) {
             toStamp.push({ id: post.id, code: known.province_code })
           }
@@ -104,6 +122,7 @@ export function usePlaceResolution(posts: Post[]): Resolution {
 
       if (code) {
         visits.set(code, (visits.get(code) ?? 0) + 1)
+        note(code, post)
         if (!post.province_code) toStamp.push({ id: post.id, code })
         continue
       }
@@ -113,10 +132,22 @@ export function usePlaceResolution(posts: Post[]): Resolution {
       else pending.set(alias, { placeName: post.place_name, alias, count: 1 })
     }
 
+    const placesByProvince = new Map<string, PlaceCount[]>()
+    for (const [code, inside] of placeTally) {
+      placesByProvince.set(
+        code,
+        [...inside.entries()]
+          .map(([placeName, count]) => ({ placeName, count }))
+          .sort((a, b) => b.count - a.count || a.placeName.localeCompare(b.placeName)),
+      )
+    }
+
     return {
       visits,
       foreign,
       toStamp,
+      provinceOf,
+      placesByProvince,
       unresolved: [...pending.values()].sort((a, b) => b.count - a.count),
       isLoading: aliasQuery.isLoading,
     }

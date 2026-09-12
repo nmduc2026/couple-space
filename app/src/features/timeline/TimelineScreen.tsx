@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
 import { groupByMonth, usePosts, type Post } from '../../hooks/usePosts'
+import { usePlaceResolution } from '../../hooks/usePlaceResolution'
+import { provinceByCode } from '../../lib/provinces'
+import { TimelineFilters, type TimeFilter } from './TimelineFilters'
 import { ACTIVITY_LABELS } from '../../lib/activities'
 import { btn } from '../../lib/ui-classes'
 import { formatDay } from '../../lib/formatDate'
@@ -12,8 +15,22 @@ export function TimelineScreen() {
   const [params, setParams] = useSearchParams()
   const view: View = params.get('view') === 'grid' ? 'grid' : 'cards'
   const { posts, isLoading } = usePosts()
-  const [activity, setActivity] = useState<string | null>(null)
-  const [year, setYear] = useState<string | null>(null)
+  const { provinceOf } = usePlaceResolution(posts)
+
+  const [time, setTime] = useState<TimeFilter>({ kind: 'all' })
+  const [activities, setActivities] = useState<string[]>([])
+
+  // Lọc theo nơi chốn đến từ màn Dấu chân, nên nằm ở URL chứ không ở state:
+  // bấm quay lại rồi vào lại vẫn giữ nguyên chỗ đang xem.
+  const province = params.get('province')
+  const place = params.get('place')
+
+  function clearPlaceFilter() {
+    const p = new URLSearchParams(params)
+    p.delete('province')
+    p.delete('place')
+    setParams(p, { replace: true })
+  }
 
   const years = useMemo(
     () =>
@@ -23,12 +40,16 @@ export function TimelineScreen() {
 
   const filtered = useMemo(
     () =>
-      posts.filter(
-        (p) =>
-          (!activity || p.activity === activity) &&
-          (!year || p.happened_on.startsWith(year)),
-      ),
-    [posts, activity, year],
+      posts.filter((p) => {
+        if (activities.length > 0 && !activities.includes(p.activity ?? ''))
+          return false
+        if (time.kind === 'year' && !p.happened_on.startsWith(time.year))
+          return false
+        if (place && p.place_name?.trim() !== place) return false
+        if (province && provinceOf.get(p.id) !== province) return false
+        return true
+      }),
+    [posts, activities, time, place, province, provinceOf],
   )
 
   function setView(next: View) {
@@ -69,33 +90,32 @@ export function TimelineScreen() {
         }
       />
 
-      {posts.length > 0 ? (
-        <div className="flex gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
-          <Chip active={!activity && !year} onClick={() => {
-            setActivity(null)
-            setYear(null)
-          }}>
-            Tất cả
-          </Chip>
-          {years.map((y) => (
-            <Chip
-              key={y}
-              active={year === y}
-              onClick={() => setYear(year === y ? null : y)}
-            >
-              {y}
-            </Chip>
-          ))}
-          {Object.entries(ACTIVITY_LABELS).map(([key, meta]) => (
-            <Chip
-              key={key}
-              active={activity === key}
-              onClick={() => setActivity(activity === key ? null : key)}
-            >
-              {meta.emoji} {meta.label}
-            </Chip>
-          ))}
+      {place || province ? (
+        <div className="flex items-center gap-2 px-4 pt-3">
+          <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-2xl border border-accent bg-soft px-3.5 py-2.5 text-[13.5px] text-text">
+            <span aria-hidden>📍</span>
+            <b className="truncate font-semibold">
+              {place ?? provinceByCode(province)?.name ?? province}
+            </b>
+          </span>
+          <button
+            type="button"
+            onClick={clearPlaceFilter}
+            className="shrink-0 rounded-2xl border border-border px-3 py-2.5 text-[13px] text-muted"
+          >
+            Bỏ lọc
+          </button>
         </div>
+      ) : null}
+
+      {posts.length > 0 ? (
+        <TimelineFilters
+          years={years}
+          time={time}
+          onTime={setTime}
+          activities={activities}
+          onActivities={setActivities}
+        />
       ) : null}
 
       <div className="flex-1 px-4 pb-8">
@@ -113,29 +133,6 @@ export function TimelineScreen() {
   )
 }
 
-function Chip({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`shrink-0 rounded-full border px-3 py-1 text-xs transition ${
-        active
-          ? 'border-accent bg-accent font-semibold text-on-accent'
-          : 'border-border text-muted'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
 
 function EmptyState({ hasPosts }: { hasPosts: boolean }) {
   if (hasPosts) {
