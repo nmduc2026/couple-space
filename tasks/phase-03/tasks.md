@@ -38,7 +38,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P3-18** Áp dụng **giờ yên lặng** — hoãn tới hết giờ yên lặng, không bỏ
 - [x] **P3-19** **Gộp** khi cùng ngày có nhiều dịp: *"Hôm nay có 3 dịp đặc biệt"*
 - [x] **P3-20** Đánh dấu đã gửi để cron chạy lại không gửi trùng — dùng bảng ở P3-03
-- [ ] **P3-21** Push hằng ngày *"Hôm nay là ngày thứ 412 💕"*, **bật/tắt được**, mặc định **tắt** — **chưa làm**: công tắc đã có trong Cài đặt, `send-reminders` chưa sinh lời nhắc hằng ngày
+- [x] **P3-21** Push hằng ngày *"Hôm nay là ngày thứ 412 💕"*, **bật/tắt được**, mặc định **tắt** — migration `20260917090000` thêm nhánh `daily` vào `due_reminders()`; `send-reminders` gộp còn một thông báo mỗi lượt
 
 ## E. Home → [steps/e-home.md](steps/e-home.md)
 

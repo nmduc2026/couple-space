@@ -19,9 +19,29 @@ type DueRow = {
 
 function phrase(row: DueRow) {
   const label = `${row.emoji ? row.emoji + " " : ""}${row.title}`;
+  // "Hôm nay là ngày thứ 412" đã là câu hoàn chỉnh — đừng thêm "Hôm nay:"
+  if (row.subject_key === "daily") return label;
   if (row.days_before === 0) return `Hôm nay: ${label}`;
   if (row.days_before === 1) return `Ngày mai: ${label}`;
   return `Còn ${row.days_before} ngày nữa: ${label}`;
+}
+
+/** Một người một lượt cron chỉ nhận MỘT thông báo, dù có mấy thứ tới hạn. */
+function summarise(items: DueRow[]) {
+  const daily = items.find((i) => i.subject_key === "daily");
+  const events = items.filter((i) => i.subject_key !== "daily");
+
+  if (events.length === 0 && daily) {
+    return { body: phrase(daily), path: "/" };
+  }
+  const eventBody = events.length === 1
+    ? phrase(events[0])
+    : `Hôm nay có ${events.length} dịp đặc biệt`;
+
+  return {
+    body: daily ? `${phrase(daily)} · ${eventBody}` : eventBody,
+    path: "/plan",
+  };
 }
 
 Deno.serve(async (req) => {
@@ -81,14 +101,12 @@ Deno.serve(async (req) => {
 
     if (!subs?.length) continue;
 
-    const body = items.length === 1
-      ? phrase(items[0])
-      : `Hôm nay có ${items.length} dịp đặc biệt`;
+    const { body, path } = summarise(items);
 
     const payload = JSON.stringify({
       title: "Couple Space",
       body,
-      path: "/plan",
+      path,
     });
 
     for (const sub of subs) {
