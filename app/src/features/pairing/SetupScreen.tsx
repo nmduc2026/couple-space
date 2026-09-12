@@ -27,6 +27,21 @@ export function SetupScreen() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
+
+    // Ô ngày giờ là nút mở lịch chứ không còn là `<input required>`, nên
+    // trình duyệt không chặn hộ nữa. Bỏ qua bước này thì ngày rỗng đi thẳng
+    // xuống RPC và người dùng nhận về một lỗi Postgres ngay lần đầu mở app.
+    if (!startDate) {
+      setStatus('error')
+      setErrorMessage('Chọn ngày bắt đầu yêu đã nhé.')
+      return
+    }
+    if (!myNickname.trim()) {
+      setStatus('error')
+      setErrorMessage('Điền biệt danh của bạn đã nhé.')
+      return
+    }
+
     setStatus('loading')
     setErrorMessage('')
 
@@ -88,11 +103,6 @@ export function SetupScreen() {
               />
             </Field>
 
-            <Field label="Ảnh đại diện">
-              <div className="flex h-12 items-center rounded-2xl border border-dashed border-border px-4 text-[15px] text-muted">
-                Thêm sau — ảnh mở ở Phase 2
-              </div>
-            </Field>
           </div>
 
           {status === 'error' ? <ErrorText>{errorMessage}</ErrorText> : null}
