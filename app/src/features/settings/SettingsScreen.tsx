@@ -35,6 +35,10 @@ const THEMES: Array<[Theme, string]> = [
 const rowInput =
   'min-w-0 flex-1 bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
 
+/** Ô giờ thì không giãn: hai ô đứng cạnh nhau trong cùng một hàng. */
+const rowTimeInput =
+  'bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
+
 export function SettingsScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -246,7 +250,7 @@ export function SettingsScreen() {
                   onChange={(e) =>
                     void savePrefs({ quiet_hours_from: e.target.value || null })
                   }
-                  className="bg-transparent text-right text-[15px] text-text outline-none"
+                  className={rowTimeInput}
                 />
                 <span className="text-muted">–</span>
                 <input
@@ -255,7 +259,7 @@ export function SettingsScreen() {
                   onChange={(e) =>
                     void savePrefs({ quiet_hours_to: e.target.value || null })
                   }
-                  className="bg-transparent text-right text-[15px] text-text outline-none"
+                  className={rowTimeInput}
                 />
               </span>
             </Row>
