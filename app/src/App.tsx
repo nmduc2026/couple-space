@@ -29,6 +29,7 @@ import { ExpenseFormScreen } from './features/expenses/ExpenseFormScreen'
 import { EatDetailScreen } from './features/eat/EatDetailScreen'
 import { AlbumsScreen } from './features/albums/AlbumsScreen'
 import { AlbumDetailScreen } from './features/albums/AlbumDetailScreen'
+import { ExportPdfScreen } from './features/albums/ExportPdfScreen'
 import { QuestionScreen } from './features/question/QuestionScreen'
 import { LettersScreen } from './features/letters/LettersScreen'
 import { MoodScreen } from './features/mood/MoodScreen'
@@ -119,6 +120,7 @@ export default function App() {
             <Route path="/expenses/:id" element={<ExpenseFormScreen />} />
             <Route path="/eat/spin" element={<SpinScreen />} />
             <Route path="/eat/:id" element={<EatDetailScreen />} />
+            <Route path="/albums/export" element={<ExportPdfScreen />} />
             <Route path="/albums/:id" element={<AlbumDetailScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>

@@ -50,11 +50,11 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 
 ## D. Xuất PDF → [steps/c-albums-pdf.md](steps/c-albums-pdf.md)
 
-- [ ] **P6-27** Edge Function sinh PDF — **chạy nền**, không đồng bộ — **chưa làm**: xuất PDF cần thư viện nhúng font tiếng Việt, chưa thử được
-- [ ] **P6-28** Bố cục sách: bìa · trang mở đầu (số liệu Wrapped) · nội dung theo tháng — **chưa làm**
-- [ ] **P6-29** Chọn khổ A4/A5 và mật độ ảnh (1/2/4 ảnh mỗi trang) — **chưa làm**
-- [ ] **P6-30** Dùng bản ảnh đã nén 1920px — đủ in A5, không làm file quá nặng — **chưa làm**
-- [ ] **P6-31** Push khi xong + link tải có hạn 24 giờ — **chưa làm**
+- [x] **P6-27** Edge Function sinh PDF — **chạy nền**, không đồng bộ — `export-pdf` + bảng hàng đợi `pdf_exports`. Font Be Vietnam Pro nhúng sẵn (OFL); **đã thử thật**: sinh PDF ở Node, đọc ngược ra đúng dấu tiếng Việt và ₫
+- [x] **P6-28** Bố cục sách: bìa · trang mở đầu (số liệu Wrapped) · nội dung theo tháng — sang tháng mới là sang trang mới
+- [x] **P6-29** Chọn khổ A4/A5 và mật độ ảnh (1/2/4 ảnh mỗi trang) — màn `/albums/export`
+- [x] **P6-30** Dùng bản ảnh đã nén — app chỉ lưu **một** bản, cạnh dài **1600px** (`lib/image.ts`), không phải 1920 như đặc tả ghi. 1600px ≈ 275dpi ở khổ A5, đủ in. Ảnh lưu dạng **WebP** nên function phải giải mã WebP → JPEG mới nhúng được (pdf-lib không đọc WebP)
+- [x] **P6-31** Push khi xong + link tải có hạn 24 giờ — `expires_at`, cron dọn hằng tuần, bucket `couple-exports` riêng
 
 ## E. Xuất toàn bộ dữ liệu — phần bắt buộc → [steps/d-export.md](steps/d-export.md)
 

@@ -64,13 +64,21 @@ export function AlbumsScreen() {
       <TopHeader
         title="Album"
         right={
-          <button
-            type="button"
-            onClick={() => void createEmpty()}
-            className="rounded-full bg-accent px-3 py-1 text-sm font-semibold text-on-accent"
-          >
-            + Tạo
-          </button>
+          <>
+            <Link
+              to="/albums/export"
+              className="rounded-full border border-border px-3 py-1 text-sm font-semibold text-accent"
+            >
+              PDF
+            </Link>
+            <button
+              type="button"
+              onClick={() => void createEmpty()}
+              className="rounded-full bg-accent px-3 py-1 text-sm font-semibold text-on-accent"
+            >
+              + Tạo
+            </button>
+          </>
         }
       />
 
