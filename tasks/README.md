@@ -20,7 +20,7 @@ kiểm chứng bằng tay sau đó.
 ## Phase đang chạy
 
 > ### ✅ **Code xong · backend đã chạy thật · đã có dữ liệu mẫu**
-> 22 migration đã push, 4 Edge Function đã deploy, cron đang chạy, dữ liệu mẫu
+> 20 migration đã push, 4 Edge Function đã deploy, cron đang chạy, dữ liệu mẫu
 > đã đổ. RLS kiểm bằng token thật của cả hai người — tất cả đạt. Xuất PDF chạy
 > thật ra sách 13 trang.
 >

@@ -14,6 +14,11 @@ dist-ssr
 .env*
 !.env.example
 
+# Khoá VAPID + CRON_SECRET sinh ra lúc cài đặt (tasks/DEPLOY.md bước 4).
+# `.env*` ở trên KHÔNG khớp tên này vì nó bắt đầu bằng `.vapid`, nên phải ghi
+# riêng — thiếu dòng này là khoá riêng bị commit lên git.
+.vapid.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

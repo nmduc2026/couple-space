@@ -112,7 +112,7 @@ Chi tiết và lý do: [docs/decisions/](docs/decisions/) và [docs/design/backe
 
 ---
 
-*Trạng thái: **code xong cả 6 phase, backend đã chạy thật.** 22 migration đã
+*Trạng thái: **code xong cả 6 phase, backend đã chạy thật.** 20 migration đã
 push lên Supabase, 4 Edge Function đã deploy, cron đang chạy, dữ liệu mẫu đã
 đổ để thử tay. Phân quyền RLS đã kiểm bằng phiên đăng nhập thật của cả hai
 người. Xuất PDF chạy thật ra sách 13 trang.*
