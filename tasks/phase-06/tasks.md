@@ -42,11 +42,11 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 
 ## C. Album → [steps/c-albums-pdf.md](steps/c-albums-pdf.md)
 
-- [~] **P6-22** Gom tự động **theo chuyến**: cùng tỉnh, cách nhau ≤ 2 ngày, ≥ 3 bài — hàm `suggested_trips` đã có; **chưa có giao diện album**
-- [ ] **P6-23** Gom tự động **theo hoạt động** — **chưa làm**
-- [ ] **P6-24** Album tự tạo: chọn bài thủ công — **chưa làm**
-- [~] **P6-25** Album là **cách xem**, không nhân bản ảnh — xoá album không xoá bài — bảng `albums`/`album_posts` dựng đúng kiểu "cách xem"; chưa có giao diện
-- [ ] **P6-26** Sửa album tự động: tách bài, đổi tên, chuyển thành album tự tạo — **chưa làm**
+- [x] **P6-22** Gom tự động **theo chuyến**: cùng tỉnh, cách nhau ≤ 2 ngày, ≥ 3 bài — `lib/albumGrouping.ts` (có test) + màn `/albums`; bản đồ ghi `province_code` ngược vào bài nên dữ liệu mới có thật
+- [x] **P6-23** Gom tự động **theo hoạt động** — gom trong phạm vi **một năm**, nếu không "Ăn uống" gộp 5 năm thành album 400 bài không ai mở
+- [x] **P6-24** Album tự tạo: chọn bài thủ công — nút + Tạo, thêm/bớt bài trong màn chi tiết
+- [x] **P6-25** Album là **cách xem**, không nhân bản ảnh — xoá album không xoá bài — giao diện nói rõ điều đó ở cả nút xoá lẫn nút tách bài
+- [x] **P6-26** Sửa album tự động: tách bài, đổi tên, chuyển thành album tự tạo — sửa nội dung một album tự gom sẽ tự chuyển `source` sang `manual`
 
 ## D. Xuất PDF → [steps/c-albums-pdf.md](steps/c-albums-pdf.md)
 

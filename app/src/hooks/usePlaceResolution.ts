@@ -25,6 +25,9 @@ export type Unresolved = {
 }
 
 export type Resolution = {
+  /** Bài đã xác định được tỉnh nhưng cột `province_code` còn trống.
+   *  Ghi ngược lại mới có dữ liệu cho `suggested_trips()`. */
+  toStamp: Array<{ id: string; code: string }>
   /** Mã tỉnh → số bài. Chỉ gồm địa điểm trong nước. */
   visits: Map<string, number>
   /** Số bài đã xác định là ở nước ngoài. */
@@ -71,6 +74,7 @@ export function usePlaceResolution(posts: Post[]): Resolution {
   return useMemo(() => {
     const visits = new Map<string, number>()
     const pending = new Map<string, Unresolved>()
+    const toStamp: Array<{ id: string; code: string }> = []
     let foreign = 0
 
     for (const post of posts) {
@@ -84,6 +88,9 @@ export function usePlaceResolution(posts: Post[]): Resolution {
             known.province_code,
             (visits.get(known.province_code) ?? 0) + 1,
           )
+          if (!post.province_code) {
+            toStamp.push({ id: post.id, code: known.province_code })
+          }
         } else {
           foreign++
         }
@@ -97,6 +104,7 @@ export function usePlaceResolution(posts: Post[]): Resolution {
 
       if (code) {
         visits.set(code, (visits.get(code) ?? 0) + 1)
+        if (!post.province_code) toStamp.push({ id: post.id, code })
         continue
       }
 
@@ -108,6 +116,7 @@ export function usePlaceResolution(posts: Post[]): Resolution {
     return {
       visits,
       foreign,
+      toStamp,
       unresolved: [...pending.values()].sort((a, b) => b.count - a.count),
       isLoading: aliasQuery.isLoading,
     }

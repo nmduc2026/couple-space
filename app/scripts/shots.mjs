@@ -39,6 +39,7 @@ const SCREENS = [
   { name: 'letters', url: '/letters?preview=1', wait: 'Sắp mở' },
   { name: 'map', url: '/map?preview=1', wait: 'tỉnh thành' },
   { name: 'wrapped', url: '/wrapped?preview=1', wait: 'Tổng kết' },
+  { name: 'albums', url: '/albums?preview=1', wait: 'Album' },
   { name: 'wishlist', url: '/wishlist?preview=1', wait: 'Của người ấy' },
   { name: 'eat', url: '/eat?preview=1', wait: 'Muốn thử' },
   { name: 'eat-spin', url: '/eat/spin?preview=1', wait: 'Tối nay ăn gì' },

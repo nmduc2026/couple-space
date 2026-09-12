@@ -27,6 +27,8 @@ import { GoalDetailScreen } from './features/goals/GoalDetailScreen'
 import { ExpensesScreen } from './features/expenses/ExpensesScreen'
 import { ExpenseFormScreen } from './features/expenses/ExpenseFormScreen'
 import { EatDetailScreen } from './features/eat/EatDetailScreen'
+import { AlbumsScreen } from './features/albums/AlbumsScreen'
+import { AlbumDetailScreen } from './features/albums/AlbumDetailScreen'
 import { QuestionScreen } from './features/question/QuestionScreen'
 import { LettersScreen } from './features/letters/LettersScreen'
 import { MoodScreen } from './features/mood/MoodScreen'
@@ -100,6 +102,7 @@ export default function App() {
               <Route path="/map" element={<MapScreen />} />
               <Route path="/wrapped" element={<WrappedScreen />} />
               <Route path="/wishlist" element={<WishlistScreen />} />
+              <Route path="/albums" element={<AlbumsScreen />} />
               <Route path="/expenses" element={<ExpensesScreen />} />
               <Route path="/eat" element={<EatScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
@@ -116,6 +119,7 @@ export default function App() {
             <Route path="/expenses/:id" element={<ExpenseFormScreen />} />
             <Route path="/eat/spin" element={<SpinScreen />} />
             <Route path="/eat/:id" element={<EatDetailScreen />} />
+            <Route path="/albums/:id" element={<AlbumDetailScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>
         </Route>

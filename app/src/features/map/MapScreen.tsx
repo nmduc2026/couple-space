@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
@@ -27,8 +27,30 @@ const ZONES: Array<{ key: Zone; label: string }> = [
 
 export function MapScreen() {
   const { posts, isLoading } = usePosts()
-  const { visits, foreign, unresolved } = usePlaceResolution(posts)
+  const { visits, foreign, unresolved, toStamp } = usePlaceResolution(posts)
   const [asking, setAsking] = useState<Unresolved | null>(null)
+  const queryClient = useQueryClient()
+
+  // Ghi tỉnh đã xác định ngược vào bài. Không có bước này thì
+  // `suggested_trips()` (gom album theo chuyến) không bao giờ có dữ liệu.
+  const stamped = useRef(false)
+  useEffect(() => {
+    if (PREVIEW || stamped.current || toStamp.length === 0) return
+    stamped.current = true
+
+    async function stamp() {
+      const byCode = new Map<string, string[]>()
+      for (const row of toStamp) {
+        byCode.set(row.code, [...(byCode.get(row.code) ?? []), row.id])
+      }
+      for (const [code, ids] of byCode) {
+        await supabase.from('posts').update({ province_code: code }).in('id', ids)
+      }
+      await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    }
+
+    void stamp()
+  }, [toStamp, queryClient])
 
   const visitedCount = visits.size
   const topProvince = [...visits.entries()].sort((a, b) => b[1] - a[1])[0]
@@ -179,6 +201,7 @@ function AskProvince({
     })
     setSaving(false)
     await queryClient.invalidateQueries({ queryKey: ['place_aliases'] })
+    await queryClient.invalidateQueries({ queryKey: ['posts'] })
     onDone()
   }
 

@@ -186,7 +186,7 @@ export function HomeScreen() {
             { to: '/map', emoji: '🗺️', label: 'Dấu chân' },
             { to: '/wishlist', emoji: '🎁', label: 'Wishlist' },
             { to: '/wrapped', emoji: '🎊', label: 'Tổng kết' },
-            { to: '/timeline?view=grid', emoji: '🖼️', label: 'Album' },
+            { to: '/albums', emoji: '🖼️', label: 'Album' },
           ].map((item) => (
             <Link
               key={item.to}
