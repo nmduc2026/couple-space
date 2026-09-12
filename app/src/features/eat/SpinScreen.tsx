@@ -18,7 +18,8 @@ type Candidate = {
 }
 
 type Mode = 'reel' | 'box'
-type Phase = 'idle' | 'running' | 'done' | 'empty'
+/** `picking` chỉ có ở kiểu hộp: đang chọn món nào được bỏ vào hộp. */
+type Phase = 'idle' | 'picking' | 'running' | 'done' | 'empty'
 
 /** Bao nhiêu bước nhảy trước khi dừng — cảm giác "quay" nằm ở nhịp chậm dần. */
 const REEL_STEPS = 26
@@ -50,6 +51,7 @@ export function SpinScreen() {
   const [askCompose, setAskCompose] = useState(false)
 
   // --- hộp bí mật ---
+  const [chosen, setChosen] = useState<string[]>([])
   const [boxes, setBoxes] = useState<Candidate[]>([])
   const [shuffling, setShuffling] = useState(false)
   const [opened, setOpened] = useState<number | null>(null)
@@ -93,11 +95,15 @@ export function SpinScreen() {
       setPhase('empty')
       return
     }
-    setItems(shuffle(list))
+    const shuffled = shuffle(list)
+    setItems(shuffled)
     setCursor(0)
-    setPhase('idle')
     setWinner(null)
     setOpened(null)
+    // Kiểu hộp bắt đầu bằng bước chọn món; mặc định tích sẵn tất cả để ai
+    // không muốn chọn thì bấm thẳng nút là xong
+    setChosen(shuffled.map((i) => i.id))
+    setPhase(next === 'box' ? 'picking' : 'idle')
   }
 
   /** Lùi về bước chọn kiểu — KHÔNG rời màn hình.
@@ -109,6 +115,7 @@ export function SpinScreen() {
     setWinner(null)
     setOpened(null)
     setShuffling(false)
+    setChosen([])
   }
 
   function start() {
@@ -140,8 +147,9 @@ export function SpinScreen() {
       return
     }
 
-    // Hộp bí mật: MỖI MÓN MỘT HỘP, không phải cố định ba cái
-    setBoxes(shuffle(items).slice(0, MAX_BOXES))
+    // Hộp bí mật: chỉ những món NGƯỜI DÙNG đã chọn mới vào hộp
+    const picked = items.filter((i) => chosen.includes(i.id))
+    setBoxes(shuffle(picked).slice(0, MAX_BOXES))
     setShuffling(true)
     timers.current.push(window.setTimeout(() => setShuffling(false), 900))
   }
@@ -174,6 +182,7 @@ export function SpinScreen() {
   }
 
   const running = phase === 'running'
+  const picking = phase === 'picking'
   const pickingBox = mode === 'box' && running && !shuffling && opened === null
 
   return (
@@ -223,6 +232,18 @@ export function SpinScreen() {
             <br />
             Thêm quán mới, hoặc chờ hết 14 ngày kể từ lần ghé gần nhất.
           </p>
+        ) : picking ? (
+          <PickDishes
+            items={items}
+            chosen={chosen}
+            onToggle={(id) =>
+              setChosen((list) =>
+                list.includes(id) ? list.filter((x) => x !== id) : [...list, id],
+              )
+            }
+            onAll={() => setChosen(items.map((i) => i.id))}
+            onNone={() => setChosen([])}
+          />
         ) : mode === 'reel' ? (
           <Reel
             items={items}
@@ -239,7 +260,7 @@ export function SpinScreen() {
             shuffling={shuffling}
             opened={opened}
             idle={phase === 'idle'}
-            count={items.length}
+            count={chosen.length}
             onOpen={openBox}
           />
         )}
@@ -275,6 +296,20 @@ export function SpinScreen() {
                 Quay lại lần nữa
               </button>
             </>
+          ) : picking ? (
+            <button
+              type="button"
+              disabled={chosen.length < 2}
+              onClick={() => {
+                setBoxes([])
+                setPhase('idle')
+              }}
+              className={btn.primary}
+            >
+              {chosen.length < 2
+                ? 'Chọn ít nhất 2 món'
+                : `Bỏ ${chosen.length} món vào hộp`}
+            </button>
           ) : pickingBox ? (
             <p className="py-4 text-center text-[14px] font-medium text-accent">
               Chạm vào một hộp để mở
@@ -495,6 +530,73 @@ function Boxes({
           )
         })}
       </div>
+    </div>
+  )
+}
+
+/** Bước chọn món trước khi bỏ vào hộp. */
+function PickDishes({
+  items,
+  chosen,
+  onToggle,
+  onAll,
+  onNone,
+}: {
+  items: Candidate[]
+  chosen: string[]
+  onToggle: (id: string) => void
+  onAll: () => void
+  onNone: () => void
+}) {
+  return (
+    <div className="mt-6 text-left">
+      <div className="flex items-center gap-2">
+        <p className="flex-1 text-[13px] text-muted">
+          Chọn món cho vào hộp — {chosen.length}/{items.length}
+        </p>
+        <button
+          type="button"
+          onClick={chosen.length === items.length ? onNone : onAll}
+          className="rounded-full border border-border px-3 py-1 text-[12.5px] text-muted"
+        >
+          {chosen.length === items.length ? 'Bỏ hết' : 'Chọn hết'}
+        </button>
+      </div>
+
+      <ul className="mt-3 overflow-hidden rounded-2xl border border-border bg-surface">
+        {items.map((item) => {
+          const on = chosen.includes(item.id)
+          return (
+            <li key={item.id} className="border-b border-border last:border-b-0">
+              <button
+                type="button"
+                onClick={() => onToggle(item.id)}
+                aria-pressed={on}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left"
+              >
+                <span
+                  aria-hidden
+                  className={`grid h-5 w-5 flex-none place-items-center rounded-md border text-[11px] ${
+                    on
+                      ? 'border-accent bg-accent text-on-accent'
+                      : 'border-border text-transparent'
+                  }`}
+                >
+                  ✓
+                </span>
+                <span className="min-w-0 flex-1">
+                  <b className="block truncate text-[14.5px] font-medium text-text">
+                    {item.name}
+                  </b>
+                  {item.never_tried ? (
+                    <small className="text-[11.5px] text-accent">chưa thử</small>
+                  ) : null}
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }

@@ -14,6 +14,7 @@ import { todayYmd } from '../../lib/dateCount'
 import { compressImage, readExifDate } from '../../lib/image'
 import { notifyPartner } from '../../lib/notify'
 import { supabase } from '../../lib/supabase'
+import { currentPosition, reverseGeocode, type ResolvedAddress } from '../../lib/geocode'
 import { enqueue, isRetriable, type QueuedPhoto } from '../../lib/syncQueue'
 import {
   ErrorText,
@@ -48,6 +49,10 @@ export function ComposeScreen() {
   const [happenedOn, setHappenedOn] = useState(todayYmd())
   // Vào từ vòng quay "Ăn gì?" thì tên quán và hoạt động đã điền sẵn
   const [placeName, setPlaceName] = useState(() => params.get('place') ?? '')
+  // Địa chỉ có cấu trúc, chỉ có khi người dùng bấm "Lấy vị trí hiện tại"
+  const [located, setLocated] = useState<ResolvedAddress | null>(null)
+  const [locating, setLocating] = useState(false)
+  const [locateError, setLocateError] = useState('')
   const [activity, setActivity] = useState<string | null>(
     () => params.get('activity'),
   )
@@ -99,6 +104,29 @@ export function ComposeScreen() {
     navigate('/timeline', { replace: true })
   }
 
+  /** Lấy vị trí máy rồi tra ngược ra địa chỉ, điền sẵn vào ô Địa điểm.
+   *  Người dùng vẫn sửa lại tên được — "79 Phố Đinh Tiên Hoàng" đúng về địa
+   *  chỉ nhưng "Cà phê Giảng" mới là thứ sau này họ nhớ ra. */
+  async function fillFromLocation() {
+    setLocating(true)
+    setLocateError('')
+    try {
+      const { lat, lng } = await currentPosition()
+      const found = await reverseGeocode(lat, lng)
+      setLocated(found)
+      if (found.shortName && !placeName.trim()) setPlaceName(found.shortName)
+      if (!found.address) {
+        setLocateError('Đã lấy được vị trí nhưng chưa tra ra địa chỉ.')
+      }
+    } catch (err) {
+      setLocateError(
+        err instanceof Error ? err.message : 'Không lấy được vị trí.',
+      )
+    } finally {
+      setLocating(false)
+    }
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (!couple || !user) return
@@ -140,6 +168,12 @@ export function ComposeScreen() {
         caption: caption.trim() || null,
         happened_on: happenedOn,
         place_name: placeName.trim() || null,
+        place_lat: located?.lat ?? null,
+        place_lng: located?.lng ?? null,
+        province_code: located?.provinceCode ?? null,
+        ward: located?.ward ?? null,
+        district: located?.district ?? null,
+        address: located?.address || null,
         activity,
       })
       .select('id')
@@ -314,6 +348,27 @@ export function ComposeScreen() {
                 placeholder="Không bắt buộc"
                 className={input}
               />
+              <button
+                type="button"
+                onClick={() => void fillFromLocation()}
+                disabled={locating}
+                className="mt-2 flex w-full items-center gap-2 rounded-2xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-accent disabled:opacity-50"
+              >
+                <span aria-hidden>📍</span>
+                {locating ? 'Đang tìm vị trí...' : 'Lấy vị trí hiện tại'}
+              </button>
+
+              {located?.address ? (
+                <p className="mt-2 rounded-2xl bg-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-text">
+                  {located.address}
+                  <span className="mt-1 block text-[11px] text-muted">
+                    Địa chỉ từ OpenStreetMap · sẽ lưu kèm kỉ niệm
+                  </span>
+                </p>
+              ) : null}
+              {locateError ? (
+                <p className="mt-2 text-[12.5px] text-accent">{locateError}</p>
+              ) : null}
             </Field>
 
             <Field label="Hoạt động">

@@ -26,6 +26,9 @@ export type Post = {
   place_lng: number | null
   /** Tỉnh/thành đã chốt cho bài này, nếu có. Bản đồ tin cột này trước hết. */
   province_code: string | null
+  /** Phường/xã và quận/huyện — chỉ có khi bài được tạo bằng "Lấy vị trí". */
+  ward: string | null
+  district: string | null
   activity: string | null
   created_at: string
   media: PostMedia[]
@@ -44,6 +47,8 @@ type Row = {
   place_lat: number | null
   place_lng: number | null
   province_code: string | null
+  ward: string | null
+  district: string | null
   activity: string | null
   created_at: string
   post_media: Omit<PostMedia, 'url'>[]
@@ -76,6 +81,8 @@ function toPost(row: Row, urls: Map<string, string>, myId: string): Post {
     place_lat: row.place_lat,
     place_lng: row.place_lng,
     province_code: row.province_code,
+    ward: row.ward,
+    district: row.district,
     activity: row.activity,
     created_at: row.created_at,
     media: [...row.post_media]
@@ -92,7 +99,7 @@ export async function fetchPosts(coupleId: string, myId: string) {
     .from('posts')
     .select(
       'id, couple_id, author_id, caption, happened_on, place_name,' +
-        ' place_lat, place_lng, province_code, activity, created_at,' +
+        ' place_lat, place_lng, province_code, ward, district, activity, created_at,' +
         ' post_media(id, storage_path, width, height, position),' +
         ' reactions(user_id), comments(id)',
     )
@@ -162,7 +169,7 @@ const PAGE_SIZE = 12
 
 const SELECT =
   'id, couple_id, author_id, caption, happened_on, place_name,' +
-  ' place_lat, place_lng, province_code, activity, created_at,' +
+  ' place_lat, place_lng, province_code, ward, district, activity, created_at,' +
   ' post_media(id, storage_path, width, height, position),' +
   ' reactions(user_id), comments(id)'
 
@@ -269,4 +276,58 @@ export function usePostYears() {
     return [...new Set(previewPosts().map((p) => p.happened_on.slice(0, 4)))]
   }
   return query.data ?? []
+}
+
+/** Những nơi đã đi, để làm bộ lọc trên Timeline mà không phải tải hết bài.
+ *  Chỉ lấy ba cột nên nhẹ. */
+export function usePostPlaces() {
+  const { couple } = useCouple()
+  const query = useQuery({
+    queryKey: ['post_places', couple?.id],
+    enabled: !!couple?.id && !PREVIEW,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('place_name, province_code')
+        .eq('couple_id', couple!.id)
+        .is('deleted_at', null)
+        .not('place_name', 'is', null)
+      if (error) throw error
+
+      const rows = (data ?? []) as Array<{
+        place_name: string | null
+        province_code: string | null
+      }>
+      const places = new Map<string, number>()
+      const provinces = new Map<string, number>()
+      for (const r of rows) {
+        const name = r.place_name?.trim()
+        if (name) places.set(name, (places.get(name) ?? 0) + 1)
+        if (r.province_code) {
+          provinces.set(r.province_code, (provinces.get(r.province_code) ?? 0) + 1)
+        }
+      }
+      const sort = (m: Map<string, number>) =>
+        [...m.entries()]
+          .map(([key, count]) => ({ key, count }))
+          .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key))
+
+      return { places: sort(places), provinces: sort(provinces) }
+    },
+  })
+
+  if (PREVIEW) {
+    const names = [
+      ...new Set(
+        previewPosts()
+          .map((p) => p.place_name?.trim())
+          .filter((n): n is string => !!n),
+      ),
+    ]
+    return {
+      places: names.map((key) => ({ key, count: 1 })),
+      provinces: [] as Array<{ key: string; count: number }>,
+    }
+  }
+  return query.data ?? { places: [], provinces: [] }
 }

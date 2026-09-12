@@ -4,10 +4,10 @@ import { TopHeader } from '../../components/AppShell'
 import {
   groupByMonth,
   useInfinitePosts,
+  usePostPlaces,
   usePostYears,
   type Post,
 } from '../../hooks/usePosts'
-import { provinceByCode } from '../../lib/provinces'
 import { TimelineFilters, type TimeFilter } from './TimelineFilters'
 import { ACTIVITY_LABELS } from '../../lib/activities'
 import { btn } from '../../lib/ui-classes'
@@ -27,6 +27,7 @@ export function TimelineScreen() {
   const place = params.get('place')
 
   const years = usePostYears()
+  const { places, provinces } = usePostPlaces()
   const {
     posts,
     isLoading,
@@ -57,10 +58,18 @@ export function TimelineScreen() {
     return () => io.disconnect()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  function clearPlaceFilter() {
+  /** Nơi chốn nằm ở URL để đi từ Dấu chân sang vẫn giữ được, và để bấm quay
+   *  lại là về đúng chỗ cũ. */
+  function setPlaceFilter(next: {
+    place?: string | null
+    province?: string | null
+  }) {
     const p = new URLSearchParams(params)
-    p.delete('province')
-    p.delete('place')
+    for (const key of ['place', 'province'] as const) {
+      const value = next[key]
+      if (value) p.set(key, value)
+      else p.delete(key)
+    }
     setParams(p, { replace: true })
   }
 
@@ -102,24 +111,6 @@ export function TimelineScreen() {
         }
       />
 
-      {place || province ? (
-        <div className="flex items-center gap-2 px-4 pt-3">
-          <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-2xl border border-accent bg-soft px-3.5 py-2.5 text-[13.5px] text-text">
-            <span aria-hidden>📍</span>
-            <b className="truncate font-semibold">
-              {place ?? provinceByCode(province)?.name ?? province}
-            </b>
-          </span>
-          <button
-            type="button"
-            onClick={clearPlaceFilter}
-            className="shrink-0 rounded-2xl border border-border px-3 py-2.5 text-[13px] text-muted"
-          >
-            Bỏ lọc
-          </button>
-        </div>
-      ) : null}
-
       {years.length > 0 ? (
         <TimelineFilters
           years={years}
@@ -127,6 +118,11 @@ export function TimelineScreen() {
           onTime={setTime}
           activities={activities}
           onActivities={setActivities}
+          places={places}
+          provinces={provinces}
+          place={place}
+          province={province}
+          onPlace={setPlaceFilter}
         />
       ) : null}
 

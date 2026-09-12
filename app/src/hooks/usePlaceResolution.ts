@@ -26,12 +26,22 @@ export type Unresolved = {
 
 export type PlaceCount = { placeName: string; count: number }
 
+/** Một phường/xã trong tỉnh, kèm những địa điểm đã đi bên trong nó. */
+export type WardGroup = {
+  /** null = bài không có địa chỉ có cấu trúc (tạo trước khi có nút lấy vị trí) */
+  ward: string | null
+  count: number
+  places: PlaceCount[]
+}
+
 export type Resolution = {
   /** Bài nào thuộc tỉnh nào. Timeline dùng để lọc theo tỉnh. */
   provinceOf: Map<string, string>
-  /** Tỉnh → những địa điểm CỤ THỂ đã đi trong tỉnh đó, nhiều lần nhất trước.
-   *  Đây là mức chi tiết hơn tỉnh mà app thật sự có dữ liệu. */
+  /** Tỉnh → những địa điểm CỤ THỂ đã đi trong tỉnh đó, nhiều lần nhất trước. */
   placesByProvince: Map<string, PlaceCount[]>
+  /** Tỉnh → gom theo phường/xã. Chỉ bài nào có `ward` mới vào nhóm có tên;
+   *  bài cũ không có địa chỉ gom chung vào nhóm `ward: null`. */
+  wardsByProvince: Map<string, WardGroup[]>
   /** Bài đã xác định được tỉnh nhưng cột `province_code` còn trống.
    *  Ghi ngược lại mới có dữ liệu cho `suggested_trips()`. */
   toStamp: Array<{ id: string; code: string }>
@@ -84,6 +94,8 @@ export function usePlaceResolution(posts: Post[]): Resolution {
     const toStamp: Array<{ id: string; code: string }> = []
     const provinceOf = new Map<string, string>()
     const placeTally = new Map<string, Map<string, number>>()
+    // tỉnh → phường → địa điểm → số lần
+    const wardTally = new Map<string, Map<string, Map<string, number>>>()
     let foreign = 0
 
     const note = (code: string, post: Post) => {
@@ -92,6 +104,14 @@ export function usePlaceResolution(posts: Post[]): Resolution {
       const name = post.place_name!.trim()
       inside.set(name, (inside.get(name) ?? 0) + 1)
       placeTally.set(code, inside)
+
+      // '' làm khoá cho nhóm "chưa biết phường" — Map không nhận null làm khoá
+      const wardKey = post.ward?.trim() || ''
+      const byWard = wardTally.get(code) ?? new Map<string, Map<string, number>>()
+      const places = byWard.get(wardKey) ?? new Map<string, number>()
+      places.set(name, (places.get(name) ?? 0) + 1)
+      byWard.set(wardKey, places)
+      wardTally.set(code, byWard)
     }
 
     for (const post of posts) {
@@ -142,12 +162,32 @@ export function usePlaceResolution(posts: Post[]): Resolution {
       )
     }
 
+    const wardsByProvince = new Map<string, WardGroup[]>()
+    for (const [code, byWard] of wardTally) {
+      const groups: WardGroup[] = [...byWard.entries()].map(([ward, places]) => ({
+        ward: ward || null,
+        count: [...places.values()].reduce((n, c) => n + c, 0),
+        places: [...places.entries()]
+          .map(([placeName, count]) => ({ placeName, count }))
+          .sort((a, b) => b.count - a.count || a.placeName.localeCompare(b.placeName)),
+      }))
+      // Nhóm "chưa biết phường" xuống cuối — nó là phần còn sót, không phải
+      // một nơi chốn thật
+      groups.sort((a, b) => {
+        if (a.ward === null) return 1
+        if (b.ward === null) return -1
+        return b.count - a.count || a.ward.localeCompare(b.ward)
+      })
+      wardsByProvince.set(code, groups)
+    }
+
     return {
       visits,
       foreign,
       toStamp,
       provinceOf,
       placesByProvince,
+      wardsByProvince,
       unresolved: [...pending.values()].sort((a, b) => b.count - a.count),
       isLoading: aliasQuery.isLoading,
     }

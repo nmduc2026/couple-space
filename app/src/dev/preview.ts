@@ -140,6 +140,18 @@ export function previewPosts() {
       comments: 0,
     },
     {
+      // Cố ý KHÔNG có toạ độ và tên không chứa tên tỉnh nào — để màn Dấu chân
+      // trong preview luôn có một địa điểm "chưa nhận ra", nhờ vậy hộp thoại
+      // hỏi tỉnh mới review được bằng `npm run shots`.
+      caption: 'Quán mới mở gần nhà, ngon bất ngờ.',
+      place: 'Quán Cây Bàng',
+      activity: 'food',
+      days: 6,
+      photos: [PHOTOS[2]],
+      likes: 0,
+      comments: 0,
+    },
+    {
       caption: 'Sinh nhật Diên 🎂',
       place: null,
       activity: 'home',
@@ -160,6 +172,8 @@ export function previewPosts() {
     place_lat: 'lat' in b ? (b.lat as number) : null,
     place_lng: 'lng' in b ? (b.lng as number) : null,
     province_code: null,
+    ward: null,
+    district: null,
     activity: b.activity,
     created_at: new Date().toISOString(),
     media: b.photos.map((url, p) => ({

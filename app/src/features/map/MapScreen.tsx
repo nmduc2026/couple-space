@@ -7,6 +7,7 @@ import { useCouple } from '../../hooks/useCouple'
 import {
   usePlaceResolution,
   type Unresolved,
+  type WardGroup,
 } from '../../hooks/usePlaceResolution'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW } from '../../dev/preview'
@@ -27,7 +28,7 @@ const ZONES: Array<{ key: Zone; label: string }> = [
 
 export function MapScreen() {
   const { posts, isLoading } = usePosts()
-  const { visits, foreign, unresolved, toStamp, placesByProvince } =
+  const { visits, foreign, unresolved, toStamp, wardsByProvince } =
     usePlaceResolution(posts)
   const [asking, setAsking] = useState<Unresolved | null>(null)
   // Chạm vào một tỉnh thì mở ra mức chi tiết hơn: những nơi CỤ THỂ đã đi
@@ -169,7 +170,7 @@ export function MapScreen() {
       {drill ? (
         <ProvinceDrill
           code={drill}
-          places={placesByProvince.get(drill) ?? []}
+          wards={wardsByProvince.get(drill) ?? []}
           onClose={() => setDrill(null)}
         />
       ) : null}
@@ -203,6 +204,13 @@ function AskProvince({
     ? PROVINCES.filter((p) => normalizePlace(p.name).includes(needle))
     : PROVINCES
 
+  // Gom theo miền như trên bản đồ: 63 dòng phẳng thì phải đọc từng cái một
+  const zones: Array<[Zone, string]> = [
+    ['bac', 'Miền Bắc'],
+    ['trung', 'Miền Trung'],
+    ['nam', 'Miền Nam'],
+  ]
+
   async function save(provinceCode: string | null) {
     if (!couple || PREVIEW) return onDone()
     setSaving(true)
@@ -230,37 +238,68 @@ function AskProvince({
         className="flex max-h-sheet w-full flex-col rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-[17px] font-semibold text-text">
-          “{place.placeName}” ở đâu?
-        </p>
-        <p className="mt-1 text-[13px] text-muted">
-          {place.count > 1 ? `${place.count} kỉ niệm · ` : ''}Trả lời một lần,
-          lần sau app tự nhận.
-        </p>
+        {/* `flex-none` cho phần đầu: không có nó thì flex bóp dẹt cả ô tìm
+            kiếm lẫn tiêu đề để nhường chỗ cho danh sách dài bên dưới. */}
+        <div className="flex-none">
+          <p className="text-[17px] font-semibold text-text">
+            “{place.placeName}” ở đâu?
+          </p>
+          <p className="mt-1 text-[13px] text-muted">
+            {place.count > 1 ? `${place.count} kỉ niệm · ` : ''}Trả lời một lần,
+            lần sau app tự nhận.
+          </p>
 
-        <input
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder="Gõ tên tỉnh..."
-          className={`${input} mt-4`}
-        />
+          <div className="relative mt-4">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
+            >
+              🔍
+            </span>
+            <input
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+              placeholder="Gõ tên tỉnh..."
+              autoFocus
+              className={`${input} pl-10`}
+            />
+          </div>
+        </div>
 
-        <ul className="mt-3 min-h-0 flex-1 overflow-y-auto">
-          {matches.map((p) => (
-            <li key={p.code}>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => void save(p.code)}
-                className="w-full border-b border-border px-1 py-3 text-left text-[15px] text-text disabled:opacity-50"
-              >
-                {p.name}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border bg-surface">
+          {matches.length === 0 ? (
+            <p className="px-4 py-10 text-center text-sm leading-relaxed text-muted">
+              Không có tỉnh nào tên như vậy.
+              <br />
+              Ở nước ngoài thì chọn nút bên dưới.
+            </p>
+          ) : (
+            zones.map(([zone, label]) => {
+              const inZone = matches.filter((p) => p.zone === zone)
+              if (inZone.length === 0) return null
+              return (
+                <div key={zone}>
+                  <p className="sticky top-0 z-10 bg-surface px-4 pt-3 pb-1.5 text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+                    {label}
+                  </p>
+                  {inZone.map((p) => (
+                    <button
+                      key={p.code}
+                      type="button"
+                      disabled={saving}
+                      onClick={() => void save(p.code)}
+                      className="w-full px-4 py-3 text-left text-[15px] text-text transition active:bg-soft disabled:opacity-50"
+                    >
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              )
+            })
+          )}
+        </div>
 
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 flex-none space-y-2">
           <button
             type="button"
             disabled={saving}
@@ -271,6 +310,117 @@ function AskProvince({
           </button>
           <button type="button" onClick={onDone} className={btn.ghost}>
             Để sau
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Mức chi tiết bên trong một tỉnh: phường/xã, rồi tới từng địa điểm.
+ *
+ * Phường/xã chỉ có với bài tạo bằng nút "Lấy vị trí hiện tại" — lúc đó app tra
+ * ngược toạ độ ra địa chỉ thật. Bài gõ tay thì không suy ra được phường từ
+ * "Quán Cây Bàng", nên gom vào một nhóm riêng ở cuối thay vì đoán bừa.
+ */
+function ProvinceDrill({
+  code,
+  wards,
+  onClose,
+}: {
+  code: string
+  wards: WardGroup[]
+  onClose: () => void
+}) {
+  const [openWard, setOpenWard] = useState<string | null>(null)
+  const name = provinceByCode(code)?.name ?? code
+  const total = wards.reduce((n, w) => n + w.count, 0)
+  const named = wards.filter((w) => w.ward !== null).length
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-label={name}
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-sheet w-full flex-col rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex-none">
+          <p className="text-[17px] font-semibold text-text">{name}</p>
+          <p className="mt-1 text-[13px] text-muted">
+            {named > 0 ? `${named} phường/xã · ` : ''}
+            {total} kỉ niệm
+          </p>
+        </div>
+
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border bg-surface">
+          {wards.map((w) => {
+            const key = w.ward ?? ''
+            const isOpen = openWard === key
+            return (
+              <div key={key} className="border-b border-border last:border-b-0">
+                <button
+                  type="button"
+                  onClick={() => setOpenWard(isOpen ? null : key)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                >
+                  <span aria-hidden>{w.ward ? '🏘️' : '📍'}</span>
+                  <span className="min-w-0 flex-1">
+                    <b className="block truncate text-[15px] font-medium text-text">
+                      {w.ward ?? 'Chưa rõ phường/xã'}
+                    </b>
+                    {w.ward ? null : (
+                      <small className="block text-[11.5px] text-muted">
+                        Bài gõ địa điểm bằng tay
+                      </small>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-[12.5px] text-muted">
+                    {w.count}
+                  </span>
+                  <span aria-hidden className="shrink-0 text-muted">
+                    {isOpen ? '▾' : '▸'}
+                  </span>
+                </button>
+
+                {isOpen ? (
+                  <ul className="bg-bg/60 px-2 pb-2">
+                    {w.places.map((p) => (
+                      <li key={p.placeName}>
+                        <Link
+                          to={`/timeline?place=${encodeURIComponent(p.placeName)}`}
+                          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] text-text"
+                        >
+                          <span aria-hidden className="text-[12px]">
+                            📍
+                          </span>
+                          <span className="min-w-0 flex-1 truncate">
+                            {p.placeName}
+                          </span>
+                          <span className="shrink-0 text-[12px] text-muted">
+                            {p.count} lần
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="mt-3 flex-none space-y-2">
+          <Link to={`/timeline?province=${code}`} className={btn.outline}>
+            Xem tất cả kỉ niệm ở {name}
+          </Link>
+          <button type="button" onClick={onClose} className={btn.ghost}>
+            Đóng
           </button>
         </div>
       </div>
@@ -298,74 +448,6 @@ function EmptyState({ hasPosts }: { hasPosts: boolean }) {
       >
         {hasPosts ? 'Mở kỉ niệm gần nhất' : 'Thêm kỉ niệm'}
       </Link>
-    </div>
-  )
-}
-
-/**
- * Mức chi tiết bên trong một tỉnh.
- *
- * Cố ý KHÔNG dựng danh sách phường/xã hành chính: app không có dữ liệu đó, mà
- * kể cả có thì một tỉnh vài trăm phường trong khi cặp đôi mới đi 3 nơi thì
- * danh sách toàn ô rỗng. Thứ liệt kê ở đây là những địa điểm CÓ THẬT mà hai
- * người đã gắn vào kỉ niệm — chi tiết hơn tỉnh, và luôn có nội dung.
- */
-function ProvinceDrill({
-  code,
-  places,
-  onClose,
-}: {
-  code: string
-  places: Array<{ placeName: string; count: number }>
-  onClose: () => void
-}) {
-  const name = provinceByCode(code)?.name ?? code
-  const total = places.reduce((n, p) => n + p.count, 0)
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40"
-      role="dialog"
-      aria-modal="true"
-      aria-label={name}
-      onClick={onClose}
-    >
-      <div
-        className="max-h-sheet w-full overflow-y-auto rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="text-[17px] font-semibold text-text">{name}</p>
-        <p className="mt-1 text-[13px] text-muted">
-          {places.length} nơi · {total} kỉ niệm
-        </p>
-
-        <ul className="mt-4">
-          {places.map((p) => (
-            <li key={p.placeName}>
-              <Link
-                to={`/timeline?place=${encodeURIComponent(p.placeName)}`}
-                className="flex items-center gap-3 border-b border-border py-3 text-[15px] text-text last:border-b-0"
-              >
-                <span aria-hidden>📍</span>
-                <span className="min-w-0 flex-1 truncate">{p.placeName}</span>
-                <span className="shrink-0 text-[12.5px] text-muted">
-                  {p.count} lần
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <Link
-          to={`/timeline?province=${code}`}
-          className={`${btn.outline} mt-4`}
-        >
-          Xem tất cả kỉ niệm ở {name}
-        </Link>
-        <button type="button" onClick={onClose} className={`${btn.ghost} mt-1`}>
-          Đóng
-        </button>
-      </div>
     </div>
   )
 }

@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { ACTIVITY_LABELS } from '../../lib/activities'
+import { provinceByCode } from '../../lib/provinces'
 
 /*
- * Hai bộ lọc cho Timeline: thời gian (chọn một) và hoạt động (chọn nhiều).
+ * Ba bộ lọc cho Timeline: thời gian (chọn một), nơi chốn (chọn một) và hoạt
+ * động (chọn nhiều).
+ *
+ * Cả ba LUÔN hiện. Trước đây lọc theo nơi chốn chỉ xuất hiện khi đi từ màn Dấu
+ * chân sang, nên vào thẳng Kỉ niệm thì không có cách nào lọc theo nơi.
  *
  * Dạng dropdown thả ngay dưới nút, không phải tấm trượt từ đáy màn hình. Tấm
  * trượt hợp với việc dài hơi (chọn ngày, chọn giờ, đọc rồi quyết); còn lọc là
@@ -21,14 +26,24 @@ export function TimelineFilters({
   onTime,
   activities,
   onActivities,
+  places,
+  provinces,
+  place,
+  province,
+  onPlace,
 }: {
   years: string[]
   time: TimeFilter
   onTime: (next: TimeFilter) => void
   activities: string[]
   onActivities: (next: string[]) => void
+  places: Array<{ key: string; count: number }>
+  provinces: Array<{ key: string; count: number }>
+  place: string | null
+  province: string | null
+  onPlace: (next: { place?: string | null; province?: string | null }) => void
 }) {
-  const [open, setOpen] = useState<'time' | 'activity' | null>(null)
+  const [open, setOpen] = useState<'time' | 'activity' | 'place' | null>(null)
 
   const timeLabel = time.kind === 'all' ? 'Mọi lúc' : `Năm ${time.year}`
   const activityLabel =
@@ -37,6 +52,12 @@ export function TimelineFilters({
       : activities.length === 1
         ? (ACTIVITY_LABELS[activities[0]]?.label ?? activities[0])
         : `${activities.length} loại`
+
+  const placeLabel = place
+    ? place
+    : province
+      ? (provinceByCode(province)?.name ?? province)
+      : 'Mọi nơi'
 
   const toggle = (key: string) =>
     onActivities(
@@ -74,6 +95,61 @@ export function TimelineFilters({
             }}
           >
             Năm {y}
+          </Option>
+        ))}
+      </Dropdown>
+
+      <Dropdown
+        icon="📍"
+        label={placeLabel}
+        active={!!place || !!province}
+        open={open === 'place'}
+        onOpen={() => setOpen(open === 'place' ? null : 'place')}
+        onClose={() => setOpen(null)}
+      >
+        <Option
+          active={!place && !province}
+          onClick={() => {
+            onPlace({ place: null, province: null })
+            setOpen(null)
+          }}
+        >
+          Mọi nơi
+        </Option>
+
+        {provinces.length > 0 ? (
+          <p className="px-2.5 pt-2 pb-1 text-[11px] font-bold tracking-[0.1em] text-muted uppercase">
+            Tỉnh thành
+          </p>
+        ) : null}
+        {provinces.map((p) => (
+          <Option
+            key={`prov-${p.key}`}
+            active={province === p.key}
+            onClick={() => {
+              onPlace({ place: null, province: p.key })
+              setOpen(null)
+            }}
+          >
+            {provinceByCode(p.key)?.name ?? p.key}
+          </Option>
+        ))}
+
+        {places.length > 0 ? (
+          <p className="px-2.5 pt-2 pb-1 text-[11px] font-bold tracking-[0.1em] text-muted uppercase">
+            Địa điểm
+          </p>
+        ) : null}
+        {places.map((p) => (
+          <Option
+            key={`place-${p.key}`}
+            active={place === p.key}
+            onClick={() => {
+              onPlace({ place: p.key, province: null })
+              setOpen(null)
+            }}
+          >
+            {p.key}
           </Option>
         ))}
       </Dropdown>
