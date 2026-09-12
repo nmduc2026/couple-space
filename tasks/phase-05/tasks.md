@@ -26,8 +26,8 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P5-07** Màn hình câu hỏi — 4 trạng thái (chưa ai trả lời / người kia đã trả lời / mình đã trả lời / cả hai xong)
 - [x] **P5-08** Ô mờ là **khối giả có kích thước gần đúng**, không phải nội dung thật bị CSS blur
 - [x] **P5-09** Sửa câu trả lời trong **24 giờ**, có nhãn "đã chỉnh"; sau đó khoá
-- [ ] **P5-10** Mục "Bỏ lỡ" — trả lời bù trong 7 ngày — **chưa làm** (trả lời bù trong 7 ngày)
-- [ ] **P5-11** Sách hỏi đáp: xem theo thời gian, tìm theo từ khoá — **chưa làm** (sách hỏi đáp)
+- [x] **P5-10** Mục "Bỏ lỡ" — trả lời bù trong 7 ngày — `lib/questionDays.ts` + policy `answers_write` siết cửa sổ ở DB (migration `20260918090000`)
+- [x] **P5-11** Sách hỏi đáp: xem theo thời gian, tìm theo từ khoá — tìm bỏ dấu, khớp cả câu hỏi lẫn câu trả lời
 - [x] **P5-12** Push buổi sáng + push khi người kia trả lời (mỗi ngày tối đa một lần nhắc)
 
 ## B. Thư gửi tương lai → [steps/b-future-letter.md](steps/b-future-letter.md)
