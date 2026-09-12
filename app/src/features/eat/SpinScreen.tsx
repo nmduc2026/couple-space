@@ -5,7 +5,7 @@ import { useCouple } from '../../hooks/useCouple'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW, previewEatItems } from '../../dev/preview'
 import type { EatItem } from '../../hooks/useEatItems'
-import { Screen, Stage, Sub, Title, TopBar } from '../../components/ui'
+import { ConfirmSheet, Screen, Stage, Sub, Title, TopBar } from '../../components/ui'
 import { btn } from '../../lib/ui-classes'
 
 type Candidate = {
@@ -25,6 +25,7 @@ export function SpinScreen() {
   const { couple } = useCouple()
 
   const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [askCompose, setAskCompose] = useState(false)
   const [shownIndex, setShownIndex] = useState(0)
   const [phase, setPhase] = useState<'idle' | 'spinning' | 'done' | 'empty'>(
     'idle',
@@ -98,7 +99,9 @@ export function SpinScreen() {
       .update({ status: 'tried' })
       .eq('id', winner.id)
     await queryClient.invalidateQueries({ queryKey: ['eat_items'] })
-    navigate('/eat')
+    await queryClient.invalidateQueries({ queryKey: ['pending_ratings'] })
+    // Vừa đi ăn xong là lúc dễ có ảnh nhất — hỏi ngay, nhưng không ép
+    setAskCompose(true)
   }
 
   const spinningName = candidates[shownIndex]?.name ?? '...'
@@ -172,6 +175,22 @@ export function SpinScreen() {
           )}
         </div>
       </Stage>
+
+      {askCompose ? (
+        <ConfirmSheet
+          title="Đăng luôn một kỉ niệm?"
+          body={`Đã ghi lại lần đi ${winner?.name ?? 'này'}.`}
+          confirmLabel="Thêm ảnh, viết vài chữ"
+          cancelLabel="Để sau"
+          onConfirm={() =>
+            navigate(
+              `/compose?activity=food&place=${encodeURIComponent(winner?.name ?? '')}`,
+              { replace: true },
+            )
+          }
+          onCancel={() => navigate('/eat', { replace: true })}
+        />
+      ) : null}
     </Screen>
   )
 }

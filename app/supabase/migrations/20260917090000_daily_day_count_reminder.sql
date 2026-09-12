@@ -1,5 +1,6 @@
 -- P3-21 — Push hằng ngày "Hôm nay là ngày thứ N".
 -- P5-20 — Push khi có thư tương lai mở khoá.
+-- P5-40 — Nhắc đánh giá quán đúng một lần vào hôm sau.
 --
 -- Công tắc `notification_prefs.daily_day_count` đã có từ Phase 3 và mặc định
 -- TẮT, nhưng `due_reminders()` chưa bao giờ sinh ra dòng nào cho nó. Migration
@@ -103,13 +104,45 @@ language sql stable security definer set search_path = public as $$
     from local_now l
     join public.letters le on le.couple_id = l.couple_id
     where le.open_on = l.today_local
+
+    union all
+
+    -- Hôm qua đi ăn mà chưa đánh giá. `reminder_sends` giữ cho đúng MỘT lần:
+    -- target_date là ngày đi, nên qua ngày kia không hỏi lại nữa. Đừng nài —
+    -- xem docs/features/p2-eat-tonight.md mục 7.
+    select l.user_id,
+           l.couple_id,
+           'eat_rating:' || v.id as subject_key,
+           it.name as title,
+           '🍽️' as emoji,
+           v.visited_on as target_date,
+           0 as days_before,
+           time '19:00' as send_after,
+           l.time_local,
+           l.today_local,
+           l.quiet_hours_from,
+           l.quiet_hours_to
+    from local_now l
+    join public.eat_visits v on v.couple_id = l.couple_id
+    join public.eat_items it on it.id = v.item_id
+    where v.visited_on = l.today_local - 1
+      and not exists (
+        select 1 from public.eat_ratings r
+        where r.visit_id = v.id and r.user_id = l.user_id
+      )
   )
   select c.user_id, c.couple_id, c.subject_key, c.title, c.emoji,
          c.target_date, c.days_before
   from candidates c
   where c.target_date is not null
-    -- đúng ngày phải nhắc
-    and c.target_date - c.days_before = c.today_local
+    -- đúng ngày phải nhắc. Nhắc đánh giá là ngoại lệ duy nhất nhìn về QUÁ KHỨ:
+    -- nó hỏi về bữa hôm qua, nên mốc của nó là today - 1.
+    and (
+      case when c.subject_key like 'eat_rating:%'
+        then c.target_date = c.today_local - 1
+        else c.target_date - c.days_before = c.today_local
+      end
+    )
     -- đã tới giờ gửi của người này
     and c.time_local >= c.send_after
     -- đang trong giờ yên lặng thì để lượt cron sau gửi

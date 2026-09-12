@@ -30,8 +30,12 @@ function phrase(row: DueRow) {
 function summarise(items: DueRow[]) {
   const daily = items.find((i) => i.subject_key === "daily");
   const letters = items.filter((i) => i.subject_key.startsWith("letter:"));
+  const ratings = items.filter((i) => i.subject_key.startsWith("eat_rating:"));
   const events = items.filter(
-    (i) => i.subject_key !== "daily" && !i.subject_key.startsWith("letter:"),
+    (i) =>
+      i.subject_key !== "daily" &&
+      !i.subject_key.startsWith("letter:") &&
+      !i.subject_key.startsWith("eat_rating:"),
   );
 
   // Thư mở khoá quan trọng hơn mọi thứ khác trong ngày — cho nó cả thông báo
@@ -41,6 +45,16 @@ function summarise(items: DueRow[]) {
         ? "💌 Có một lá thư vừa mở khoá"
         : `💌 Có ${letters.length} lá thư vừa mở khoá`,
       path: "/letters",
+    };
+  }
+
+  // Hỏi đánh giá là lời nhắc nhẹ nhất — chỉ gửi khi không có gì khác
+  if (events.length === 0 && !daily && ratings.length > 0) {
+    return {
+      body: ratings.length === 1
+        ? `Hôm qua đi ${ratings[0].title} — ngon không?`
+        : "Hôm qua đi ăn — đánh giá một câu nhé?",
+      path: "/eat",
     };
   }
 

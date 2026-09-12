@@ -6,7 +6,9 @@ import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW } from '../../dev/preview'
-import { useEatItems, type EatItem } from '../../hooks/useEatItems'
+import { useEatItems, useEatStats, type EatItem } from '../../hooks/useEatItems'
+import { formatShortVnd } from '../../lib/money'
+import { RatingPrompt } from './RatingPrompt'
 import { btn, input } from '../../lib/ui-classes'
 
 type Tab = 'want' | 'tried'
@@ -17,6 +19,7 @@ export function EatScreen() {
   const { couple } = useCouple()
   const { user } = useSession()
   const { items, isLoading } = useEatItems()
+  const stats = useEatStats()
 
   const tab: Tab = params.get('tab') === 'tried' ? 'tried' : 'want'
   // Nhận link chia sẻ từ app khác (TikTok, Maps) qua share_target của PWA:
@@ -75,6 +78,8 @@ export function EatScreen() {
           🎲 Quay đi, khỏi cãi nhau
         </Link>
 
+        <RatingPrompt />
+
         <form onSubmit={quickAdd} className="mt-3 flex gap-2">
           <input
             value={name}
@@ -130,31 +135,32 @@ export function EatScreen() {
                 key={item.id}
                 className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
               >
-                <span aria-hidden className="text-2xl">
-                  🍽️
-                </span>
-                <div className="min-w-0 flex-1">
-                  <b className="block truncate text-[15px] font-semibold text-text">
-                    {item.name}
-                  </b>
-                  {item.address ? (
-                    <span className="block truncate text-[12.5px] text-muted">
-                      {item.address}
-                    </span>
-                  ) : null}
-                  {item.tags.length ? (
-                    <span className="mt-1 flex flex-wrap gap-1">
-                      {item.tags.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-full bg-soft px-2 py-0.5 text-[11px] text-accent"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </span>
-                  ) : null}
-                </div>
+                <Link
+                  to={`/eat/${item.id}`}
+                  className="flex min-w-0 flex-1 items-center gap-3"
+                >
+                  <span aria-hidden className="text-2xl">
+                    🍽️
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <b className="block truncate text-[15px] font-semibold text-text">
+                      {item.name}
+                    </b>
+                    <ItemSubtitle item={item} stat={stats.get(item.id)} />
+                    {item.tags.length ? (
+                      <span className="mt-1 flex flex-wrap gap-1">
+                        {item.tags.map((t) => (
+                          <span
+                            key={t}
+                            className="rounded-full bg-soft px-2 py-0.5 text-[11px] text-accent"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </span>
+                </Link>
                 <button
                   type="button"
                   onClick={() =>
@@ -170,5 +176,37 @@ export function EatScreen() {
         )}
       </div>
     </>
+  )
+}
+
+/** Dòng phụ dưới tên quán: ưu tiên số liệu tự tính, không có thì mới
+ *  rơi về địa chỉ — số lần ăn hữu ích hơn địa chỉ khi đang chọn chỗ. */
+function ItemSubtitle({
+  item,
+  stat,
+}: {
+  item: EatItem
+  stat?: { visit_count: number; avg_spend_minor: number | null; love_count: number; nope_count: number }
+}) {
+  const bits: string[] = []
+  if (stat?.visit_count) bits.push(`${stat.visit_count} lần`)
+  if (stat?.avg_spend_minor) {
+    bits.push(`~${formatShortVnd(Number(stat.avg_spend_minor))}`)
+  }
+  if (stat?.love_count) bits.push('😍'.repeat(Math.min(stat.love_count, 2)))
+  if (stat?.nope_count) bits.push('😕')
+
+  if (bits.length === 0) {
+    return item.address ? (
+      <span className="block truncate text-[12.5px] text-muted">
+        {item.address}
+      </span>
+    ) : null
+  }
+
+  return (
+    <span className="block truncate text-[12.5px] text-muted">
+      {bits.join(' · ')}
+    </span>
   )
 }

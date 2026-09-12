@@ -65,9 +65,9 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 
 - [x] **P5-35** Migration `eat_visits` + `eat_ratings` — [p2-eat-tonight.md](../../docs/features/p2-eat-tonight.md) mục 6
 - [x] **P5-36** View `eat_item_stats` — nhớ `security_invoker = true`
-- [x] **P5-37** Nối lượt ghé với `posts` và `expenses` → **số lần ăn và giá trung bình tự tính** — cột `eat_visits.expense_id` và view `eat_item_stats` đã có; **chưa nối ở giao diện**
-- [x] **P5-38** Nút [Chốt] tạo lượt ghé + hỏi mở form đăng kỉ niệm — nút Chốt tạo lượt ghé xong; **chưa hỏi mở form đăng kỉ niệm**
-- [ ] **P5-39** Dải hỏi đánh giá 3 mức, một chạm, bỏ qua được — **chưa làm** (dải hỏi đánh giá)
-- [ ] **P5-40** Nhắc đánh giá **đúng một lần** hôm sau nếu người kia chưa đánh giá — **chưa làm**
+- [x] **P5-37** Nối lượt ghé với `posts` và `expenses` → **số lần ăn và giá trung bình tự tính** — `useEatStats()` nối view vào danh sách và màn chi tiết
+- [x] **P5-38** Nút [Chốt] tạo lượt ghé + hỏi mở form đăng kỉ niệm — `ConfirmSheet` sau khi Chốt, `/compose` nhận sẵn tên quán và hoạt động
+- [x] **P5-39** Dải hỏi đánh giá 3 mức, một chạm, bỏ qua được — `RatingPrompt`, mỗi lần chỉ hỏi một quán
+- [x] **P5-40** Nhắc đánh giá **đúng một lần** hôm sau nếu người kia chưa đánh giá — nhánh `eat_rating:` trong `due_reminders()`; `reminder_sends` giữ đúng một lần
 - [x] **P5-41** Thêm luật 1 và 2 vào hàm quay: loại chỗ ăn trong 14 ngày · loại chỗ ai đó chê
-- [ ] **P5-42** Màn hình chi tiết quán hiện đủ thống kê tự tính — **chưa làm** (màn chi tiết quán)
+- [x] **P5-42** Màn hình chi tiết quán hiện đủ thống kê tự tính — `/eat/:id`, số liệu lấy từ view `eat_item_stats`

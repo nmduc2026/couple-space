@@ -41,8 +41,11 @@ export function ComposeScreen() {
   // Vào từ màn chúc mừng mục tiêu thì caption đã điền sẵn
   const [caption, setCaption] = useState(() => params.get('caption') ?? '')
   const [happenedOn, setHappenedOn] = useState(todayYmd())
-  const [placeName, setPlaceName] = useState('')
-  const [activity, setActivity] = useState<string | null>(null)
+  // Vào từ vòng quay "Ăn gì?" thì tên quán và hoạt động đã điền sẵn
+  const [placeName, setPlaceName] = useState(() => params.get('place') ?? '')
+  const [activity, setActivity] = useState<string | null>(
+    () => params.get('activity'),
+  )
   const [addExpense, setAddExpense] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')

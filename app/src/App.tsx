@@ -26,6 +26,7 @@ import { EventFormScreen } from './features/plan/EventFormScreen'
 import { GoalDetailScreen } from './features/goals/GoalDetailScreen'
 import { ExpensesScreen } from './features/expenses/ExpensesScreen'
 import { ExpenseFormScreen } from './features/expenses/ExpenseFormScreen'
+import { EatDetailScreen } from './features/eat/EatDetailScreen'
 import { QuestionScreen } from './features/question/QuestionScreen'
 import { LettersScreen } from './features/letters/LettersScreen'
 import { MoodScreen } from './features/mood/MoodScreen'
@@ -114,6 +115,7 @@ export default function App() {
             <Route path="/expenses/new" element={<ExpenseFormScreen />} />
             <Route path="/expenses/:id" element={<ExpenseFormScreen />} />
             <Route path="/eat/spin" element={<SpinScreen />} />
+            <Route path="/eat/:id" element={<EatDetailScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>
         </Route>
