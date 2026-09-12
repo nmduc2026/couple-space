@@ -1,0 +1,18 @@
+# Khoá kiểu nhị phân cho tài sản của bản xuất PDF.
+#
+# Git đoán text/binary theo nội dung. Đoán sai một lần là file font hoặc wasm
+# bị đổi CRLF lúc checkout trên Windows, và hỏng đó chỉ lộ ra khi PDF sinh
+# xong không có dấu — rất xa chỗ gây lỗi.
+*.ttf  binary
+*.otf  binary
+*.woff binary
+*.woff2 binary
+*.wasm binary
+*.pdf  binary
+
+# Ảnh
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.ico  binary
