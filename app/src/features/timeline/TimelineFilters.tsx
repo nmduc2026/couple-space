@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { ACTIVITY_LABELS } from '../../lib/activities'
 import { provinceByCode } from '../../lib/provinces'
+import {
+  IconCalendar,
+  IconChevronDown,
+  IconMap,
+  IconTag,
+} from '../../components/icons'
 
 /*
  * Ba bộ lọc cho Timeline: thời gian (chọn một), nơi chốn (chọn một) và hoạt
@@ -69,7 +75,7 @@ export function TimelineFilters({
   return (
     <div className="flex gap-2 px-4 py-3">
       <Dropdown
-        icon="🗓️"
+        Icon={IconCalendar}
         label={timeLabel}
         active={time.kind !== 'all'}
         open={open === 'time'}
@@ -100,7 +106,7 @@ export function TimelineFilters({
       </Dropdown>
 
       <Dropdown
-        icon="📍"
+        Icon={IconMap}
         label={placeLabel}
         active={!!place || !!province}
         open={open === 'place'}
@@ -118,7 +124,7 @@ export function TimelineFilters({
         </Option>
 
         {provinces.length > 0 ? (
-          <p className="px-2.5 pt-2 pb-1 text-[11px] font-bold tracking-[0.1em] text-muted uppercase">
+          <p className="px-2.5 pt-2 pb-1 text-[12.5px] font-medium text-muted">
             Tỉnh thành
           </p>
         ) : null}
@@ -136,7 +142,7 @@ export function TimelineFilters({
         ))}
 
         {places.length > 0 ? (
-          <p className="px-2.5 pt-2 pb-1 text-[11px] font-bold tracking-[0.1em] text-muted uppercase">
+          <p className="px-2.5 pt-2 pb-1 text-[12.5px] font-medium text-muted">
             Địa điểm
           </p>
         ) : null}
@@ -155,7 +161,7 @@ export function TimelineFilters({
       </Dropdown>
 
       <Dropdown
-        icon="🏷️"
+        Icon={IconTag}
         label={activityLabel}
         active={activities.length > 0}
         open={open === 'activity'}
@@ -191,7 +197,7 @@ export function TimelineFilters({
 }
 
 function Dropdown({
-  icon,
+  Icon,
   label,
   active,
   open,
@@ -199,7 +205,7 @@ function Dropdown({
   onClose,
   children,
 }: {
-  icon: string
+  Icon: (p: { size?: number; className?: string }) => React.ReactElement
   label: string
   active: boolean
   open: boolean
@@ -234,16 +240,14 @@ function Dropdown({
         aria-expanded={open}
         className={`${trigger} ${active || open ? 'border-accent' : 'border-border'}`}
       >
-        <span aria-hidden>{icon}</span>
+        <Icon size={17} className="shrink-0 text-muted" />
         <span className="truncate">{label}</span>
-        <span
-          aria-hidden
-          className={`ml-auto text-[11px] text-muted transition-transform ${
+        <IconChevronDown
+          size={15}
+          className={`ml-auto shrink-0 text-muted transition-transform ${
             open ? 'rotate-180' : ''
           }`}
-        >
-          ▾
-        </span>
+        />
       </button>
 
       {open ? (

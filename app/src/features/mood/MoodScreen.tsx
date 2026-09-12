@@ -121,7 +121,7 @@ export function MoodScreen() {
         </section>
 
         <div className="mt-4 flex items-center justify-between">
-          <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+          <h2 className="text-[14px] font-semibold text-muted">
             {range} ngày qua
           </h2>
           <div className="flex overflow-hidden rounded-full border border-border">

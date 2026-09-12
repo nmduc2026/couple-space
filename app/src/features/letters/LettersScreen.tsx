@@ -134,7 +134,7 @@ export function LettersScreen() {
           className={`${input} mt-3 h-auto py-3 leading-[1.75]`}
         />
 
-        <p className="mt-4 text-[11px] font-semibold tracking-[0.12em] text-muted uppercase">
+        <p className="mt-4 text-[13px] font-medium text-muted">
           Mở vào ngày
         </p>
         <DateField
@@ -208,7 +208,7 @@ export function LettersScreen() {
 
         {upcoming.length > 0 ? (
           <section>
-            <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+            <h2 className="text-[14px] font-semibold text-muted">
               Sắp mở
             </h2>
             <ul className="mt-2.5 flex flex-col gap-2.5">
@@ -239,7 +239,7 @@ export function LettersScreen() {
 
         {opened.length > 0 ? (
           <section className="mt-6">
-            <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+            <h2 className="text-[14px] font-semibold text-muted">
               Đã mở
             </h2>
             <ul className="mt-2.5 flex flex-col gap-2.5">

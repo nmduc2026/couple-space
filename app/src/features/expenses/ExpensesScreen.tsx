@@ -89,7 +89,7 @@ export function ExpensesScreen() {
         ) : (
           <>
             <section className="rounded-2xl border border-border bg-surface p-4">
-              <p className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+              <p className="text-[13px] font-medium text-muted">
                 Tổng chi
               </p>
               <p className="mt-1 text-[30px] leading-tight font-extrabold tracking-[-0.02em] text-text">

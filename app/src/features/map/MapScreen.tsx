@@ -131,7 +131,7 @@ export function MapScreen() {
 
             {ZONES.map((zone) => (
               <section key={zone.key} className="mt-5">
-                <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+                <h2 className="text-[14px] font-semibold text-muted">
                   {zone.label}
                 </h2>
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -279,7 +279,7 @@ function AskProvince({
               if (inZone.length === 0) return null
               return (
                 <div key={zone}>
-                  <p className="sticky top-0 z-10 bg-surface px-4 pt-3 pb-1.5 text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+                  <p className="sticky top-0 z-10 bg-surface px-4 pt-3 pb-1.5 text-[13px] font-medium text-muted">
                     {label}
                   </p>
                   {inZone.map((p) => (

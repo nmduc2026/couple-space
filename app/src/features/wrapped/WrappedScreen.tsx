@@ -140,7 +140,7 @@ export function WrappedScreen() {
               </p>
             </section>
 
-            <h2 className="mt-6 text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+            <h2 className="mt-6 text-[14px] font-semibold text-muted">
               Chọn thứ muốn khoe
             </h2>
             <ul className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface divide-y divide-border">

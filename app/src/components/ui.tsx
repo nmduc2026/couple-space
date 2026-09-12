@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { btn } from '../lib/ui-classes'
 import { Link } from 'react-router'
+import { IconArrowLeft } from './icons'
 
 /* Ngôn ngữ thiết kế lấy từ docs/design/frontend/ui/prototype.html.
    Sửa ở đây, mọi màn hình đổi theo — đừng chép chuỗi class đi nơi khác. */
@@ -51,9 +52,9 @@ export function TopBar({ to, label = 'Quay lại' }: { to: string; label?: strin
       >
         <span
           aria-hidden
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-[16px] text-text"
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-text"
         >
-          ←
+          <IconArrowLeft size={18} />
         </span>
         {label}
       </Link>
@@ -73,7 +74,11 @@ export function Sub({ children }: { children: ReactNode }) {
   return <p className="mt-1.5 text-sm leading-relaxed text-muted">{children}</p>
 }
 
-/** Nhãn trường nhập liệu — chữ nhỏ, in hoa, giãn chữ. */
+/** Nhãn trường nhập liệu.
+ *
+ *  Trước đây in hoa và giãn chữ. Kiểu đó đọc chậm hơn hẳn với tiếng Việt vì
+ *  dấu bị đẩy lên cao và các chữ IN HOA mất đường viền trên dưới vốn giúp mắt
+ *  nhận ra từ. Chữ thường, cỡ nhỏ, màu nhạt đã đủ nói "đây là nhãn". */
 export function Field({
   label,
   hint,
@@ -85,7 +90,7 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold tracking-[0.12em] text-muted uppercase">
+      <span className="text-[13px] font-medium text-muted">
         {label}
       </span>
       <div className="mt-2">{children}</div>
@@ -104,7 +109,7 @@ export function SectionLabel({
 }) {
   return (
     <h2
-      className={`px-1 text-[11px] font-bold tracking-[0.13em] uppercase ${
+      className={`px-1 text-[13px] font-semibold ${
         tone === 'danger' ? 'text-accent' : 'text-muted'
       }`}
     >

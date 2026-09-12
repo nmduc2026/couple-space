@@ -16,6 +16,21 @@ import { formatShortVnd } from '../../lib/money'
 import { todayYmd } from '../../lib/dateCount'
 import { wrappedSeason } from '../../lib/wrappedSeason'
 import { coverGradient } from '../../lib/coupleTheme'
+import {
+  IconAlbum,
+  IconBowl,
+  IconCalendar,
+  IconChevronRight,
+  IconDice,
+  IconGift,
+  IconLetter,
+  IconMap,
+  IconMood,
+  IconQuestion,
+  IconSettings,
+  IconSparkle,
+  IconTarget,
+} from '../../components/icons'
 
 export function HomeScreen() {
   const { user } = useSession()
@@ -108,14 +123,15 @@ export function HomeScreen() {
         <Link
           to="/settings"
           aria-label="Cài đặt"
-          className="absolute right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-lg backdrop-blur-sm transition active:scale-95"
+          className="absolute right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm transition active:scale-95"
           style={{ top: 'calc(env(safe-area-inset-top) + 0.5rem)' }}
         >
-          ⚙
+          <IconSettings size={19} />
         </Link>
 
         <p className="text-[15px] font-semibold opacity-95">
-          {leftName} <span aria-hidden>🤍</span> {rightName}
+          {leftName} <span aria-hidden className="opacity-60">&amp;</span>{' '}
+          {rightName}
         </p>
         <p className="mt-0.5 text-[62px] leading-[0.95] font-extrabold tracking-[-0.04em] tabular-nums">
           {days}
@@ -159,9 +175,7 @@ export function HomeScreen() {
             to="/wrapped"
             className="mb-3 flex items-center gap-3 rounded-2xl border border-accent/30 bg-soft p-4"
           >
-            <span aria-hidden className="text-2xl">
-              🎊
-            </span>
+            <IconSparkle size={22} className="shrink-0 text-accent" />
             <span className="min-w-0 flex-1">
               <b className="block text-[15px] font-semibold text-text">
                 Tổng kết {season.year} đã sẵn sàng
@@ -172,43 +186,42 @@ export function HomeScreen() {
                   : 'Tạm tính tới hôm nay, chốt vào 31/12'}
               </span>
             </span>
-            <span aria-hidden className="shrink-0 text-muted">
-              ›
-            </span>
+            <IconChevronRight size={17} className="shrink-0 text-muted" />
           </Link>
         ) : null}
 
-        <div className="grid grid-cols-4 gap-2">
+        {/* Một khối chung, không phải tám thẻ rời.
+            Trước đây mỗi lối tắt là một thẻ có viền riêng. Tám cái hộp giống
+            hệt nhau xếp thành lưới làm màn hình vụn ra, mà viền thì vẽ thêm
+            tám đường kẻ chẳng phân biệt được gì — chúng nó vốn là một nhóm,
+            nên vẽ một khung cho cả nhóm. */}
+        <nav className="grid grid-cols-4 gap-y-1 overflow-hidden rounded-2xl border border-border bg-surface py-2">
           {[
-            { to: '/question', emoji: '💭', label: 'Câu hỏi' },
-            { to: '/mood', emoji: '🌤️', label: 'Tâm trạng' },
-            { to: '/letters', emoji: '💌', label: 'Thư' },
-            { to: '/eat/spin', emoji: '🎲', label: 'Quay ăn' },
-            { to: '/map', emoji: '🗺️', label: 'Dấu chân' },
-            { to: '/wishlist', emoji: '🎁', label: 'Wishlist' },
-            { to: '/wrapped', emoji: '🎊', label: 'Tổng kết' },
-            { to: '/albums', emoji: '🖼️', label: 'Album' },
-          ].map((item) => (
+            { to: '/question', Icon: IconQuestion, label: 'Câu hỏi' },
+            { to: '/mood', Icon: IconMood, label: 'Tâm trạng' },
+            { to: '/letters', Icon: IconLetter, label: 'Thư' },
+            { to: '/eat/spin', Icon: IconDice, label: 'Quay ăn' },
+            { to: '/map', Icon: IconMap, label: 'Dấu chân' },
+            { to: '/wishlist', Icon: IconGift, label: 'Wishlist' },
+            { to: '/wrapped', Icon: IconSparkle, label: 'Tổng kết' },
+            { to: '/albums', Icon: IconAlbum, label: 'Album' },
+          ].map(({ to, Icon, label }) => (
             <Link
-              key={item.to}
-              to={item.to}
-              className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-surface py-3 text-[11.5px] font-medium text-muted"
+              key={to}
+              to={to}
+              className="flex flex-col items-center gap-1.5 rounded-xl py-2.5 text-[11.5px] font-medium text-muted transition active:scale-95"
             >
-              <span aria-hidden className="text-xl">
-                {item.emoji}
-              </span>
-              {item.label}
+              <Icon size={22} className="text-accent" />
+              {label}
             </Link>
           ))}
-        </div>
+        </nav>
 
         <Link
           to="/eat"
           className="mt-3 flex w-full items-center gap-3.5 rounded-2xl border border-border bg-surface p-3.5 text-left"
         >
-          <span aria-hidden className="text-2xl">
-            🍜
-          </span>
+          <IconBowl size={22} className="shrink-0 text-accent" />
           <span className="min-w-0">
             <b className="block text-[15px] font-semibold text-text">
               Tối nay ăn gì?
@@ -217,31 +230,33 @@ export function HomeScreen() {
               Quay một cái cho khỏi cãi nhau
             </small>
           </span>
-          <span aria-hidden className="ml-auto text-muted">
-            ›
-          </span>
+          <IconChevronRight size={17} className="ml-auto shrink-0 text-muted" />
         </Link>
 
         {agenda.length > 0 ? (
           <section className="mt-6">
             <div className="flex items-baseline justify-between">
-              <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+              <h2 className="text-[14px] font-semibold text-text">
                 Sắp tới
               </h2>
               <Link to="/plan" className="text-[11.5px] text-accent">
                 Xem tất cả
               </Link>
             </div>
-            <ul className="mt-2.5 flex flex-col gap-2">
+            {/* Cùng một danh sách thì vẽ một khung, ngăn nhau bằng đường kẻ.
+                Mỗi mục một thẻ viền riêng làm chúng nó trông như những thứ
+                chẳng liên quan gì tới nhau. */}
+            <ul className="mt-2.5 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
               {agenda.slice(0, 2).map((item) => (
                 <li key={item.id}>
-                  <Link
-                    to="/plan"
-                    className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
-                  >
-                    <span aria-hidden className="text-xl">
-                      {item.emoji ?? '📅'}
-                    </span>
+                  <Link to="/plan" className="flex items-center gap-3 p-3.5">
+                    {item.emoji ? (
+                      <span aria-hidden className="text-xl">
+                        {item.emoji}
+                      </span>
+                    ) : (
+                      <IconCalendar size={20} className="text-muted" />
+                    )}
                     <b className="min-w-0 flex-1 truncate text-[15px] font-semibold text-text">
                       {item.title}
                     </b>
@@ -261,7 +276,7 @@ export function HomeScreen() {
             className="mt-6 flex items-center gap-4 rounded-2xl border border-border bg-surface p-4"
           >
             <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+              <span className="block text-[13px] font-medium text-muted">
                 Tháng này
               </span>
               <span className="mt-1 block text-[13.5px] text-muted">
@@ -274,9 +289,7 @@ export function HomeScreen() {
                 </b>
               </span>
             </span>
-            <span aria-hidden className="text-muted">
-              ›
-            </span>
+            <IconChevronRight size={17} className="shrink-0 text-muted" />
           </Link>
         ) : null}
 
@@ -285,11 +298,15 @@ export function HomeScreen() {
             to={`/plan/goals/${activeGoal.id}`}
             className="mt-3 block rounded-2xl border border-border bg-surface p-4"
           >
-            <span className="block text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+            <span className="block text-[13px] font-medium text-muted">
               Mục tiêu
             </span>
             <span className="mt-1.5 flex items-center gap-2">
-              <span aria-hidden>{activeGoal.emoji ?? '✨'}</span>
+              {activeGoal.emoji ? (
+                <span aria-hidden>{activeGoal.emoji}</span>
+              ) : (
+                <IconTarget size={18} className="text-muted" />
+              )}
               <b className="min-w-0 flex-1 truncate text-[15px] font-semibold text-text">
                 {activeGoal.title}
               </b>
@@ -310,7 +327,7 @@ export function HomeScreen() {
 
         <section className="mt-6">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+            <h2 className="text-[14px] font-semibold text-text">
               Kỉ niệm gần đây
             </h2>
             {posts.length > 0 ? (

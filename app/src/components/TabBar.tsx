@@ -1,31 +1,38 @@
 import { Link, useLocation } from 'react-router'
+import {
+  IconCalendar,
+  IconHome,
+  IconPhoto,
+  IconPlus,
+  IconWallet,
+} from './icons'
 
 type Tab = {
   to: string
   label: string
-  emoji: string
+  Icon: (p: { size?: number; className?: string }) => React.ReactElement
   /** Khớp cả route con: /timeline/abc vẫn sáng tab Kỉ niệm */
   match: (path: string) => boolean
 }
 
 const TABS: Tab[] = [
-  { to: '/', label: 'Nhà', emoji: '🏠', match: (p) => p === '/' },
+  { to: '/', label: 'Nhà', Icon: IconHome, match: (p) => p === '/' },
   {
     to: '/timeline',
     label: 'Kỉ niệm',
-    emoji: '📷',
+    Icon: IconPhoto,
     match: (p) => p.startsWith('/timeline'),
   },
   {
     to: '/plan',
     label: 'Kế hoạch',
-    emoji: '🗓️',
+    Icon: IconCalendar,
     match: (p) => p.startsWith('/plan'),
   },
   {
     to: '/expenses',
     label: 'Chi tiêu',
-    emoji: '💰',
+    Icon: IconWallet,
     match: (p) => p.startsWith('/expenses'),
   },
 ]
@@ -49,9 +56,9 @@ export function TabBar() {
       <Link
         to="/compose"
         aria-label="Thêm kỉ niệm"
-        className="-mt-8 grid h-16 w-16 flex-none place-items-center rounded-full bg-accent text-3xl text-on-accent shadow-[0_8px_20px_-6px_var(--color-accent)] transition active:scale-95"
+        className="-mt-8 grid h-16 w-16 flex-none place-items-center rounded-full bg-accent text-on-accent shadow-[0_8px_20px_-6px_var(--color-accent)] transition active:scale-95"
       >
-        +
+        <IconPlus size={28} />
       </Link>
 
       {TABS.slice(2).map((tab) => (
@@ -62,6 +69,7 @@ export function TabBar() {
 }
 
 function TabLink({ tab, active }: { tab: Tab; active: boolean }) {
+  const { Icon } = tab
   return (
     <Link
       to={tab.to}
@@ -70,9 +78,7 @@ function TabLink({ tab, active }: { tab: Tab; active: boolean }) {
         active ? 'font-semibold text-accent' : 'text-muted'
       }`}
     >
-      <span aria-hidden className="text-[23px] leading-none">
-        {tab.emoji}
-      </span>
+      <Icon size={24} />
       {tab.label}
     </Link>
   )

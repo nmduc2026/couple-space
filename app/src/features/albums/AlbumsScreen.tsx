@@ -111,7 +111,7 @@ export function AlbumsScreen() {
 
             {fresh.length > 0 ? (
               <section className={albums.length > 0 ? 'mt-7' : ''}>
-                <h2 className="text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+                <h2 className="text-[14px] font-semibold text-muted">
                   App gom thử
                 </h2>
                 <p className="mt-1 text-[12.5px] leading-relaxed text-muted">

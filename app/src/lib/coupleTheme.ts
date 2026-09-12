@@ -87,8 +87,16 @@ export function applyCoupleTheme(key: string | null | undefined, isDark: boolean
   root.style.setProperty('--color-on-accent', palette.onAccent)
 }
 
-/** Chuỗi CSS cho khối bìa. Giữ đúng góc 150° của prototype. */
+/** Chuỗi CSS cho khối bìa khi chưa đặt ảnh.
+ *
+ *  Trước đây là gradient chéo 150° qua ba chặng sáng → đậm → sẫm. Kiểu
+ *  đó đập vào mắt ngay là đồ dựng nhanh — nó là thứ nằm sẵn trong mọi bản
+ *  mẫu, chỉ đổi màu. Giờ chỉ còn hai chặng đậm → sẫm đổ thẳng xuống, giống
+ *  bóng mờ dưới chân một tấm ảnh thật hơn là một mảng màu trang trí — và khi
+ *  người dùng đặt ảnh bìa thật thì hai trạng thái trông liền mạch với nhau.
+ *
+ *  Chặng sáng nhất vẫn giữ trong `cover` vì ảnh Tổng kết năm còn dùng. */
 export function coverGradient(key: string | null | undefined) {
-  const [a, b, c] = coupleThemeByKey(key).cover
-  return `linear-gradient(150deg, ${a}, ${b} 55%, ${c})`
+  const [, b, c] = coupleThemeByKey(key).cover
+  return `linear-gradient(178deg, ${b}, ${c})`
 }

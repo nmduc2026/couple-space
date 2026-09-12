@@ -31,4 +31,5 @@ dist-ssr
 *.sw?
 
 # Ảnh chụp màn hình để review UI (npm run shots)
-.shots/
+.shots*/
+.shots-compare.html

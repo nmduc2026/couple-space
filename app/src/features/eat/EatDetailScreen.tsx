@@ -121,7 +121,7 @@ export function EatDetailScreen() {
           </a>
         ) : null}
 
-        <h2 className="mt-6 text-[11px] font-bold tracking-[0.13em] text-muted uppercase">
+        <h2 className="mt-6 text-[14px] font-semibold text-muted">
           Những lần đã đi
         </h2>
 
@@ -170,7 +170,7 @@ export function EatDetailScreen() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-3 text-center">
-      <dt className="text-[10.5px] font-bold tracking-[0.1em] text-muted uppercase">
+      <dt className="text-[12.5px] font-medium text-muted">
         {label}
       </dt>
       <dd className="mt-1 text-[15px] font-semibold text-text">{value}</dd>

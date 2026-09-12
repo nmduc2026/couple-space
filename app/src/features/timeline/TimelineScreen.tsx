@@ -182,7 +182,7 @@ function CardView({ posts }: { posts: Post[] }) {
     <div>
       {groupByMonth(posts).map((group) => (
         <section key={group.key}>
-          <h2 className="sticky top-[calc(env(safe-area-inset-top)+2.9rem)] z-[5] bg-bg/90 py-2.5 text-[11px] font-bold tracking-[0.13em] text-muted uppercase backdrop-blur">
+          <h2 className="sticky top-[calc(env(safe-area-inset-top)+2.9rem)] z-[5] bg-bg/90 py-2.5 text-[14px] font-semibold text-muted backdrop-blur">
             {group.label}
           </h2>
           <div className="flex flex-col gap-3.5 pb-3">

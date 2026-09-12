@@ -197,7 +197,7 @@ function DayQuestion({
             : 'rounded-[1.5rem] bg-soft p-5 text-center'
         }
       >
-        <p className="text-[11px] font-bold tracking-[0.13em] text-accent uppercase">
+        <p className="text-[13px] font-medium text-accent">
           {formatDay(day)} · {question.tone}
         </p>
         <p
@@ -411,7 +411,7 @@ function Book({ history }: { history: Answer[] }) {
               key={day}
               className="rounded-2xl border border-border bg-surface p-4"
             >
-              <p className="text-[11px] font-bold tracking-[0.13em] text-accent uppercase">
+              <p className="text-[13px] font-medium text-accent">
                 {formatDay(day)}
               </p>
               <p className="mt-1.5 text-[15px] leading-snug font-semibold text-text">
