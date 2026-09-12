@@ -21,6 +21,7 @@ type Export = {
   status: 'queued' | 'running' | 'done' | 'failed'
   storage_path: string | null
   page_count: number | null
+  progress: string | null
   error: string | null
   expires_at: string | null
   created_at: string
@@ -56,7 +57,9 @@ export function ExportPdfScreen() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('pdf_exports')
-        .select('id, status, storage_path, page_count, error, expires_at, created_at')
+        .select(
+          'id, status, storage_path, page_count, progress, error, expires_at, created_at',
+        )
         .eq('couple_id', couple!.id)
         .order('created_at', { ascending: false })
         .limit(5)
@@ -217,7 +220,7 @@ function JobRow({ job, onDownload }: { job: Export; onDownload: () => void }) {
   if (job.status !== 'done') {
     return (
       <p className="mt-5 rounded-2xl border border-border bg-soft p-4 text-center text-[13.5px] text-accent">
-        Đang sinh sách — cứ đóng app, xong sẽ có thông báo.
+        {job.progress ?? 'Đang bắt đầu'} — cứ đóng app, xong sẽ có thông báo.
       </p>
     )
   }

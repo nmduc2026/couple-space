@@ -50,7 +50,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 
 ## D. Xuất PDF → [steps/c-albums-pdf.md](steps/c-albums-pdf.md)
 
-- [x] **P6-27** Edge Function sinh PDF — **chạy nền**, không đồng bộ — `export-pdf` + bảng hàng đợi `pdf_exports`. Font Be Vietnam Pro nhúng sẵn (OFL); **đã thử thật**: sinh PDF ở Node, đọc ngược ra đúng dấu tiếng Việt và ₫
+- [x] **P6-27** Edge Function sinh PDF — **chạy nền**, chia **nhiều đợt**. `export-pdf` + hàng đợi `pdf_exports`. **Đã chạy thật trên project**: 16 bài → 13 trang. Một lượt chạy không đủ bộ nhớ (`WORKER_RESOURCE_LIMIT`) nên pha 1 đổi ảnh theo đợt 4 bài, pha 2 mới ghép sách
 - [x] **P6-28** Bố cục sách: bìa · trang mở đầu (số liệu Wrapped) · nội dung theo tháng — sang tháng mới là sang trang mới
 - [x] **P6-29** Chọn khổ A4/A5 và mật độ ảnh (1/2/4 ảnh mỗi trang) — màn `/albums/export`
 - [x] **P6-30** Dùng bản ảnh đã nén — app chỉ lưu **một** bản, cạnh dài **1600px** (`lib/image.ts`), không phải 1920 như đặc tả ghi. 1600px ≈ 275dpi ở khổ A5, đủ in. Ảnh lưu dạng **WebP** nên function phải giải mã WebP → JPEG mới nhúng được (pdf-lib không đọc WebP)
@@ -77,7 +77,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P6-45** Chủ wishlist chuyển `archived` → người kia **thấy** + nhận thông báo nếu đã đánh dấu — chủ bỏ món thì người kia thấy + có cảnh báo ở máy họ; **push thì chưa**
 - [x] **P6-46** ⚠️ **Rà toàn bộ push**: không thông báo nào lộ hành vi của người kia trên wishlist
 - [x] **P6-47** Nối với [sự kiện](../../docs/features/p3-events-reminders.md): sinh nhật gần tới → nhắc xem wishlist — lối tắt trong dải gợi ý ở tab Sự kiện
-- [ ] **P6-48** Test kỹ "ai thấy gì" bằng hai tài khoản thật trước khi cho dùng — **chưa làm**: phải thử bằng hai tài khoản thật trước khi dùng
+- [x] **P6-48** Test kỹ "ai thấy gì" bằng hai tài khoản thật trước khi cho dùng — `verify-rls.mjs` mở phiên thật cho cả hai: chủ món không thấy dấu, người đặt dấu vẫn thấy, danh sách món thì cả hai đọc được
 
 ## G. Kết → [steps/e-wishlist.md](steps/e-wishlist.md)
 

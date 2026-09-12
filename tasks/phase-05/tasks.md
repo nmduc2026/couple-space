@@ -22,7 +22,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P5-03** Hàm chọn câu của ngày: xáo trộn cố định theo `couple_id`, quay vòng khi hết
 - [x] **P5-04** Lưu **múi giờ của space**, dùng nó để xác định "hôm nay" — không dùng múi giờ máy
 - [x] **P5-05** 🔒 **RLS có điều kiện**: chỉ đọc được câu trả lời của người kia khi tồn tại câu trả lời của mình cho cùng câu đó
-- [ ] **P5-06** Kiểm chứng P5-05 **bằng cách gọi API trực tiếp** với token của người chưa trả lời — **chưa làm**, phải gọi API tay bằng token người chưa trả lời
+- [x] **P5-06** Kiểm chứng P5-05 **bằng cách gọi API trực tiếp** với token của người chưa trả lời — `app/scripts/verify-rls.mjs`, chạy trên project thật. **Bắt được lỗi thật**: policy cũ tự truy vấn lại chính bảng nó bảo vệ → `42P17 infinite recursion`, mọi truy vấn đọc đều hỏng. Sửa ở migration `20260920090000`
 - [x] **P5-07** Màn hình câu hỏi — 4 trạng thái (chưa ai trả lời / người kia đã trả lời / mình đã trả lời / cả hai xong)
 - [x] **P5-08** Ô mờ là **khối giả có kích thước gần đúng**, không phải nội dung thật bị CSS blur
 - [x] **P5-09** Sửa câu trả lời trong **24 giờ**, có nhãn "đã chỉnh"; sau đó khoá
@@ -35,7 +35,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P5-13** Migration `letters` (`open_on` kiểu **`date`**, người viết, người nhận, tiêu đề, nội dung)
 - [x] **P5-14** 🔒 **RLS chặn theo ngày**: trước `open_on` chỉ trả metadata, **không trả nội dung**
 - [x] **P5-15** Người viết luôn đọc lại được thư của mình
-- [ ] **P5-16** Kiểm chứng P5-14 bằng cách gọi API trực tiếp — **chưa làm**, phải gọi API tay
+- [x] **P5-16** Kiểm chứng P5-14 bằng cách gọi API trực tiếp — `verify-rls.mjs`: thư chưa tới ngày mở không trả về dòng nào, `locked_letters()` không có cột `body`
 - [x] **P5-17** Màn hình viết thư + gợi ý ngày mở lấy từ [sự kiện](../../docs/features/p3-events-reminders.md)
 - [x] **P5-18** Danh sách "Sắp mở" (🔒 + đếm ngược) và "Đã mở"
 - [x] **P5-19** Sửa/xoá trước ngày mở; **khoá vĩnh viễn** sau ngày mở

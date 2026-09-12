@@ -1,12 +1,41 @@
 -- Lịch chạy nhắc nhở. Chạy SAU khi đã deploy Edge Function `send-reminders`.
 --
--- Trước khi chạy file này, đặt hai giá trị trong Dashboard → Settings → Vault
--- (hoặc sửa thẳng vào đây nếu chưa dùng Vault):
---   project_url  = https://<ref>.supabase.co
---   cron_secret  = chuỗi bí mật, đặt trùng với secret CRON_SECRET của function
+-- Cron cần hai giá trị: địa chỉ project và bí mật dùng chung với function.
+-- Cách thường thấy là `alter database ... set app.xxx`, NHƯNG trên Supabase
+-- role `postgres` không phải superuser nên câu đó bị từ chối
+-- (42501: permission denied to set parameter). Vì vậy hai giá trị nằm trong
+-- một bảng thuộc schema `private`.
+--
+-- `private` KHÔNG nằm trong danh sách schema mà PostgREST phơi ra
+-- (xem `[api] schemas` trong config.toml), nên bảng này không có đường nào
+-- gọi tới từ client — kể cả khi ai đó có khoá anon.
+--
+-- Điền giá trị sau khi push:
+--   insert into private.app_config (key, value) values
+--     ('project_url', 'https://<ref>.supabase.co'),
+--     ('cron_secret', '<CRON_SECRET giống secret của function>')
+--   on conflict (key) do update set value = excluded.value;
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
+
+create schema if not exists private;
+
+create table if not exists private.app_config (
+  key   text primary key,
+  value text not null
+);
+
+revoke all on schema private from anon, authenticated;
+revoke all on all tables in schema private from anon, authenticated;
+
+create or replace function private.config(p_key text)
+returns text
+language sql stable security definer set search_path = private as $$
+  select value from private.app_config where key = p_key;
+$$;
+
+revoke all on function private.config(text) from public, anon, authenticated;
 
 -- Xoá job cũ để chạy lại file này không sinh job trùng
 do $$
@@ -23,10 +52,10 @@ select cron.schedule(
   '0 * * * *',
   $cron$
   select net.http_post(
-    url := current_setting('app.project_url', true) || '/functions/v1/send-reminders',
+    url := private.config('project_url') || '/functions/v1/send-reminders',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-cron-secret', current_setting('app.cron_secret', true)
+      'x-cron-secret', private.config('cron_secret')
     ),
     body := '{}'::jsonb
   );
