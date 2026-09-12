@@ -7,7 +7,7 @@ import { daysTogether, nextMilestone } from '../../lib/dateCount'
 import { shareInvite } from '../../lib/inviteShare'
 import { supabase } from '../../lib/supabase'
 import { Loading } from '../../components/ui'
-import { usePosts } from '../../hooks/usePosts'
+import { useRecentPosts } from '../../hooks/usePosts'
 import { useAgenda } from '../../hooks/useAgenda'
 import { countdownLabel } from '../../lib/recurrence'
 import { useExpenses } from '../../hooks/useExpenses'
@@ -22,7 +22,7 @@ export function HomeScreen() {
   const { couple, refetch, isLoading, isFetching } = useCouple()
   const { profile } = useMyProfile()
   const myTheme = profile?.color_theme ?? couple?.theme
-  const { posts } = usePosts()
+  const posts = useRecentPosts(6)
   const { agenda } = useAgenda(2)
   const { summary } = useExpenses(`${todayYmd().slice(0, 7)}-01`)
   const { goals } = useGoals()

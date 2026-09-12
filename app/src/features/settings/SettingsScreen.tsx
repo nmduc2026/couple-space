@@ -181,16 +181,11 @@ export function SettingsScreen() {
         .upload(path, blob, { contentType: blob.type, upsert: false })
       if (upErr) throw upErr
 
-      // Bucket là riêng tư nên không có URL cố định; ký một link dài hạn để
-      // Home hiện được mà không phải ký lại mỗi lần mở app.
-      const { data: signed, error: signErr } = await supabase.storage
-        .from(MEDIA_BUCKET)
-        .createSignedUrl(path, 60 * 60 * 24 * 365)
-      if (signErr || !signed) throw signErr ?? new Error('Không ký được link')
-
+      // Lưu ĐƯỜNG DẪN, không lưu link đã ký. Link ký có hạn; cất nó vào DB là
+      // hẹn giờ cho ảnh bìa tự biến mất. `useCouple` ký lại mỗi lần đọc.
       const { error } = await supabase
         .from('couples')
-        .update({ cover_url: signed.signedUrl })
+        .update({ cover_path: path, cover_url: null })
         .eq('id', couple.id)
       if (error) throw error
 
@@ -206,7 +201,10 @@ export function SettingsScreen() {
 
   async function removeCover() {
     if (!couple) return
-    await supabase.from('couples').update({ cover_url: null }).eq('id', couple.id)
+    await supabase
+      .from('couples')
+      .update({ cover_path: null, cover_url: null })
+      .eq('id', couple.id)
     await queryClient.invalidateQueries({ queryKey: ['couple'] })
     await refetch()
     setMessage('Đã bỏ ảnh bìa.')

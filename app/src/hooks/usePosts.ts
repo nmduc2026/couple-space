@@ -331,3 +331,63 @@ export function usePostPlaces() {
   }
   return query.data ?? { places: [], provinces: [] }
 }
+
+/** Vài bài mới nhất — cho khối "Kỉ niệm gần đây" ở Home.
+ *  Home chỉ hiện 4 ảnh mà trước đây tải TOÀN BỘ bài về để cắt lấy 4. */
+export function useRecentPosts(limit = 4) {
+  const { couple } = useCouple()
+  const coupleId = couple?.id
+  const myId = couple?.members[0]?.user_id ?? ''
+
+  const query = useQuery({
+    queryKey: ['posts', coupleId, { recent: limit }],
+    enabled: !!coupleId && !PREVIEW,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(SELECT)
+        .eq('couple_id', coupleId!)
+        .is('deleted_at', null)
+        .order('happened_on', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(limit)
+      if (error) throw error
+      const rows = (data ?? []) as unknown as Row[]
+      const urls = await signMedia(
+        rows.flatMap((r) => r.post_media.map((m) => m.storage_path)),
+      )
+      return rows.map((r) => toPost(r, urls, myId))
+    },
+  })
+
+  if (PREVIEW) return previewPosts().slice(0, limit)
+  return query.data ?? []
+}
+
+/** Một bài theo id. Màn chi tiết trước đây duyệt cả danh sách để tìm đúng
+ *  một bài — tải về hàng trăm bài để dùng một. */
+export function usePost(id: string | undefined) {
+  const { couple } = useCouple()
+  const myId = couple?.members[0]?.user_id ?? ''
+
+  const query = useQuery({
+    queryKey: ['post', id],
+    enabled: !!id && !PREVIEW,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(SELECT)
+        .eq('id', id!)
+        .is('deleted_at', null)
+        .maybeSingle()
+      if (error) throw error
+      if (!data) return null
+      const row = data as unknown as Row
+      const urls = await signMedia(row.post_media.map((m) => m.storage_path))
+      return toPost(row, urls, myId)
+    },
+  })
+
+  if (PREVIEW) return { post: previewPosts().find((p) => p.id === id) ?? null, isLoading: false }
+  return { post: query.data ?? null, isLoading: query.isLoading }
+}

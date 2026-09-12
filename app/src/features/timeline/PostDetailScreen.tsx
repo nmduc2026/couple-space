@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
-import { usePosts } from '../../hooks/usePosts'
+import { usePost } from '../../hooks/usePosts'
 import { ACTIVITY_LABELS } from '../../lib/activities'
 import { supabase } from '../../lib/supabase'
 import { notifyPartner } from '../../lib/notify'
@@ -28,8 +28,7 @@ export function PostDetailScreen() {
   const queryClient = useQueryClient()
   const { user } = useSession()
   const { couple } = useCouple()
-  const { posts, isLoading } = usePosts()
-  const post = posts.find((p) => p.id === id)
+  const { post, isLoading } = usePost(id)
 
   const [index, setIndex] = useState(0)
   const [draft, setDraft] = useState('')
@@ -141,6 +140,7 @@ export function PostDetailScreen() {
     // phải `liked_by_me` cũ nên lại INSERT — đụng khoá duy nhất rồi tự huỷ,
     // thành ra "thả tim lần hai không được".
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
   }
 
   async function sendComment(event: FormEvent) {
@@ -158,8 +158,9 @@ export function PostDetailScreen() {
     if (error) return
     setDraft('')
     await queryClient.invalidateQueries({ queryKey: ['comments', post.id] })
-    // `comment_count` cũng nằm trong ['posts']
+    // `comment_count` nằm trong ['posts'] (danh sách) lẫn ['post', id] (bài này)
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
     void notifyPartner(couple, user.id, {
       title: nameOf(user.id),
       body,
@@ -196,6 +197,7 @@ export function PostDetailScreen() {
     if (error) return
     setEditing(false)
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
   }
 
   /** Bài này có khoản chi gắn kèm không — hỏi trước khi xoá thì mới biết
