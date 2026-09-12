@@ -1,26 +1,54 @@
 # Đưa lên Supabase thật + Vercel
 
-> Các lệnh dưới đây chạy trong thư mục `app/`. Project đã link sẵn
+> Các lệnh chạy trong thư mục `app/`. Project đã link sẵn
 > (`supabase/.temp/project-ref`), không cần `supabase link` lại.
 
-## Trạng thái lúc viết file này
+## Trạng thái
 
-Kiểm tra trực tiếp trên project, không phải phỏng đoán:
+**Backend đã lên thật và đã chạy được** (12/09/2026). Kiểm trực tiếp, không
+phỏng đoán:
 
 | Thứ | Trạng thái |
 |---|---|
-| 8 migration Phase 1 | ✅ đã push |
-| 10 migration Phase 2–6 + 3 migration mới | ❌ chưa push |
-| Edge Function | ❌ chưa deploy cái nào (`functions list` rỗng) — nay có **4** hàm |
-| Secrets | ❌ chưa đặt (`secrets list` rỗng) |
-| pg_cron | ❌ chưa bật (nằm trong migration chưa push) |
+| 22 migration | ✅ đã push hết |
+| 4 Edge Function | ✅ đã deploy (`send-notification`, `send-reminders`, `export-data`, `export-pdf`) |
+| Secrets | ✅ VAPID + CRON_SECRET |
+| pg_cron | ✅ 3 job đang hoạt động |
+| Dữ liệu mẫu | ✅ 16 bài · 20 ảnh · đủ mọi tính năng |
+| RLS | ✅ kiểm bằng token thật của cả hai người, tất cả đạt |
+| Xuất PDF | ✅ chạy thật: 16 bài → sách 13 trang |
 
-## Thứ tự — không đảo được
+Còn lại: Vercel + cài PWA lên iPhone (P1-34/35/36) và test push qua đêm
+(P3-28). Cả bốn đều cần máy thật.
 
-Migration `20260913091000_phase3_cron.sql` tạo cron job gọi
-`/functions/v1/send-reminders` và đọc `app.project_url` / `app.cron_secret`
-từ DB settings. Push nó **trước** khi deploy function và đặt hai giá trị đó
-thì mỗi giờ sẽ có một job bắn vào hư không.
+## Lệnh hay dùng
+
+```bash
+# Đổ lại dữ liệu mẫu (xoá sạch rồi seed lại)
+SUPABASE_SERVICE_ROLE_KEY=... npm run seed -- --reset
+
+# Kiểm chứng RLS bằng phiên thật của cả hai tài khoản
+SUPABASE_SERVICE_ROLE_KEY=... npm run verify:rls
+```
+
+Lấy service role key: Dashboard → Settings → API → **service_role** (bản JWT
+`eyJ...`, KHÔNG phải `sb_secret_...` vì API trả bản đó bị che). Đừng commit.
+
+## Những cái bẫy đã vấp — ghi lại để khỏi vấp lại
+
+Tất cả đều **build sạch** và chỉ lộ ra khi chạy thật:
+
+| Vấp ở đâu | Chuyện gì xảy ra |
+|---|---|
+| `answers_read` | Policy tự truy vấn lại bảng nó bảo vệ → `42P17 infinite recursion`. Màn Câu hỏi trắng trơn vĩnh viễn. Phải bọc câu kiểm tra vào hàm `security definer` |
+| `alter database ... set` | Bị từ chối: `postgres` trên Supabase không phải superuser. Tham số cron chuyển vào bảng trong schema `private` |
+| `verify_jwt` | Mặc định BẬT, nên cron gọi `send-reminders` bằng `x-cron-secret` bị cổng API chặn trước khi hàm chạy. Phải tắt trong `config.toml` |
+| `static_files` | Không khai báo thì CLI chỉ upload `index.ts` — font và wasm của `export-pdf` không đi theo |
+| `WORKER_RESOURCE_LIMIT` | Đổi ảnh cả cuốn sách trong một lượt là hết bộ nhớ. Phải thu nhỏ ảnh trước **và** chia đợt qua nhiều lượt gọi |
+| `Invalid Compact JWS` | Khoá service role dạng `sb_secret_` không phải JWT; Storage chỉ nhận nó ở header `apikey` |
+| `try/catch` quá rộng | Bọc chung cả giải mã lẫn tải lên đã giấu mất lỗi trên suốt một vòng gỡ lỗi |
+
+## Các bước đã chạy (để dựng lại từ đầu)
 
 ### 1. Sinh khoá và đặt secrets
 
@@ -114,14 +142,14 @@ trong tab Safari. Thử push trong tab rồi kết luận "push hỏng" là kế
 
 Năm mục trong [phase-01/context.md](phase-01/context.md) mục 1.
 
-## Việc phải làm bằng tay sau khi lên thật
+## Còn phải làm bằng tay
 
 | Task | Việc |
 |---|---|
-| P5-06 | Gọi API `question_answers` bằng token người **chưa** trả lời — phải không thấy câu của người kia |
-| P5-16 | Gọi API `letters` bằng token thường — thư chưa tới ngày mở phải không trả về `body` |
-| P6-48 | Thử wishlist bằng **hai tài khoản thật** — chủ wishlist không được thấy dấu "đã tính mua" |
+| P1-34 | Push GitHub → nối Vercel → deploy |
+| P1-35 | Cài PWA lên iPhone cả hai người |
+| P1-36 | Chạy checklist DoD ở [phase-01/context.md](phase-01/context.md) mục 1 |
 | P3-28 | Đặt sự kiện cho ngày mai, để máy qua đêm, xác nhận push tới đúng giờ |
 
-Ba việc đầu là kiểm chứng RLS. Policy viết đúng không có nghĩa là chạy đúng —
-và đây là ba chỗ mà sai thì hỏng đúng cái tính năng đang bán.
+P5-06, P5-16 và P6-48 **đã xong** — `npm run verify:rls` làm thay, bằng phiên
+đăng nhập thật của cả hai tài khoản.

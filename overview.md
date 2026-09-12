@@ -112,11 +112,11 @@ Chi tiết và lý do: [docs/decisions/](docs/decisions/) và [docs/design/backe
 
 ---
 
-*Trạng thái: **phần code đã xong cho cả 6 phase** — build sạch, 65 test xanh.
-Bảy task còn lại đều **không phải việc viết code**: chúng cần chạy trên
-Supabase thật hoặc thử trên hai máy thật. Xem [tasks/DEPLOY.md](tasks/DEPLOY.md)
-cho thứ tự bắt buộc, và [tasks/](tasks/README.md) cho từng task.*
+*Trạng thái: **code xong cả 6 phase, backend đã chạy thật.** 22 migration đã
+push lên Supabase, 4 Edge Function đã deploy, cron đang chạy, dữ liệu mẫu đã
+đổ để thử tay. Phân quyền RLS đã kiểm bằng phiên đăng nhập thật của cả hai
+người. Xuất PDF chạy thật ra sách 13 trang.*
 
-*Phần backend vẫn **chưa chạy lần nào trên Supabase thật**: 8 migration của
-Phase 1 đã push, 13 migration còn lại và cả 4 Edge Function thì chưa. SQL
-build sạch không có nghĩa là chạy đúng — đây là rủi ro lớn nhất còn lại.*
+*Còn bốn việc, đều cần máy thật: deploy Vercel, cài PWA lên hai iPhone, chạy
+checklist DoD Phase 1, và để máy qua đêm xác nhận giờ push. Xem
+[tasks/DEPLOY.md](tasks/DEPLOY.md).*

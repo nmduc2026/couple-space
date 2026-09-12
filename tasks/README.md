@@ -19,20 +19,19 @@ kiểm chứng bằng tay sau đó.
 
 ## Phase đang chạy
 
-> ### ✅ **Phần code đã xong cho cả 6 phase**
-> Build sạch, 65 test xanh. **Bảy task còn lại không phải việc viết code** —
-> chúng cần backend chạy thật hoặc hai máy thật:
+> ### ✅ **Code xong · backend đã chạy thật · đã có dữ liệu mẫu**
+> 22 migration đã push, 4 Edge Function đã deploy, cron đang chạy, dữ liệu mẫu
+> đã đổ. RLS kiểm bằng token thật của cả hai người — tất cả đạt. Xuất PDF chạy
+> thật ra sách 13 trang.
+>
+> **Còn 4 task, đều cần máy thật:**
 >
 > | Phase | Còn |
 > |---|---|
 > | 1 | P1-34 Vercel · P1-35 cài PWA · P1-36 checklist DoD |
 > | 3 | P3-28 để máy qua đêm, xác nhận giờ push |
-> | 5 | P5-06 · P5-16 kiểm chứng RLS bằng cách gọi API tay |
-> | 6 | P6-48 thử wishlist bằng hai tài khoản thật |
 >
-> Thứ tự bắt buộc để lên thật: **[DEPLOY.md](DEPLOY.md)**.
->
-> Xem UI: `cd app && npm run shots` — chụp 28 màn × 2 theme vào `.shots/`.
+> Chi tiết và những cái bẫy đã vấp: **[DEPLOY.md](DEPLOY.md)**.
 
 ## Toàn cảnh
 

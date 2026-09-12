@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "seed": "node scripts/seed-demo.mjs",
+    "verify:rls": "node scripts/verify-rls.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.109.0",
