@@ -8,9 +8,10 @@ import { ACTIVITY_LABELS } from '../../lib/activities'
 import { supabase } from '../../lib/supabase'
 import { notifyPartner } from '../../lib/notify'
 import { PREVIEW, previewComments } from '../../dev/preview'
-import { Loading, Screen, TopBar } from '../../components/ui'
+import { ConfirmSheet, Loading, Screen, TopBar } from '../../components/ui'
 import { input } from '../../lib/ui-classes'
 import { formatDay } from '../../lib/formatDate'
+import { formatVnd } from '../../lib/money'
 
 type Comment = {
   id: string
@@ -31,6 +32,9 @@ export function PostDetailScreen() {
   const [index, setIndex] = useState(0)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState<
+    Array<{ id: string; amount_minor: number }> | null
+  >(null)
   // Thả tim phản hồi lạc quan: `override` là ý muốn của người dùng,
   // null nghĩa là chưa bấm gì nên cứ tin dữ liệu server.
   const [override, setOverride] = useState<boolean | null>(null)
@@ -150,14 +154,57 @@ export function PostDetailScreen() {
     })
   }
 
-  async function removePost() {
+  /** Bài này có khoản chi gắn kèm không — hỏi trước khi xoá thì mới biết
+   *  có phải hỏi tiếp về khoản chi hay không. */
+  async function linkedExpenses() {
+    if (!id || PREVIEW) return []
+    const { data } = await supabase
+      .from('expenses')
+      .select('id, amount_minor')
+      .eq('post_id', id)
+      .is('deleted_at', null)
+    return data ?? []
+  }
+
+  async function askRemovePost() {
     if (!post || PREVIEW) return
-    if (!window.confirm('Xoá kỉ niệm này?')) return
+    const linked = await linkedExpenses()
+    if (linked.length === 0) {
+      if (!window.confirm('Xoá kỉ niệm này?')) return
+      await doRemovePost(false)
+      return
+    }
+    setPendingDelete(linked)
+  }
+
+  /** Khoản chi là dữ liệu thống kê độc lập với bài — xoá bài không được
+   *  âm thầm làm hụt tổng chi của tháng. Vì vậy mặc định là GIỮ. */
+  async function doRemovePost(alsoRemoveExpenses: boolean) {
+    if (!post) return
+    const stamp = new Date().toISOString()
     await supabase
       .from('posts')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({ deleted_at: stamp })
       .eq('id', post.id)
+
+    if (alsoRemoveExpenses) {
+      await supabase
+        .from('expenses')
+        .update({ deleted_at: stamp })
+        .eq('post_id', post.id)
+        .is('deleted_at', null)
+    } else {
+      // Giữ khoản chi nhưng cắt liên kết, nếu không nó trỏ tới bài đã xoá
+      await supabase
+        .from('expenses')
+        .update({ post_id: null })
+        .eq('post_id', post.id)
+        .is('deleted_at', null)
+    }
+
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    await queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    await queryClient.invalidateQueries({ queryKey: ['expense_summary'] })
     navigate('/timeline', { replace: true })
   }
 
@@ -233,7 +280,7 @@ export function PostDetailScreen() {
           {mine ? (
             <button
               type="button"
-              onClick={() => void removePost()}
+              onClick={() => void askRemovePost()}
               className="ml-auto text-sm text-muted"
             >
               Xoá
@@ -284,6 +331,45 @@ export function PostDetailScreen() {
           Gửi
         </button>
       </form>
+
+      {pendingDelete ? (
+        <ConfirmSheet
+          title="Xoá kỉ niệm này?"
+          body={
+            <>
+              Bài này có{' '}
+              <b className="font-semibold text-text">
+                {pendingDelete.length} khoản chi
+              </b>{' '}
+              gắn kèm, tổng{' '}
+              <b className="font-semibold text-text">
+                {formatVnd(
+                  pendingDelete.reduce((sum, e) => sum + e.amount_minor, 0),
+                )}
+              </b>
+              . Giữ lại thì thống kê tháng vẫn đúng, chỉ mất ảnh.
+            </>
+          }
+          confirmLabel="Xoá bài, giữ khoản chi"
+          cancelLabel="Thôi, không xoá"
+          onConfirm={() => {
+            setPendingDelete(null)
+            void doRemovePost(false)
+          }}
+          onCancel={() => setPendingDelete(null)}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setPendingDelete(null)
+              void doRemovePost(true)
+            }}
+            className="mt-4 w-full text-[13px] font-medium text-muted underline underline-offset-4"
+          >
+            Xoá cả khoản chi
+          </button>
+        </ConfirmSheet>
+      ) : null}
     </main>
   )
 }

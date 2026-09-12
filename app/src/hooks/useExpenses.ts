@@ -48,25 +48,55 @@ export function useExpenses(month: string) {
     },
   })
 
-  const summary = useQuery({
-    queryKey: ['expense_summary', coupleId, month.slice(0, 7)],
+  const summary = useMonthSummary(coupleId, month.slice(0, 7))
+  // Dải nhận xét cần tháng trước để so — một truy vấn nữa, cùng RPC
+  const previous = useMonthSummary(coupleId, shiftMonth(month.slice(0, 7), -1))
+
+  if (PREVIEW) return { ...previewExpenses(month), previous: null }
+
+  return {
+    expenses: list.data ?? [],
+    summary: summary.data ?? null,
+    previous: previous.data ?? null,
+    isLoading: list.isLoading,
+  }
+}
+
+function useMonthSummary(coupleId: string | undefined, ym: string) {
+  return useQuery({
+    queryKey: ['expense_summary', coupleId, ym],
     enabled: !!coupleId && !PREVIEW,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('expense_summary', {
         p_couple_id: coupleId!,
-        p_month: `${month.slice(0, 7)}-01`,
+        p_month: `${ym}-01`,
       })
       if (error) throw error
       const row = Array.isArray(data) ? data[0] : data
       return row as ExpenseSummary
     },
   })
+}
 
-  if (PREVIEW) return previewExpenses(month)
+/** `2026-01` lùi 1 → `2025-12`. Dùng chung với màn hình nên để ở đây. */
+export function shiftMonth(ym: string, delta: number) {
+  const [y, m] = ym.split('-').map(Number)
+  const index = y * 12 + (m - 1) + delta
+  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, '0')}`
+}
 
-  return {
-    expenses: list.data ?? [],
-    summary: summary.data ?? null,
-    isLoading: list.isLoading,
-  }
+export function useExpense(id: string | undefined) {
+  return useQuery({
+    queryKey: ['expense', id],
+    enabled: !!id && !PREVIEW,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('id, amount_minor, category, note, spent_on, paid_by, post_id')
+        .eq('id', id!)
+        .single()
+      if (error) throw error
+      return data as Expense
+    },
+  })
 }

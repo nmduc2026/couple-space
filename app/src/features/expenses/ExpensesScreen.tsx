@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
 import { useCouple } from '../../hooks/useCouple'
-import { useExpenses } from '../../hooks/useExpenses'
+import { shiftMonth, useExpenses } from '../../hooks/useExpenses'
+import { expenseInsight } from '../../lib/expenseInsight'
 import {
   categoryOf,
   formatShortVnd,
@@ -12,16 +13,31 @@ import {
 import { todayYmd } from '../../lib/dateCount'
 import { btn } from '../../lib/ui-classes'
 
-function shiftMonth(ym: string, delta: number) {
-  const [y, m] = ym.split('-').map(Number)
-  const index = y * 12 + (m - 1) + delta
-  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, '0')}-01`
-}
-
 export function ExpensesScreen() {
   const [month, setMonth] = useState(() => `${todayYmd().slice(0, 7)}-01`)
   const { couple } = useCouple()
-  const { expenses, summary, isLoading } = useExpenses(month)
+  const { expenses, summary, previous, isLoading } = useExpenses(month)
+
+  // Khoản lớn nhất tháng dùng làm câu dự phòng khi hai tháng giống hệt nhau
+  const biggest = expenses.reduce<(typeof expenses)[number] | null>(
+    (max, e) => (!max || e.amount_minor > max.amount_minor ? e : max),
+    null,
+  )
+  const insight = expenseInsight({
+    byCategory: summary?.by_category ?? {},
+    outingCount: summary?.outing_count ?? 0,
+    totalMinor: summary?.total_minor ?? 0,
+    previous: previous
+      ? { outingCount: previous.outing_count, totalMinor: previous.total_minor }
+      : null,
+    biggest: biggest
+      ? {
+          note: biggest.note,
+          category: biggest.category,
+          amountMinor: biggest.amount_minor,
+        }
+      : null,
+  })
 
   const [y, m] = month.split('-').map(Number)
   const isThisMonth = month.slice(0, 7) === todayYmd().slice(0, 7)
@@ -46,7 +62,7 @@ export function ExpensesScreen() {
         <button
           type="button"
           aria-label="Tháng trước"
-          onClick={() => setMonth(shiftMonth(month.slice(0, 7), -1))}
+          onClick={() => setMonth(`${shiftMonth(month.slice(0, 7), -1)}-01`)}
           className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted"
         >
           ‹
@@ -58,7 +74,7 @@ export function ExpensesScreen() {
           type="button"
           aria-label="Tháng sau"
           disabled={isThisMonth}
-          onClick={() => setMonth(shiftMonth(month.slice(0, 7), 1))}
+          onClick={() => setMonth(`${shiftMonth(month.slice(0, 7), 1)}-01`)}
           className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted disabled:opacity-30"
         >
           ›
@@ -102,32 +118,40 @@ export function ExpensesScreen() {
               </p>
             </section>
 
+            {insight ? (
+              <p className="mt-3 rounded-2xl border border-border bg-soft px-4 py-3 text-[13.5px] leading-relaxed text-text">
+                {insight}
+              </p>
+            ) : null}
+
             <CategoryChart byCategory={summary?.by_category ?? {}} />
 
             <ul className="mt-5 flex flex-col gap-2">
               {expenses.map((e) => {
                 const cat = categoryOf(e.category)
                 return (
-                  <li
-                    key={e.id}
-                    className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
-                  >
-                    <span aria-hidden className="text-xl">
-                      {cat.emoji}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <b className="block truncate text-[15px] font-medium text-text">
-                        {e.note || cat.label}
-                      </b>
-                      <span className="block text-[12.5px] text-muted">
-                        {e.spent_on.slice(8)}/{e.spent_on.slice(5, 7)} ·{' '}
-                        {nameOf(e.paid_by)} trả
-                        {e.post_id ? ' · 📷' : ''}
+                  <li key={e.id}>
+                    <Link
+                      to={`/expenses/${e.id}`}
+                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
+                    >
+                      <span aria-hidden className="text-xl">
+                        {cat.emoji}
                       </span>
-                    </div>
-                    <b className="shrink-0 text-[15px] font-semibold text-text tabular-nums">
-                      {formatShortVnd(e.amount_minor)}
-                    </b>
+                      <div className="min-w-0 flex-1">
+                        <b className="block truncate text-[15px] font-medium text-text">
+                          {e.note || cat.label}
+                        </b>
+                        <span className="block text-[12.5px] text-muted">
+                          {e.spent_on.slice(8)}/{e.spent_on.slice(5, 7)} ·{' '}
+                          {nameOf(e.paid_by)} trả
+                          {e.post_id ? ' · 📷' : ''}
+                        </span>
+                      </div>
+                      <b className="shrink-0 text-[15px] font-semibold text-text tabular-nums">
+                        {formatShortVnd(e.amount_minor)}
+                      </b>
+                    </Link>
                   </li>
                 )
               })}

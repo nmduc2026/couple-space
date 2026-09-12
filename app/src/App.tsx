@@ -112,6 +112,7 @@ export default function App() {
             <Route path="/plan/:id" element={<EventFormScreen />} />
             <Route path="/plan/goals/:id" element={<GoalDetailScreen />} />
             <Route path="/expenses/new" element={<ExpenseFormScreen />} />
+            <Route path="/expenses/:id" element={<ExpenseFormScreen />} />
             <Route path="/eat/spin" element={<SpinScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>

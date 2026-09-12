@@ -41,10 +41,10 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P4-17** Khối tổng: tổng chi · mỗi người trả bao nhiêu · trung bình mỗi buổi hẹn
 - [x] **P4-18** Biểu đồ tròn theo danh mục + chú thích (conic-gradient, không cần thư viện)
 - [x] **P4-19** Danh sách khoản chi; khoản sinh từ kỉ niệm có icon 📷, chạm mở bài đó
-- [ ] **P4-20** **Dải nhận xét** sinh từ dữ liệu: *"tháng này đi ăn 12 lần — nhiều hơn tháng trước 4"* — **chưa làm**, cần so với tháng trước
+- [x] **P4-20** **Dải nhận xét** sinh từ dữ liệu: *"tháng này đi ăn 12 lần — nhiều hơn tháng trước 4"* — `lib/expenseInsight.ts`, có test
 - [x] **P4-21** Loại khoản bất thường khỏi "trung bình mỗi buổi hẹn" (vượt 10 lần trung vị)
-- [ ] **P4-22** Sửa / xoá khoản chi — **không có số dư nào phải tính lại** — **chưa làm**
-- [ ] **P4-23** Xoá bài Timeline có gắn chi phí → hỏi rõ, mặc định **giữ** khoản chi — **chưa làm**
+- [x] **P4-22** Sửa / xoá khoản chi — **không có số dư nào phải tính lại** — route `/expenses/:id` dùng chung `ExpenseFormScreen`
+- [x] **P4-23** Xoá bài Timeline có gắn chi phí → hỏi rõ, mặc định **giữ** khoản chi — `ConfirmSheet`, giữ thì cắt `post_id` chứ không xoá
 
 ## E. Mục tiêu → [steps/d-goals.md](steps/d-goals.md)
 
@@ -62,7 +62,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P4-32** Tích bước cuối → màn hình chúc mừng + **[Đăng lên kỉ niệm]** / **[Để sau]**
 - [x] **P4-33** [Đăng lên kỉ niệm] nhảy vào flow soạn bài với caption điền sẵn
 - [x] **P4-34** Bỏ tích sau khi đã sinh bài → mục tiêu quay lại "đang làm", **bài giữ nguyên**
-- [ ] **P4-35** Nối gợi ý hành động của [sự kiện](../../docs/features/p3-events-reminders.md): *"đặt bàn chưa?"* → tạo nhanh mục tiêu — **chưa làm**
+- [x] **P4-35** Nối gợi ý hành động của [sự kiện](../../docs/features/p3-events-reminders.md): *"đặt bàn chưa?"* → tạo nhanh mục tiêu — `lib/eventSuggestion.ts`, dải gợi ý ở tab Sự kiện
 
 ## G. Home → [steps/f-home.md](steps/f-home.md)
 

@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { useAgenda, type AgendaItem } from '../../hooks/useAgenda'
+import { useCouple } from '../../hooks/useCouple'
+import { useSession } from '../../hooks/useSession'
+import { supabase } from '../../lib/supabase'
+import { shouldSuggest, suggestedTask } from '../../lib/eventSuggestion'
+import { PREVIEW } from '../../dev/preview'
 import { countdownLabel } from '../../lib/recurrence'
 import { formatDay } from '../../lib/formatDate'
 import { btn } from '../../lib/ui-classes'
@@ -12,6 +18,11 @@ export function PlanScreen() {
   const tab = params.get('tab') === 'goals' ? 'goals' : 'events'
   const { agenda, isLoading } = useAgenda(30)
   const [showPast, setShowPast] = useState(false)
+  const queryClient = useQueryClient()
+  const { couple } = useCouple()
+  const { user } = useSession()
+  const [dismissed, setDismissed] = useState<string[]>([])
+  const [creating, setCreating] = useState(false)
 
   function setTab(next: 'events' | 'goals') {
     const p = new URLSearchParams(params)
@@ -22,6 +33,30 @@ export function PlanScreen() {
 
   const upcoming = agenda.filter((a) => a.days_away >= 0)
   const past = agenda.filter((a) => a.days_away < 0)
+
+  // Chỉ gợi ý cho dịp gần nhất — nhiều dải gợi ý cùng lúc là làm phiền
+  const suggestFor = upcoming.find(
+    (a) => shouldSuggest(a.days_away) && !dismissed.includes(a.id) && suggestedTask(a.title),
+  )
+  const suggestion = suggestFor ? suggestedTask(suggestFor.title) : null
+
+  /** Tạo thẳng một mục tiêu checklist, hạn đúng ngày diễn ra dịp. */
+  async function createTask() {
+    if (!suggestFor || !suggestion || !couple || !user || PREVIEW) return
+    setCreating(true)
+    const { error } = await supabase.from('goals').insert({
+      couple_id: couple.id,
+      title: suggestion,
+      kind: 'checklist',
+      due_date: suggestFor.occurs_on,
+      created_by: user.id,
+    })
+    setCreating(false)
+    if (error) return
+    setDismissed((list) => [...list, suggestFor.id])
+    await queryClient.invalidateQueries({ queryKey: ['goals'] })
+    setTab('goals')
+  }
 
   return (
     <>
@@ -67,6 +102,33 @@ export function PlanScreen() {
         className="flex-1 px-4 py-3"
         hidden={tab !== 'events'}
       >
+        {suggestion && suggestFor ? (
+          <div className="mb-3 rounded-2xl border border-accent/30 bg-soft p-3.5">
+            <p className="text-[13.5px] leading-relaxed text-text">
+              Còn {suggestFor.days_away === 0 ? 'hôm nay' : `${suggestFor.days_away} ngày`}{' '}
+              là <b className="font-semibold">{suggestFor.title}</b> — {suggestion.toLowerCase()}{' '}
+              chưa?
+            </p>
+            <div className="mt-2.5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => void createTask()}
+                disabled={creating}
+                className="rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-semibold text-on-accent disabled:opacity-50"
+              >
+                Tạo việc cần làm
+              </button>
+              <button
+                type="button"
+                onClick={() => setDismissed((l) => [...l, suggestFor.id])}
+                className="rounded-full px-3 py-1.5 text-[13px] font-medium text-muted"
+              >
+                Bỏ qua
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         {isLoading ? (
           <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
         ) : upcoming.length === 0 ? (

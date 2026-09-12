@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { btn } from '../lib/ui-classes'
 import { Link } from 'react-router'
 
 /* Ngôn ngữ thiết kế lấy từ docs/design/frontend/ui/prototype.html.
@@ -172,5 +173,57 @@ export function Loading({ text = 'Đang tải...' }: { text?: string }) {
     <main className="flex min-h-svh items-center justify-center bg-bg">
       <p className="animate-pulse text-sm text-muted">{text}</p>
     </main>
+  )
+}
+
+/** Hộp hỏi lại trượt từ đáy, dùng khi `window.confirm` không đủ —
+ *  nó chỉ có hai nút và nút mặc định luôn là "đồng ý", nên không diễn tả
+ *  được lựa chọn an toàn mặc định. Ở đây nút đầu tiên mới là mặc định. */
+export function ConfirmSheet({
+  title,
+  body,
+  confirmLabel,
+  cancelLabel = 'Thôi',
+  onConfirm,
+  onCancel,
+  children,
+}: {
+  title: string
+  body?: ReactNode
+  confirmLabel: string
+  cancelLabel?: string
+  onConfirm: () => void
+  onCancel: () => void
+  children?: ReactNode
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onClick={onCancel}
+    >
+      <div
+        className="w-full rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-[17px] font-semibold text-text">{title}</p>
+        {body ? (
+          <div className="mt-2 text-[13.5px] leading-relaxed text-muted">
+            {body}
+          </div>
+        ) : null}
+        {children}
+        <div className="mt-5 space-y-2">
+          <button type="button" onClick={onConfirm} className={btn.primary}>
+            {confirmLabel}
+          </button>
+          <button type="button" onClick={onCancel} className={btn.ghost}>
+            {cancelLabel}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
