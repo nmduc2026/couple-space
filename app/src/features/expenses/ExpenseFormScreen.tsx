@@ -5,6 +5,7 @@ import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { useExpense } from '../../hooks/useExpenses'
 import { supabase } from '../../lib/supabase'
+import { enqueue, isRetriable } from '../../lib/syncQueue'
 import { todayYmd } from '../../lib/dateCount'
 import {
   EXPENSE_CATEGORIES,
@@ -60,6 +61,22 @@ export function ExpenseFormScreen() {
   const payer = value.paidBy || user?.id || ''
   const backTo = editing ? '/expenses' : postId ? `/timeline/${postId}` : '/expenses'
 
+  /** Cất khoản chi vào hàng đợi rồi rời màn hình như đã lưu xong. */
+  async function queueIt(minor: number) {
+    if (!couple || !user) return
+    await enqueue({
+      kind: 'expense',
+      coupleId: couple.id,
+      amountMinor: minor,
+      category: value.category,
+      note: value.note.trim() || null,
+      spentOn: value.spentOn,
+      paidBy: payer,
+      createdBy: user.id,
+    })
+    navigate(backTo, { replace: true })
+  }
+
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ['expenses'] })
     await queryClient.invalidateQueries({ queryKey: ['expense_summary'] })
@@ -91,11 +108,22 @@ export function ExpenseFormScreen() {
       created_by: user.id,
     }
 
+    // Chỉ khoản chi MỚI mới xếp hàng được. Sửa thì không: bản ghi có thể đã
+    // bị người kia sửa hoặc xoá trong lúc mình mất mạng, gửi bù sẽ ghi đè mù.
+    if (!editing && !navigator.onLine) {
+      await queueIt(minor)
+      return
+    }
+
     const { error } = editing
       ? await supabase.from('expenses').update(payload).eq('id', id!)
       : await supabase.from('expenses').insert(payload)
 
     if (error) {
+      if (!editing && isRetriable(error)) {
+        await queueIt(minor)
+        return
+      }
       setStatus('error')
       setErrorMessage(error.message)
       return

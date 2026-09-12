@@ -33,7 +33,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P4-12** Bộ danh mục cố định (7 loại), một chạm chọn
 - [x] **P4-13** Nối vào form soạn bài Timeline: mục "💰 Thêm chi phí" sinh thẳng một khoản chi
 - [x] **P4-14** Đoán sẵn danh mục theo hoạt động của bài (🍜 → ăn uống)
-- [ ] **P4-15** Hàng đợi đồng bộ khi mất mạng — dùng lại cơ chế của Phase 2 — **chưa làm**, cùng lý do với P2-09
+- [x] **P4-15** Hàng đợi đồng bộ khi mất mạng — dùng lại cơ chế của Phase 2. Chỉ khoản chi **mới**; sửa thì không xếp hàng
 
 ## D. Xem chi tiêu → [steps/c-expense-view.md](steps/c-expense-view.md)
 

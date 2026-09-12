@@ -10,6 +10,7 @@ import { todayYmd } from '../../lib/dateCount'
 import { compressImage, readExifDate } from '../../lib/image'
 import { notifyPartner } from '../../lib/notify'
 import { supabase } from '../../lib/supabase'
+import { enqueue, isRetriable, type QueuedPhoto } from '../../lib/syncQueue'
 import {
   ErrorText,
   Field,
@@ -67,6 +68,24 @@ export function ComposeScreen() {
     setPhotos((prev) => [...prev, ...picked])
   }
 
+  /** Cất bài vào hàng đợi và rời màn hình như thể đã đăng xong —
+   *  dưới góc nhìn người dùng thì việc đã làm xong, chỉ là chưa gửi. */
+  async function queueIt(ready: QueuedPhoto[]) {
+    if (!couple || !user) return
+    await enqueue({
+      kind: 'post',
+      coupleId: couple.id,
+      authorId: user.id,
+      caption: caption.trim() || null,
+      happenedOn,
+      placeName: placeName.trim() || null,
+      activity,
+      photos: ready,
+    })
+    setProgress('')
+    navigate('/timeline', { replace: true })
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (!couple || !user) return
@@ -78,6 +97,27 @@ export function ComposeScreen() {
 
     setStatus('saving')
     setErrorMessage('')
+
+    // Nén trước khi làm bất cứ việc gì khác: hàng đợi phải giữ bản đã nén,
+    // không phải File gốc 8 MB — nếu không thì lưu vài bài là đầy máy.
+    let ready: QueuedPhoto[]
+    try {
+      ready = []
+      for (const [i, picked] of photos.entries()) {
+        setProgress(`Đang xử lý ảnh ${i + 1}/${photos.length}...`)
+        ready.push(await compressImage(picked.file))
+      }
+    } catch {
+      setStatus('error')
+      setProgress('')
+      setErrorMessage('Không đọc được một tấm ảnh. Thử bỏ tấm đó ra nhé.')
+      return
+    }
+
+    if (!navigator.onLine) {
+      await queueIt(ready)
+      return
+    }
 
     const { data: created, error: postErr } = await supabase
       .from('posts')
@@ -93,27 +133,35 @@ export function ComposeScreen() {
       .single()
 
     if (postErr || !created) {
+      // Mất mạng giữa chừng thì xếp hàng, không bắt người dùng gõ lại
+      if (isRetriable(postErr)) {
+        await queueIt(ready)
+        return
+      }
       setStatus('error')
+      setProgress('')
       setErrorMessage(postErr?.message ?? 'Không lưu được kỉ niệm.')
       return
     }
 
-    for (const [i, picked] of photos.entries()) {
-      setProgress(`Đang tải ảnh ${i + 1}/${photos.length}...`)
+    for (const [i, photo] of ready.entries()) {
+      setProgress(`Đang tải ảnh ${i + 1}/${ready.length}...`)
       try {
-        const { blob, width, height, ext } = await compressImage(picked.file)
-        const path = `${couple.id}/${created.id}/${crypto.randomUUID()}.${ext}`
+        const path = `${couple.id}/${created.id}/${crypto.randomUUID()}.${photo.ext}`
         const { error: upErr } = await supabase.storage
           .from(MEDIA_BUCKET)
-          .upload(path, blob, { contentType: blob.type, upsert: false })
+          .upload(path, photo.blob, {
+            contentType: photo.blob.type,
+            upsert: false,
+          })
         if (upErr) throw upErr
 
         const { error: mediaErr } = await supabase.from('post_media').insert({
           post_id: created.id,
           couple_id: couple.id,
           storage_path: path,
-          width,
-          height,
+          width: photo.width,
+          height: photo.height,
           position: i,
         })
         if (mediaErr) throw mediaErr

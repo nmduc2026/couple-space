@@ -1,11 +1,20 @@
 import { Outlet } from 'react-router'
 import { TabBar } from './TabBar'
+import { useOutbox } from '../hooks/useOutbox'
 
 /** Vỏ chung cho các màn có thanh tab. Màn toàn trang (soạn bài, huỷ
  *  ghép đôi) nằm ngoài shell này để không bị tab che mất nút chính. */
 export function AppShell() {
+  // Gắn đúng một lần ở đây: hàng đợi tự gửi lại suốt vòng đời app
+  const { pending } = useOutbox()
+
   return (
     <div className="flex min-h-svh flex-col bg-bg">
+      {pending.length > 0 ? (
+        <p className="top-safe sticky top-0 z-20 bg-soft px-4 py-1.5 text-center text-[12.5px] text-accent">
+          {pending.length} việc đang chờ gửi — sẽ tự gửi khi có mạng
+        </p>
+      ) : null}
       <Outlet />
       <TabBar />
     </div>

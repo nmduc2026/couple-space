@@ -19,7 +19,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P2-06** Đọc EXIF lấy ngày, mặc định hôm nay nếu không có
 - [x] **P2-07** Màn hình soạn bài **một trang** — caption · ngày · địa điểm · hoạt động
 - [x] **P2-08** Upload nền + bài hiện ngay ở trạng thái "đang tải"
-- [ ] **P2-09** Hàng đợi đồng bộ khi mất mạng, tự gửi lại — **chưa làm**, cần IndexedDB để giữ Blob ảnh qua lần mở app sau
+- [x] **P2-09** Hàng đợi đồng bộ khi mất mạng, tự gửi lại — `lib/idb.ts` + `lib/syncQueue.ts`, ảnh nén xong mới xếp hàng
 - [x] **P2-10** Push "vừa thêm một kỉ niệm" + gộp nhiều ảnh liên tiếp thành một thông báo
 
 ## C. Xem lại → [steps/c-browse.md](steps/c-browse.md)
