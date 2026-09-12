@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW } from '../../dev/preview'
@@ -70,6 +70,23 @@ export function UnpairScreen() {
 
   const pending = (couple?.members.length ?? 0) < 2
 
+  // Thư chưa mở là thứ DUY NHẤT ở đây có hẹn trong tương lai. Người bấm huỷ
+  // lúc xúc động rất dễ quên là mình đã viết cho người kia một lá cho năm 2036.
+  const lockedQuery = useQuery({
+    queryKey: ['locked_letters', couple?.id],
+    enabled: !!couple?.id && !PREVIEW,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('locked_letters', {
+        p_couple_id: couple!.id,
+      })
+      if (error) throw error
+      return (data ?? []) as Array<{ id: string; open_on: string }>
+    },
+  })
+
+  const locked = lockedQuery.data ?? []
+  const lockedYears = [...new Set(locked.map((l) => l.open_on.slice(0, 4)))].sort()
+
   async function confirmUnpair() {
     if (!couple || !matchesConfirm(phrase)) return
     setStatus('loading')
@@ -107,6 +124,17 @@ export function UnpairScreen() {
             ))}
           </ul>
         )}
+
+        {locked.length > 0 && !pending ? (
+          <p className="mt-3 rounded-2xl border border-accent/30 bg-soft p-4 text-[14px] leading-relaxed text-text">
+            💌 Còn{' '}
+            <b className="font-semibold">
+              {locked.length} lá thư chưa mở
+            </b>
+            , sẽ mở vào {lockedYears.join(' và ')}. Huỷ ghép đôi rồi thì không ai
+            nhận được nhắc nữa.
+          </p>
+        ) : null}
 
         {/* Nút tải dữ liệu đặt TRƯỚC ô xác nhận — nhiều người bấm huỷ lúc xúc động */}
         <button

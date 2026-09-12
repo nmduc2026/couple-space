@@ -1,9 +1,11 @@
 -- P3-21 — Push hằng ngày "Hôm nay là ngày thứ N".
+-- P5-20 — Push khi có thư tương lai mở khoá.
 --
 -- Công tắc `notification_prefs.daily_day_count` đã có từ Phase 3 và mặc định
 -- TẮT, nhưng `due_reminders()` chưa bao giờ sinh ra dòng nào cho nó. Migration
 -- này thêm nhánh đó vào, giữ nguyên chữ ký hàm để Edge Function không phải đổi
--- cách gọi.
+-- cách gọi. Thư tương lai mở khoá cũng đi qua cùng đường ống này — nó cũng chỉ
+-- là "tới ngày thì nhắc", không đáng có một cron riêng.
 --
 -- Ba thứ dùng chung với nhánh sự kiện, không được làm khác đi:
 --   · giờ gửi tính theo múi giờ NGƯỜI NHẬN
@@ -80,6 +82,27 @@ language sql stable security definer set search_path = public as $$
     from local_now l
     where l.wants_daily
       and l.today_local >= l.start_date
+
+    union all
+
+    -- Thư tương lai tới ngày mở. Nhắc CẢ HAI, kể cả người viết — và cố ý
+    -- KHÔNG đưa tiêu đề thư vào: bất ngờ là toàn bộ lý do tính năng này tồn
+    -- tại, xem docs/features/p5-future-letter.md mục 4.
+    select l.user_id,
+           l.couple_id,
+           'letter:' || le.id as subject_key,
+           'Có một lá thư vừa mở khoá' as title,
+           '💌' as emoji,
+           le.open_on as target_date,
+           0 as days_before,
+           time '09:00' as send_after,
+           l.time_local,
+           l.today_local,
+           l.quiet_hours_from,
+           l.quiet_hours_to
+    from local_now l
+    join public.letters le on le.couple_id = l.couple_id
+    where le.open_on = l.today_local
   )
   select c.user_id, c.couple_id, c.subject_key, c.title, c.emoji,
          c.target_date, c.days_before

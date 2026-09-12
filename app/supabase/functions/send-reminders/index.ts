@@ -29,7 +29,20 @@ function phrase(row: DueRow) {
 /** Một người một lượt cron chỉ nhận MỘT thông báo, dù có mấy thứ tới hạn. */
 function summarise(items: DueRow[]) {
   const daily = items.find((i) => i.subject_key === "daily");
-  const events = items.filter((i) => i.subject_key !== "daily");
+  const letters = items.filter((i) => i.subject_key.startsWith("letter:"));
+  const events = items.filter(
+    (i) => i.subject_key !== "daily" && !i.subject_key.startsWith("letter:"),
+  );
+
+  // Thư mở khoá quan trọng hơn mọi thứ khác trong ngày — cho nó cả thông báo
+  if (letters.length > 0) {
+    return {
+      body: letters.length === 1
+        ? "💌 Có một lá thư vừa mở khoá"
+        : `💌 Có ${letters.length} lá thư vừa mở khoá`,
+      path: "/letters",
+    };
+  }
 
   if (events.length === 0 && daily) {
     return { body: phrase(daily), path: "/" };

@@ -39,8 +39,8 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P5-17** Màn hình viết thư + gợi ý ngày mở lấy từ [sự kiện](../../docs/features/p3-events-reminders.md)
 - [x] **P5-18** Danh sách "Sắp mở" (🔒 + đếm ngược) và "Đã mở"
 - [x] **P5-19** Sửa/xoá trước ngày mở; **khoá vĩnh viễn** sau ngày mở
-- [ ] **P5-20** Cron gửi push khi có thư mở khoá — **chưa làm**, cần thêm nhánh vào `send-reminders`
-- [ ] **P5-21** Thêm cảnh báo vào [màn hình huỷ ghép đôi](../../docs/features/p1-breakup.md): *"Còn 2 lá thư sẽ mở vào 2027 và 2036"* — **chưa làm**
+- [x] **P5-20** Cron gửi push khi có thư mở khoá — nhánh `letter:` trong `due_reminders()` (migration `20260917090000`); push không lộ tiêu đề thư
+- [x] **P5-21** Thêm cảnh báo vào [màn hình huỷ ghép đôi](../../docs/features/p1-breakup.md): *"Còn 2 lá thư sẽ mở vào 2027 và 2036"* — dùng `locked_letters()`
 
 ## C. Check-in tâm trạng → [steps/c-mood.md](steps/c-mood.md)
 
