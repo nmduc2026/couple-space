@@ -112,6 +112,11 @@ Chi tiết và lý do: [docs/decisions/](docs/decisions/) và [docs/design/backe
 
 ---
 
-*Trạng thái: đã viết code một lượt cho cả 6 phase — toàn bộ màn hình, migration
-và Edge Function đều build sạch. Chưa chạy trên Supabase thật, chưa deploy.
-Task còn dở của từng phase ghi trong [tasks/](tasks/README.md).*
+*Trạng thái: **phần code đã xong cho cả 6 phase** — build sạch, 65 test xanh.
+Bảy task còn lại đều **không phải việc viết code**: chúng cần chạy trên
+Supabase thật hoặc thử trên hai máy thật. Xem [tasks/DEPLOY.md](tasks/DEPLOY.md)
+cho thứ tự bắt buộc, và [tasks/](tasks/README.md) cho từng task.*
+
+*Phần backend vẫn **chưa chạy lần nào trên Supabase thật**: 8 migration của
+Phase 1 đã push, 13 migration còn lại và cả 4 Edge Function thì chưa. SQL
+build sạch không có nghĩa là chạy đúng — đây là rủi ro lớn nhất còn lại.*

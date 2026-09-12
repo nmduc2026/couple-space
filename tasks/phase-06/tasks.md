@@ -82,4 +82,4 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 ## G. Kết → [steps/e-wishlist.md](steps/e-wishlist.md)
 
 - [~] **P6-49** Rà lại toàn bộ app một lượt: trạng thái rỗng, chế độ tối, vùng an toàn iPhone — đã rà bằng ảnh chụp 2 theme; **chưa thử trên iPhone thật**
-- [~] **P6-50** Cập nhật `overview.md` và `tasks/README.md` — đánh dấu 6 phase đã xong — xem nhật ký phiên
+- [x] **P6-50** Cập nhật `overview.md` và `tasks/README.md` — ghi rõ 7 task còn lại đều không phải việc viết code — đánh dấu 6 phase đã xong — xem nhật ký phiên

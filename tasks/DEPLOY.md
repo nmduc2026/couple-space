@@ -10,8 +10,8 @@ Kiểm tra trực tiếp trên project, không phải phỏng đoán:
 | Thứ | Trạng thái |
 |---|---|
 | 8 migration Phase 1 | ✅ đã push |
-| 8 migration Phase 2–6 + 2 migration mới | ❌ chưa push |
-| Edge Function | ❌ chưa deploy cái nào (`functions list` rỗng) |
+| 10 migration Phase 2–6 + 3 migration mới | ❌ chưa push |
+| Edge Function | ❌ chưa deploy cái nào (`functions list` rỗng) — nay có **4** hàm |
 | Secrets | ❌ chưa đặt (`secrets list` rỗng) |
 | pg_cron | ❌ chưa bật (nằm trong migration chưa push) |
 
@@ -54,7 +54,18 @@ Xong thì **xoá `.vapid.env`** (khoá riêng không thuộc về đĩa).
 npx supabase functions deploy send-notification
 npx supabase functions deploy send-reminders
 npx supabase functions deploy export-data
+npx supabase functions deploy export-pdf
 ```
+
+`export-pdf` mang theo ~670KB tài sản trong `assets/` (2 font TTF + 2 file
+wasm). Deploy xong kiểm tra chúng thật sự đi kèm:
+
+```bash
+curl -X POST "https://<ref>.supabase.co/functions/v1/export-pdf"   -H "Authorization: Bearer <token người dùng>"   -H "Content-Type: application/json" -d '{"export_id":"<id vừa tạo>"}'
+```
+
+Lỗi `NotFound` khi đọc `assets/...` nghĩa là Supabase không đóng gói file
+tĩnh — lúc đó phải chuyển sang nhúng font/wasm dạng base64 trong mã nguồn.
 
 ### 3. Đặt hai giá trị cho cron
 

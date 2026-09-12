@@ -19,11 +19,18 @@ kiểm chứng bằng tay sau đó.
 
 ## Phase đang chạy
 
-> ### 🔄 **Cả 6 phase đã viết code xong một lượt**
-> Toàn bộ màn hình, migration và Edge Function đã có và build sạch, nhưng
-> **chưa chạy trên Supabase thật và chưa deploy**. Việc còn lại là thao tác
-> tay: `db push`, deploy function, bật pg_cron, Vercel, cài PWA lên iPhone.
-> Mỗi `tasks.md` ghi rõ task nào còn dở và vì sao.
+> ### ✅ **Phần code đã xong cho cả 6 phase**
+> Build sạch, 65 test xanh. **Bảy task còn lại không phải việc viết code** —
+> chúng cần backend chạy thật hoặc hai máy thật:
+>
+> | Phase | Còn |
+> |---|---|
+> | 1 | P1-34 Vercel · P1-35 cài PWA · P1-36 checklist DoD |
+> | 3 | P3-28 để máy qua đêm, xác nhận giờ push |
+> | 5 | P5-06 · P5-16 kiểm chứng RLS bằng cách gọi API tay |
+> | 6 | P6-48 thử wishlist bằng hai tài khoản thật |
+>
+> Thứ tự bắt buộc để lên thật: **[DEPLOY.md](DEPLOY.md)**.
 >
 > Xem UI: `cd app && npm run shots` — chụp 28 màn × 2 theme vào `.shots/`.
 
@@ -31,12 +38,12 @@ kiểm chứng bằng tay sau đó.
 
 | Phase | Tên | Mục tiêu | Task | Hướng dẫn từng bước | Trạng thái |
 |---|---|---|---|---|---|
-| [1](phase-01/context.md) | Nền móng | Hai máy nhìn thấy nhau | 36 | ✅ [steps/](phase-01/steps/) | 🔄 Code xong, chưa chạy thật |
-| [2](phase-02/context.md) | Kỉ niệm | App có nội dung | 26 | ✅ [steps/](phase-02/steps/) | 🔄 Code xong, chưa chạy thật |
-| [3](phase-03/context.md) | Nhịp sống | Có lý do mở app hằng ngày | 28 | ✅ [steps/](phase-03/steps/) | 🔄 Code xong, chưa chạy thật |
-| [4](phase-04/context.md) | Cùng nhau | Khác biệt so với app cùng loại | 38 | ✅ [steps/](phase-04/steps/) | 🔄 Code xong, chưa chạy thật |
-| [5](phase-05/context.md) | Gắn kết | Giữ chân | 42 | ✅ [steps/](phase-05/steps/) | 🔄 Code xong, chưa chạy thật |
-| [6](phase-06/context.md) | Lan truyền | Tăng trưởng | 50 | ✅ [steps/](phase-06/steps/) | 🔄 Code xong, chưa chạy thật |
+| [1](phase-01/context.md) | Nền móng | Hai máy nhìn thấy nhau | 36 | ✅ [steps/](phase-01/steps/) | 🔄 Code xong · còn deploy |
+| [2](phase-02/context.md) | Kỉ niệm | App có nội dung | 26 | ✅ [steps/](phase-02/steps/) | ✅ Code xong |
+| [3](phase-03/context.md) | Nhịp sống | Có lý do mở app hằng ngày | 28 | ✅ [steps/](phase-03/steps/) | 🔄 Code xong · còn test qua đêm |
+| [4](phase-04/context.md) | Cùng nhau | Khác biệt so với app cùng loại | 38 | ✅ [steps/](phase-04/steps/) | ✅ Code xong |
+| [5](phase-05/context.md) | Gắn kết | Giữ chân | 42 | ✅ [steps/](phase-05/steps/) | 🔄 Code xong · còn kiểm chứng RLS |
+| [6](phase-06/context.md) | Lan truyền | Tăng trưởng | 50 | ✅ [steps/](phase-06/steps/) | 🔄 Code xong · còn test 2 tài khoản |
 
 **220 task** cho cả 6 phase. Đặc tả nghiệp vụ đã đầy đủ cho **cả 19 tính năng**.
 
