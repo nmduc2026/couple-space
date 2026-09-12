@@ -27,7 +27,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 - [x] **P2-11** Timeline dạng thẻ, nhóm theo tháng, tiêu đề dính
 - [x] **P2-12** Chế độ lưới ảnh 3 cột
 - [x] **P2-13** Chi tiết bài: ảnh toàn màn hình, vuốt ngang
-- [~] **P2-14** Sửa / xoá bài của mình — xoá xong, **sửa chưa làm**
+- [x] **P2-14** Sửa / xoá bài của mình — sửa caption · địa điểm · ngày ngay trong màn chi tiết. Ảnh không sửa được: đổi ảnh mà giữ tim và bình luận cũ là sai
 - [x] **P2-15** Lọc theo năm và theo hoạt động
 - [x] **P2-16** Trạng thái rỗng có sức mời gọi (*"Kỉ niệm đầu tiên của hai đứa nằm ở đây nè 📷"*)
 

@@ -9,7 +9,8 @@ import { supabase } from '../../lib/supabase'
 import { notifyPartner } from '../../lib/notify'
 import { PREVIEW, previewComments } from '../../dev/preview'
 import { ConfirmSheet, Loading, Screen, TopBar } from '../../components/ui'
-import { input } from '../../lib/ui-classes'
+import { btn, input } from '../../lib/ui-classes'
+import { todayYmd } from '../../lib/dateCount'
 import { formatDay } from '../../lib/formatDate'
 import { formatVnd } from '../../lib/money'
 
@@ -32,6 +33,9 @@ export function PostDetailScreen() {
   const [index, setIndex] = useState(0)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [edit, setEdit] = useState({ caption: '', place: '', day: '' })
+  const [savingEdit, setSavingEdit] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<
     Array<{ id: string; amount_minor: number }> | null
   >(null)
@@ -154,6 +158,37 @@ export function PostDetailScreen() {
     })
   }
 
+  /** Sửa phần chữ của bài. Ảnh thì không sửa được ở đây — đổi ảnh là một
+   *  bài khác, và giữ nguyên tim với bình luận cũ thì sai. */
+  function startEdit() {
+    if (!post) return
+    setEdit({
+      caption: post.caption ?? '',
+      place: post.place_name ?? '',
+      day: post.happened_on,
+    })
+    setEditing(true)
+  }
+
+  async function saveEdit() {
+    if (!post || PREVIEW) return
+    setSavingEdit(true)
+    const { error } = await supabase
+      .from('posts')
+      .update({
+        caption: edit.caption.trim() || null,
+        place_name: edit.place.trim() || null,
+        happened_on: edit.day,
+        // Đổi địa điểm thì tỉnh cũ không còn đúng — để bản đồ suy lại
+        province_code: null,
+      })
+      .eq('id', post.id)
+    setSavingEdit(false)
+    if (error) return
+    setEditing(false)
+    await queryClient.invalidateQueries({ queryKey: ['posts'] })
+  }
+
   /** Bài này có khoản chi gắn kèm không — hỏi trước khi xoá thì mới biết
    *  có phải hỏi tiếp về khoản chi hay không. */
   async function linkedExpenses() {
@@ -254,10 +289,52 @@ export function PostDetailScreen() {
       ) : null}
 
       <div className="px-4 pt-4">
-        {post.caption ? (
+        {editing ? (
+          <div className="space-y-2.5">
+            <textarea
+              value={edit.caption}
+              onChange={(e) => setEdit({ ...edit, caption: e.target.value })}
+              rows={3}
+              placeholder="Viết gì đó..."
+              className={`${input} h-auto py-3 leading-relaxed`}
+            />
+            <input
+              value={edit.place}
+              onChange={(e) => setEdit({ ...edit, place: e.target.value })}
+              placeholder="Địa điểm"
+              className={input}
+            />
+            <input
+              type="date"
+              value={edit.day}
+              max={todayYmd()}
+              onChange={(e) => setEdit({ ...edit, day: e.target.value })}
+              className={input}
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={savingEdit}
+                onClick={() => void saveEdit()}
+                className={btn.primary}
+              >
+                {savingEdit ? 'Đang lưu...' : 'Lưu'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className={btn.ghost}
+              >
+                Huỷ
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {!editing && post.caption ? (
           <p className="text-[15px] leading-relaxed text-text">{post.caption}</p>
         ) : null}
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted" hidden={editing}>
           <span>{formatDay(post.happened_on)}</span>
           {post.place_name ? <span>📍 {post.place_name}</span> : null}
           {activity ? (
@@ -278,13 +355,22 @@ export function PostDetailScreen() {
           </button>
           <span className="text-sm text-muted">💬 {comments.length}</span>
           {mine ? (
-            <button
-              type="button"
-              onClick={() => void askRemovePost()}
-              className="ml-auto text-sm text-muted"
-            >
-              Xoá
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={startEdit}
+                className="ml-auto text-sm text-muted"
+              >
+                Sửa
+              </button>
+              <button
+                type="button"
+                onClick={() => void askRemovePost()}
+                className="text-sm text-muted"
+              >
+                Xoá
+              </button>
+            </>
           ) : null}
         </div>
 
