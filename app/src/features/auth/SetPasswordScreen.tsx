@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import {
   ErrorText,
@@ -48,7 +49,8 @@ export function SetPasswordScreen() {
       return
     }
 
-    navigate('/settings', { replace: true, state: { toast: 'Đã lưu mật khẩu.' } })
+    toast.success('Đã lưu mật khẩu.')
+    navigate('/settings', { replace: true })
   }
 
   const busy = status === 'loading'

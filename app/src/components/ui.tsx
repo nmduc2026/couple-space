@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { btn } from '../lib/ui-classes'
 import { Link } from 'react-router'
 import { IconArrowLeft } from './icons'
@@ -137,7 +137,9 @@ export function Row({
   return <div className={`px-4 py-3.5 ${className}`}>{children}</div>
 }
 
-/** Công tắc bật/tắt — thay cho checkbox mặc định của trình duyệt. */
+/** Công tắc bật/tắt — thay cho checkbox mặc định của trình duyệt.
+ *  Transition chỉ bật sau mount: nếu để từ đầu, mỗi lần vào màn nút tròn
+ *  animate từ vị trí “tắt” → “bật” dù giá trị vốn đã là true. */
 export function Switch({
   checked,
   onChange,
@@ -147,6 +149,12 @@ export function Switch({
   onChange: (next: boolean) => void
   label: string
 }) {
+  const [motion, setMotion] = useState(false)
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => setMotion(true))
+    return () => window.cancelAnimationFrame(id)
+  }, [])
+
   return (
     <button
       type="button"
@@ -154,14 +162,14 @@ export function Switch({
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-        checked ? 'bg-accent' : 'bg-border'
-      }`}
+      className={`relative h-7 w-12 shrink-0 rounded-full ${
+        motion ? 'transition' : ''
+      } ${checked ? 'bg-accent' : 'bg-border'}`}
     >
       <span
-        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-sm transition-all ${
-          checked ? 'left-[1.375rem]' : 'left-0.5'
-        }`}
+        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-sm ${
+          motion ? 'transition-all' : ''
+        } ${checked ? 'left-[1.375rem]' : 'left-0.5'}`}
       />
     </button>
   )

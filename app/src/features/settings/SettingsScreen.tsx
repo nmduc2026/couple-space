@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { useRef, useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { useCouple } from '../../hooks/useCouple'
 import { useMyProfile } from '../../hooks/useMyProfile'
 import { useSession } from '../../hooks/useSession'
@@ -16,7 +17,6 @@ import {
   Switch,
   TopBar,
 } from '../../components/ui'
-import { btn } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
 import { COUPLE_THEMES } from '../../lib/coupleTheme'
 import { compressImage } from '../../lib/image'
@@ -48,7 +48,6 @@ const rowTimeInput =
 
 export function SettingsScreen() {
   const navigate = useNavigate()
-  const location = useLocation()
   const queryClient = useQueryClient()
   const { user } = useSession()
   const { couple, refetch } = useCouple()
@@ -59,19 +58,11 @@ export function SettingsScreen() {
   // Nhờ vậy không cần useEffect đồng bộ state theo dữ liệu server.
   const [draftStartDate, setDraftStartDate] = useState<string | null>(null)
   const [draftNickname, setDraftNickname] = useState<string | null>(null)
-  const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
   const { profile } = useMyProfile()
   const myTheme = profile?.color_theme ?? couple?.theme
   const coverInput = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    const toast = (location.state as { toast?: string } | null)?.toast
-    if (!toast) return
-    setMessage(toast)
-    navigate(location.pathname, { replace: true, state: null })
-  }, [location.pathname, location.state, navigate])
 
   const prefsQuery = useQuery({
     queryKey: ['notification_prefs', user?.id],
@@ -86,13 +77,6 @@ export function SettingsScreen() {
       return data
     },
   })
-
-  // Toast tự tắt để không đọng lại giữa các thao tác
-  useEffect(() => {
-    if (!message) return
-    const id = window.setTimeout(() => setMessage(''), 2600)
-    return () => window.clearTimeout(id)
-  }, [message])
 
   const savedStartDate = couple?.start_date ?? ''
   const savedNickname =
@@ -109,32 +93,45 @@ export function SettingsScreen() {
 
     // Đặc tả mục 3: biệt danh rỗng thì chặn. Không ai bị gọi bằng khoảng trắng.
     if (!myNickname.trim()) {
-      setMessage('Biệt danh không được để trống.')
+      toast.error('Biệt danh không được để trống.')
       return
     }
 
     const startDateChanged = startDate !== savedStartDate
     setSaving(true)
-    setMessage('')
 
-    const { error: coupleErr } = await supabase
+    const { data: coupleRow, error: coupleErr } = await supabase
       .from('couples')
       .update({ start_date: startDate })
       .eq('id', couple.id)
+      .select('id')
+      .maybeSingle()
     if (coupleErr) {
       setSaving(false)
-      setMessage(coupleErr.message)
+      toast.error(coupleErr.message)
+      return
+    }
+    if (!coupleRow) {
+      setSaving(false)
+      toast.error('Không lưu được ngày bắt đầu yêu.')
       return
     }
 
-    const { error: memberErr } = await supabase
+    const { data: memberRow, error: memberErr } = await supabase
       .from('couple_members')
       .update({ nickname: myNickname.trim() })
       .eq('couple_id', couple.id)
       .eq('user_id', user.id)
+      .select('id')
+      .maybeSingle()
     if (memberErr) {
       setSaving(false)
-      setMessage(memberErr.message)
+      toast.error(memberErr.message)
+      return
+    }
+    if (!memberRow) {
+      setSaving(false)
+      toast.error('Không lưu được biệt danh.')
       return
     }
 
@@ -156,7 +153,7 @@ export function SettingsScreen() {
     setDraftStartDate(null)
     setDraftNickname(null)
     setSaving(false)
-    setMessage('Đã lưu.')
+    toast.success('Đã lưu.')
   }
 
   /** Ghi kèm múi giờ máy mỗi lần lưu — server cần nó để gửi nhắc đúng
@@ -169,7 +166,7 @@ export function SettingsScreen() {
       ...patch,
     })
     if (error) {
-      setMessage(error.message)
+      toast.error(error.message)
       return
     }
     await prefsQuery.refetch()
@@ -180,7 +177,6 @@ export function SettingsScreen() {
   async function pickCover(file: File | undefined) {
     if (!file || !couple) return
     setUploadingCover(true)
-    setMessage('')
     try {
       const { blob, ext } = await compressImage(file)
       const path = `${couple.id}/cover/${crypto.randomUUID()}.${ext}`
@@ -199,9 +195,9 @@ export function SettingsScreen() {
 
       await queryClient.invalidateQueries({ queryKey: ['couple'] })
       await refetch()
-      setMessage('Đã đổi ảnh bìa.')
+      toast.success('Đã đổi ảnh bìa.')
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Không tải được ảnh.')
+      toast.error(err instanceof Error ? err.message : 'Không tải được ảnh.')
     } finally {
       setUploadingCover(false)
     }
@@ -215,7 +211,7 @@ export function SettingsScreen() {
       .eq('id', couple.id)
     await queryClient.invalidateQueries({ queryKey: ['couple'] })
     await refetch()
-    setMessage('Đã bỏ ảnh bìa.')
+    toast.success('Đã bỏ ảnh bìa.')
   }
 
   /** Màu nhấn là lựa chọn của RIÊNG người này — lưu ở `profiles`, không phải
@@ -227,7 +223,7 @@ export function SettingsScreen() {
       .update({ color_theme: key })
       .eq('id', user.id)
     if (error) {
-      setMessage(error.message)
+      toast.error(error.message)
       return
     }
     await queryClient.invalidateQueries({ queryKey: ['my_profile'] })
@@ -236,9 +232,9 @@ export function SettingsScreen() {
   async function onEnablePush() {
     try {
       await enablePush()
-      setMessage('Đã bật thông báo trên máy này.')
+      toast.success('Đã bật thông báo trên máy này.')
     } catch (err) {
-      setMessage(
+      toast.error(
         err instanceof Error ? err.message : 'Không bật được thông báo.',
       )
     }
@@ -254,11 +250,22 @@ export function SettingsScreen() {
     <main className="min-h-app bg-bg pb-safe">
       <TopBar to="/" />
       <div className="mx-auto w-full max-w-[calc(28rem/var(--ui-scale))] px-4 pb-16">
-        <h1 className="px-1 pt-1 pb-5 text-[23px] font-bold tracking-[-0.02em] text-text">
-          Cài đặt
-        </h1>
-
         <form onSubmit={saveProfile}>
+          <div className="flex items-center justify-between gap-3 px-1 pt-1 pb-5">
+            <h1 className="text-[23px] font-bold tracking-[-0.02em] text-text">
+              Cài đặt
+            </h1>
+            {dirty ? (
+              <button
+                type="submit"
+                disabled={saving}
+                className="shrink-0 text-[15px] font-semibold text-accent disabled:opacity-50"
+              >
+                {saving ? 'Đang lưu...' : 'Lưu'}
+              </button>
+            ) : null}
+          </div>
+
           <SectionLabel>Không gian của chúng ta</SectionLabel>
           <Group>
             <Row className="flex items-center justify-between gap-3">
@@ -324,16 +331,6 @@ export function SettingsScreen() {
               />
             </Row>
           </Group>
-
-          {dirty ? (
-            <button
-              type="submit"
-              disabled={saving}
-              className={`${btn.primary} mt-3`}
-            >
-              {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </button>
-          ) : null}
         </form>
 
         <div className="mt-7">
@@ -464,6 +461,17 @@ export function SettingsScreen() {
               </Link>
             </Row>
             <Row>
+              <Link
+                to="/settings/unpair"
+                className="flex w-full items-center justify-between gap-3 text-[15px] font-medium text-accent"
+              >
+                <span>Huỷ ghép đôi</span>
+                <span className="text-muted" aria-hidden>
+                  ›
+                </span>
+              </Link>
+            </Row>
+            <Row>
               <button
                 type="button"
                 onClick={() => void signOut()}
@@ -474,25 +482,7 @@ export function SettingsScreen() {
             </Row>
           </Group>
         </div>
-
-        <div className="mt-10">
-          <SectionLabel tone="danger">Vùng nguy hiểm</SectionLabel>
-          <Link to="/settings/unpair" className={`${btn.danger} mt-2`}>
-            Huỷ ghép đôi
-          </Link>
-        </div>
       </div>
-
-      {message ? (
-        <p
-          role="status"
-          className="pb-safe fixed inset-x-0 bottom-0 mx-auto max-w-[calc(28rem/var(--ui-scale))] px-4"
-        >
-          <span className="block rounded-2xl bg-text px-4 py-3 text-center text-sm text-bg shadow-lg">
-            {message}
-          </span>
-        </p>
-      ) : null}
     </main>
   )
 }

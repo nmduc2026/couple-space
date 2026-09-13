@@ -200,8 +200,9 @@ h4.t{margin:0 0 6px;font-size:23px;font-weight:700;letter-spacing:-.02em;text-wr
 .swatches i{flex:1;height:44px;border-radius:12px;border:2px solid transparent;display:grid;place-items:center;
   font-style:normal;color:#fff;font-size:14px}
 .swatches i.on{border-color:var(--a-accent)}
-.filters{display:flex;gap:8px;padding:10px 16px 0;overflow-x:auto}
-.filters .chip{flex:none}
+.filters{display:flex;flex-direction:column;gap:8px;padding:10px 16px 0}
+.filters-row{display:flex;gap:8px}
+.filters .chip{flex:1;min-width:0}
 .zone{margin-top:16px}
 .zone h5{margin:0 0 8px;font-size:14px;font-weight:600;color:var(--a-muted)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -250,8 +251,12 @@ h4.t{margin:0 0 6px;font-size:23px;font-weight:700;letter-spacing:-.02em;text-wr
 .topbar .right{margin-left:auto;display:flex;gap:7px}
 .chip{border:1px solid var(--a-line);border-radius:999px;padding:4px 11px;font-size:12px;color:var(--a-muted)}
 .chip.on{background:var(--a-accent);border-color:var(--a-accent);color:var(--a-accent-ink);font-weight:600}
-.month{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--a-muted);
-  font-weight:700;padding:14px 0 8px}
+.month{font-size:13.5px;letter-spacing:-.01em;color:var(--a-ink);
+  font-weight:600;padding:8px 0;margin:0 -16px;padding-left:16px;padding-right:16px;
+  position:sticky;top:52px;z-index:3;
+  background:color-mix(in srgb,var(--a-bg) 40%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid color-mix(in srgb,var(--a-line) 40%,transparent)}
 .post{background:var(--a-surface);border:1px solid var(--a-line);border-radius:17px;overflow:hidden;
   width:100%;text-align:left;display:block}
 .post .big{aspect-ratio:4/3;display:grid;place-items:center;font-size:38px}
@@ -753,14 +758,18 @@ const S = [
 
 {id:"settings",phase:1,code:"P1-30",name:"Cài đặt",title:"Màn hình Cài đặt",
  src:"app/src/features/settings/SettingsScreen.tsx",
- desc:"Vào bằng icon ⚙ ở header Home. Hồ sơ space, giao diện (Sáng/Tối/Theo máy + màu nhấn), thông báo, tài khoản, vùng nguy hiểm.",
+ desc:"Vào bằng icon ⚙ ở header Home. Hồ sơ space, giao diện (Sáng/Tối/Theo máy + màu nhấn), thông báo, tài khoản (kèm huỷ ghép đôi).",
  rules:[["Cả hai sửa được thông tin chung","Không có khái niệm “chủ space” — trái nguyên tắc space-first."],
         ["Đổi ngày bắt đầu yêu thì báo người kia","Đổi âm thầm con số cảm xúc nhất app sẽ gây hiểu lầm."],
-        ["Đặt mật khẩu ở đây","Không bắt lúc onboarding — xem p1-auth.md."]],
+        ["Đặt mật khẩu ở đây","Không bắt lúc onboarding — xem p1-auth.md."],
+        ["Lưu cùng hàng tiêu đề","Khi có thay đổi hồ sơ, nút Lưu hiện cạnh Cài đặt."]],
  html:`<div class="scr">
   <div class="stat"><span>9:41</span><span>◍ ⏻</span></div>
   <span data-go="home" style="color:var(--a-muted)">‹</span>
-  <h4 class="t" style="margin-top:8px">Cài đặt</h4>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px">
+    <h4 class="t" style="margin:0">Cài đặt</h4>
+    <button type="button" style="border:0;background:none;color:var(--a-accent);font:600 15px/1 var(--font);padding:0">Lưu</button>
+  </div>
   <div class="sec" style="margin:10px 0 8px">Không gian của chúng ta</div>
   <div class="grp">
     <div class="r"><span>Ngày bắt đầu yêu</span><small>15/03/2024</small></div>
@@ -771,7 +780,6 @@ const S = [
   <div class="segtabs" style="margin-bottom:10px">
     <button>Sáng</button><button class="on">Tối</button><button>Theo máy</button>
   </div>
-  <p style="font-size:12.5px;color:var(--a-muted);margin:0 2px 6px">Màu nhấn của riêng bạn. Người kia chọn màu khác cũng được.</p>
   <div class="swatches">
     <i class="on" style="background:#c2415b">✓</i>
     <i style="background:#2f6f93"></i>
@@ -792,10 +800,9 @@ const S = [
   <div class="grp">
     <div class="r"><span>Email</span><small>minh.nguyen@gmail.com</small></div>
     <div class="r" data-go="set-password"><span>Đặt / đổi mật khẩu</span><small>›</small></div>
+    <div class="r" data-go="breakup"><span style="color:var(--a-accent);font-weight:500">Huỷ ghép đôi</span><small>›</small></div>
     <div class="r"><span>Đăng xuất</span><small></small></div>
   </div>
-  <div class="sec danger-zone" style="margin-bottom:8px;color:#C2415B">Vùng nguy hiểm</div>
-  <button class="btn danger" data-go="breakup">Huỷ ghép đôi</button>
   <div class="spacer"></div>
  </div>`},
 
@@ -848,8 +855,10 @@ const S = [
     <div class="right"><span class="chip on">☰</span><span class="chip" data-go="grid">▦</span></div>
   </div>
   <div class="filters">
-    <span class="chip">Năm ▾</span>
-    <span class="chip">Hoạt động ▾</span>
+    <div class="filters-row">
+      <span class="chip">Năm ▾</span>
+      <span class="chip">Hoạt động ▾</span>
+    </div>
     <span class="chip">Nơi ▾</span>
   </div>
   <div class="body" style="padding-top:0">
@@ -890,8 +899,10 @@ const S = [
     <div class="right"><span class="chip" data-go="timeline">☰</span><span class="chip on">▦</span></div>
   </div>
   <div class="filters">
-    <span class="chip">Năm ▾</span>
-    <span class="chip">Hoạt động ▾</span>
+    <div class="filters-row">
+      <span class="chip">Năm ▾</span>
+      <span class="chip">Hoạt động ▾</span>
+    </div>
     <span class="chip">Nơi ▾</span>
   </div>
   <div style="padding:0 4px 92px">

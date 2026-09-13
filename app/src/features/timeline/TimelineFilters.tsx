@@ -51,10 +51,10 @@ export function TimelineFilters({
 }) {
   const [open, setOpen] = useState<'time' | 'activity' | 'place' | null>(null)
 
-  const timeLabel = time.kind === 'all' ? 'Mọi lúc' : `Năm ${time.year}`
+  const timeLabel = time.kind === 'all' ? 'Thời gian' : `Năm ${time.year}`
   const activityLabel =
     activities.length === 0
-      ? 'Mọi hoạt động'
+      ? 'Hoạt động'
       : activities.length === 1
         ? (ACTIVITY_LABELS[activities[0]]?.label ?? activities[0])
         : `${activities.length} loại`
@@ -63,7 +63,7 @@ export function TimelineFilters({
     ? place
     : province
       ? (provinceByCode(province)?.name ?? province)
-      : 'Mọi nơi'
+      : 'Địa điểm'
 
   const toggle = (key: string) =>
     onActivities(
@@ -73,37 +73,72 @@ export function TimelineFilters({
     )
 
   return (
-    <div className="flex gap-2 px-4 py-3">
-      <Dropdown
-        Icon={IconCalendar}
-        label={timeLabel}
-        active={time.kind !== 'all'}
-        open={open === 'time'}
-        onOpen={() => setOpen(open === 'time' ? null : 'time')}
-        onClose={() => setOpen(null)}
-      >
-        <Option
-          active={time.kind === 'all'}
-          onClick={() => {
-            onTime({ kind: 'all' })
-            setOpen(null)
-          }}
+    <div className="flex flex-col gap-2 px-4 py-3">
+      <div className="flex gap-2">
+        <Dropdown
+          Icon={IconCalendar}
+          label={timeLabel}
+          active={time.kind !== 'all'}
+          open={open === 'time'}
+          onOpen={() => setOpen(open === 'time' ? null : 'time')}
+          onClose={() => setOpen(null)}
         >
-          Mọi lúc
-        </Option>
-        {years.map((y) => (
           <Option
-            key={y}
-            active={time.kind === 'year' && time.year === y}
+            active={time.kind === 'all'}
             onClick={() => {
-              onTime({ kind: 'year', year: y })
+              onTime({ kind: 'all' })
               setOpen(null)
             }}
           >
-            Năm {y}
+            Tất cả
           </Option>
-        ))}
-      </Dropdown>
+          {years.map((y) => (
+            <Option
+              key={y}
+              active={time.kind === 'year' && time.year === y}
+              onClick={() => {
+                onTime({ kind: 'year', year: y })
+                setOpen(null)
+              }}
+            >
+              Năm {y}
+            </Option>
+          ))}
+        </Dropdown>
+
+        <Dropdown
+          Icon={IconTag}
+          label={activityLabel}
+          active={activities.length > 0}
+          open={open === 'activity'}
+          onOpen={() => setOpen(open === 'activity' ? null : 'activity')}
+          onClose={() => setOpen(null)}
+        >
+          {/* Chọn nhiều nên KHÔNG đóng sau mỗi lần bấm */}
+          {Object.entries(ACTIVITY_LABELS).map(([key, meta]) => (
+            <Option
+              key={key}
+              active={activities.includes(key)}
+              multi
+              onClick={() => toggle(key)}
+            >
+              <span aria-hidden className="mr-1.5">
+                {meta.emoji}
+              </span>
+              {meta.label}
+            </Option>
+          ))}
+          {activities.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => onActivities([])}
+              className="w-full py-2.5 text-center text-[13px] font-medium text-muted"
+            >
+              Bỏ chọn
+            </button>
+          ) : null}
+        </Dropdown>
+      </div>
 
       <Dropdown
         Icon={IconMap}
@@ -120,7 +155,7 @@ export function TimelineFilters({
             setOpen(null)
           }}
         >
-          Mọi nơi
+          Tất cả
         </Option>
 
         {provinces.length > 0 ? (
@@ -158,39 +193,6 @@ export function TimelineFilters({
             {p.key}
           </Option>
         ))}
-      </Dropdown>
-
-      <Dropdown
-        Icon={IconTag}
-        label={activityLabel}
-        active={activities.length > 0}
-        open={open === 'activity'}
-        onOpen={() => setOpen(open === 'activity' ? null : 'activity')}
-        onClose={() => setOpen(null)}
-      >
-        {/* Chọn nhiều nên KHÔNG đóng sau mỗi lần bấm */}
-        {Object.entries(ACTIVITY_LABELS).map(([key, meta]) => (
-          <Option
-            key={key}
-            active={activities.includes(key)}
-            multi
-            onClick={() => toggle(key)}
-          >
-            <span aria-hidden className="mr-1.5">
-              {meta.emoji}
-            </span>
-            {meta.label}
-          </Option>
-        ))}
-        {activities.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => onActivities([])}
-            className="w-full py-2.5 text-center text-[13px] font-medium text-muted"
-          >
-            Bỏ chọn hết
-          </button>
-        ) : null}
       </Dropdown>
     </div>
   )

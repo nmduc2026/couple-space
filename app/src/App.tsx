@@ -7,6 +7,7 @@ import {
   RequireNoCouple,
 } from './components/RequireAuth'
 import { ThemeSync } from './components/ThemeSync'
+import { AppToaster } from './components/AppToaster'
 import { AppShell } from './components/AppShell'
 import { Loading } from './components/ui'
 import { PREVIEW } from './dev/preview'
@@ -90,6 +91,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeSync />
+      <AppToaster />
       <Suspense fallback={<Loading />}>
         <Routes>
         <Route element={<GuestOnly />}>

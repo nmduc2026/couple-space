@@ -16,7 +16,7 @@ type Tab = {
 }
 
 const TABS: Tab[] = [
-  { to: '/', label: 'Nhà', Icon: IconHome, match: (p) => p === '/' },
+  { to: '/', label: 'Trang chủ', Icon: IconHome, match: (p) => p === '/' },
   {
     to: '/timeline',
     label: 'Kỉ niệm',

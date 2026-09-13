@@ -95,3 +95,5 @@ P1-34 → P1-36 (deploy máy thật)
 | 2026-09-13 | Đồng bộ docs auth như thiết kế ban đầu (README/features/c-auth/tasks); audit prototype vs code (Home, Eat/Spin, Map…) — liệt kê lệch chờ review, chưa sửa proto | Chờ chốt chỗ sửa prototype | Sửa prototype theo ưu tiên đã chốt |
 | 2026-09-13 | Đồng bộ prototype.html theo app: Home 8 shortcut, Eat reel/box + list, Map tiến độ tỉnh, Settings/Choice/Join/Forgot/…; 39 màn; bỏ home-p1…p4 | Chờ review proto trên trình duyệt | P1-34 Vercel hoặc chỉnh tiếp nếu còn lệch |
 | 2026-09-13 | Rà copy UI vibe AI → production: `hai đứa`→`hai người`, xoá mọi copy nợ nần; áp override #1–17,27–28,34,39; #51 giữ nguyên | Copy app xong; chưa đụng prototype | Review copy trên máy / tiếp task phase |
+| 2026-09-13 | Placeholder input theo bảng review; sửa bug Cài đặt: thiếu RLS UPDATE `couple_members` (biệt danh không lưu), đẩy toast lên trên TabBar | Policy đã push remote | Thử lại đổi biệt danh + ngày trên máy |
+| 2026-09-13 | Thêm `sonner` + `AppToaster`; thay toast tự viết ở Settings / SetPassword | Xong | Thử toast trên Cài đặt |
