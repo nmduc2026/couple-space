@@ -13,6 +13,9 @@ import { PREVIEW } from './dev/preview'
 import { WelcomeScreen } from './features/auth/WelcomeScreen'
 import { EmailScreen } from './features/auth/EmailScreen'
 import { OtpScreen } from './features/auth/OtpScreen'
+import { ForgotPasswordScreen } from './features/auth/ForgotPasswordScreen'
+import { ResetPasswordScreen } from './features/auth/ResetPasswordScreen'
+import { SetPasswordScreen } from './features/auth/SetPasswordScreen'
 import { ChoiceScreen } from './features/pairing/ChoiceScreen'
 import { SetupScreen } from './features/pairing/SetupScreen'
 import { HomeScreen } from './features/home/HomeScreen'
@@ -93,7 +96,10 @@ export default function App() {
           <Route path="/welcome" element={<WelcomeScreen />} />
           <Route path="/login" element={<EmailScreen />} />
           <Route path="/login/otp" element={<OtpScreen />} />
+          <Route path="/login/forgot" element={<ForgotPasswordScreen />} />
         </Route>
+
+        <Route path="/login/reset" element={<ResetPasswordScreen />} />
 
         <Route path="/join" element={<JoinEntry />} />
 
@@ -134,6 +140,7 @@ export default function App() {
             <Route path="/eat/:id" element={<EatDetailScreen />} />
             <Route path="/albums/export" element={<ExportPdfScreen />} />
             <Route path="/albums/:id" element={<AlbumDetailScreen />} />
+            <Route path="/settings/password" element={<SetPasswordScreen />} />
             <Route path="/settings/unpair" element={<UnpairScreen />} />
           </Route>
         </Route>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import {
@@ -13,19 +13,19 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
+import { IconEye, IconEyeOff } from '../../components/icons'
 
 type Mode = 'otp' | 'password'
 
-/** Đăng nhập mật khẩu chỉ là lối tắt lúc dev (user tạo tay trên Supabase).
- *  Bản build thật chỉ có OTP — đúng đặc tả P1-12. */
-const DEV_PASSWORD_LOGIN = import.meta.env.DEV
-
+/** Hai cách đăng nhập luôn hiện (OTP mặc định + mật khẩu nếu đã đặt).
+ *  Đặc tả: docs/features/p1-auth.md · task P1-37. */
 export function EmailScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [mode, setMode] = useState<Mode>(DEV_PASSWORD_LOGIN ? 'password' : 'otp')
+  const [mode, setMode] = useState<Mode>('otp')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -51,7 +51,7 @@ export function EmailScreen() {
     if (mode === 'password') {
       if (!password) {
         setStatus('error')
-        setErrorMessage('Nhập mật khẩu đã đặt lúc tạo user trên Supabase.')
+        setErrorMessage('Nhập mật khẩu đã đặt trong Cài đặt.')
         return
       }
 
@@ -63,7 +63,7 @@ export function EmailScreen() {
       if (error) {
         setStatus('error')
         setErrorMessage(
-          'Đăng nhập thất bại. Kiểm tra email/mật khẩu, hoặc dùng tab OTP.',
+          'Email hoặc mật khẩu chưa đúng. Thử lại, dùng tab Mã OTP, hoặc đặt mật khẩu trong Cài đặt sau khi vào bằng OTP.',
         )
         return
       }
@@ -99,36 +99,36 @@ export function EmailScreen() {
         <Stage>
           <Title>Email của bạn</Title>
           <Sub>
-            Tụi mình gửi một mã 6 số để xác nhận. Không cần mật khẩu, không cần
-            nhớ gì thêm.
+            {mode === 'password'
+              ? 'Nhập mật khẩu để tiếp tục.'
+              : 'Chưa có mật khẩu? Đăng nhập bằng OTP.'}
           </Sub>
 
-          {DEV_PASSWORD_LOGIN ? (
-            <div className="mt-6 flex gap-1 rounded-2xl border border-border bg-surface p-1">
-              {(
-                [
-                  ['password', 'Mật khẩu'],
-                  ['otp', 'Mã OTP'],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => {
-                    setMode(value)
-                    setStatus('idle')
-                  }}
-                  className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                    mode === value
-                      ? 'bg-accent text-on-accent'
-                      : 'text-muted hover:text-text'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <div className="mt-6 flex gap-1 rounded-2xl border border-border bg-surface p-1">
+            {(
+              [
+                ['otp', 'Mã OTP'],
+                ['password', 'Mật khẩu'],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setMode(value)
+                  setStatus('idle')
+                  if (value === 'otp') setShowPassword(false)
+                }}
+                className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
+                  mode === value
+                    ? 'bg-accent text-on-accent'
+                    : 'text-muted hover:text-text'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
           <div className="mt-6 space-y-4">
             <Field label="Email">
@@ -144,25 +144,52 @@ export function EmailScreen() {
                   if (status === 'error') setStatus('idle')
                 }}
                 disabled={busy}
-                placeholder="ten@email.com"
+                placeholder="email@example.com"
                 className={input}
               />
             </Field>
 
             {mode === 'password' ? (
-              <Field label="Mật khẩu">
-                <input
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                    if (status === 'error') setStatus('idle')
-                  }}
-                  disabled={busy}
-                  className={input}
-                />
-              </Field>
+              <div>
+                <Field label="Mật khẩu">
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        if (status === 'error') setStatus('idle')
+                      }}
+                      disabled={busy}
+                      className={`${input} pr-12`}
+                      placeholder="******"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      disabled={busy}
+                      aria-label={
+                        showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'
+                      }
+                      className="absolute top-1/2 right-2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl text-muted transition hover:text-text active:scale-95 disabled:opacity-50"
+                    >
+                      {showPassword ? (
+                        <IconEyeOff size={20} />
+                      ) : (
+                        <IconEye size={20} />
+                      )}
+                    </button>
+                  </div>
+                </Field>
+                <Link
+                  to="/login/forgot"
+                  state={{ email: email.trim() }}
+                  className="mt-2.5 block text-right text-[13px] font-medium text-accent"
+                >
+                  Quên mật khẩu?
+                </Link>
+              </div>
             ) : null}
           </div>
 

@@ -6,7 +6,7 @@
 
 ## Prototype
 
-36 màn hình bấm được của cả 6 phase, dựng theo đặc tả trong `docs/features/`:
+Prototype bấm được của cả 6 phase, dựng theo đặc tả trong `docs/features/`:
 **[docs/design/frontend/ui/prototype.html](../docs/design/frontend/ui/prototype.html)**
 — mở bằng trình duyệt. Sửa tính năng thì **sửa prototype cùng lúc với đặc tả**, để nó không
 lệch khỏi tài liệu.
@@ -44,7 +44,7 @@ kiểm chứng bằng tay sau đó.
 | [5](phase-05/context.md) | Gắn kết | Giữ chân | 42 | ✅ [steps/](phase-05/steps/) | 🔄 Code xong · còn kiểm chứng RLS |
 | [6](phase-06/context.md) | Lan truyền | Tăng trưởng | 50 | ✅ [steps/](phase-06/steps/) | 🔄 Code xong · còn test 2 tài khoản |
 
-**220 task** cho cả 6 phase. Đặc tả nghiệp vụ đã đầy đủ cho **cả 19 tính năng**.
+**220+ task** cho cả 6 phase. Đặc tả nghiệp vụ đã đầy đủ cho **cả 20 tính năng**.
 
 **220 task, 26 file hướng dẫn từng bước** — đủ cho cả 6 phase.
 

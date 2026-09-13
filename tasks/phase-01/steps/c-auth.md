@@ -1,7 +1,11 @@
-# C. Đăng nhập — P1-11 → P1-14
+# C. Đăng nhập — P1-11 → P1-14 · P1-37 → P1-39
 
-Chỉ dùng **email OTP** (mã 6 số gửi qua email). Không làm đăng nhập Google/Apple ở Phase 1:
-ít việc hơn, và không phụ thuộc cấu hình bên ngoài.
+Đặc tả: [p1-auth.md](../../../docs/features/p1-auth.md).
+
+**Hai cách đăng nhập:** email OTP (lần đầu / mặc định) và mật khẩu (sau khi đã đặt
+trong Cài đặt). Không làm Google/Apple ở Phase 1.
+
+P1-11 → P1-14 đã xong (OTP). P1-37 → P1-39 bổ sung mật khẩu theo đặc tả mới.
 
 ---
 
@@ -128,3 +132,67 @@ Chỉ dùng **email OTP** (mã 6 số gửi qua email). Không làm đăng nhậ
 - Người thứ nhất **đã tạo space nhưng chưa có người thứ hai** vẫn phải vào được Home —
   chỉ hiện thêm banner chờ. **Không chặn ở phòng chờ**: đó là cách nhanh nhất để người ta
   bỏ app. Xem [p1-pairing.md](../../../docs/features/p1-pairing.md) mục 3.
+
+---
+
+## P1-37 · Login hai tab (OTP + mật khẩu) trên bản production
+
+**Mục tiêu:** bản deploy cũng có tab Mật khẩu — không còn gắn `import.meta.env.DEV`.
+
+**Các bước**
+
+1. Trong `EmailScreen.tsx`, bỏ `DEV_PASSWORD_LOGIN` / `import.meta.env.DEV`.
+2. Luôn hiện hai tab; **mặc định = OTP**.
+3. Tab Mật khẩu gọi `signInWithPassword`; sửa copy lỗi cho user thường (bỏ câu
+   “tạo trên Supabase”).
+4. Thêm link **Quên mật khẩu?** trên tab Mật khẩu → màn P1-39.
+
+**Xong khi:** `npm run build` / bản Vercel vẫn thấy hai tab; OTP vẫn là đường vào lần đầu.
+
+**Bẫy**
+- User OTP chưa đặt mật khẩu sẽ fail ở tab Mật khẩu — message phải hướng về OTP hoặc
+  Cài đặt (sau khi đã vào bằng OTP). Xem [p1-auth.md](../../../docs/features/p1-auth.md) mục 4.
+
+---
+
+## P1-38 · Đặt / đổi mật khẩu trong Cài đặt
+
+**Mục tiêu:** sau khi đã vào app, tự đặt mật khẩu để lần sau login nhanh.
+
+**Các bước**
+
+1. Trong nhóm **Tài khoản** của Settings: hàng **Đặt / đổi mật khẩu**.
+2. Form: mật khẩu mới + nhập lại; gọi `supabase.auth.updateUser({ password })`.
+3. Không cần đoán “đã có mật khẩu chưa” — một form dùng chung cho đặt và đổi.
+
+**Xong khi:** đặt xong → đăng xuất → đăng nhập lại bằng tab Mật khẩu thành công.
+
+Chi tiết UI cùng task: xem thêm [g-settings.md](g-settings.md).
+
+---
+
+## P1-39 · Quên mật khẩu + màn đặt lại
+
+**Mục tiêu:** mất mật khẩu vẫn lấy lại được tài khoản qua email.
+
+**Các bước**
+
+1. Màn quên mật khẩu: nhập email → `resetPasswordForEmail` với `redirectTo` về
+   `/login/reset` trên domain app.
+2. Thêm route + màn đặt mật khẩu mới khi mở từ link email.
+3. Cấu hình Supabase Auth: Redirect URLs (Vercel + localhost lúc dev); template email
+   tiếng Việt.
+
+**Xong khi:** gửi mail → mở link trên iPhone → đặt MK mới → đăng nhập được bằng mật khẩu.
+
+**Cấu hình Supabase (bắt buộc tay):**
+1. Authentication → URL Configuration
+2. **Site URL** = domain Vercel (hoặc `http://localhost:5173` lúc dev)
+3. **Redirect URLs** thêm:
+   - `http://localhost:5173/login/reset`
+   - `https://<app>.vercel.app/login/reset`
+
+**Bẫy**
+- Link reset phải mở đúng PWA / Safari cùng origin; sai Redirect URL là lỗi im lặng.
+- Session recovery từ hash/query của Supabase — thử kỹ trên iPhone, không chỉ desktop.
+- Route `/login/reset` **không** được đặt trong `GuestOnly` — phiên recovery sẽ bị đá về Home.

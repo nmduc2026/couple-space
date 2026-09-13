@@ -83,7 +83,7 @@ Chi tiết cách phân phối: [distribution.md](../../../docs/decisions/distrib
 
 **Các bước** — làm trên **hai máy thật**, không phải trình duyệt máy tính:
 
-- [ ] Cả hai đăng nhập được bằng email OTP
+- [ ] Cả hai đăng nhập được bằng email OTP (và mật khẩu nếu đã đặt)
 - [ ] Người thứ nhất tạo space, người thứ hai vào bằng mã mời → cả hai thấy **cùng một space**
 - [ ] Home hiện đúng số ngày yêu
 - [ ] Thử đổi múi giờ một máy → số ngày vẫn hợp lý, không lệch bậy

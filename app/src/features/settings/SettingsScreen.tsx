@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useMyProfile } from '../../hooks/useMyProfile'
@@ -48,6 +48,7 @@ const rowTimeInput =
 
 export function SettingsScreen() {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const { user } = useSession()
   const { couple, refetch } = useCouple()
@@ -64,6 +65,13 @@ export function SettingsScreen() {
   const { profile } = useMyProfile()
   const myTheme = profile?.color_theme ?? couple?.theme
   const coverInput = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const toast = (location.state as { toast?: string } | null)?.toast
+    if (!toast) return
+    setMessage(toast)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state, navigate])
 
   const prefsQuery = useQuery({
     queryKey: ['notification_prefs', user?.id],
@@ -448,6 +456,17 @@ export function SettingsScreen() {
             <Row className="flex items-center justify-between gap-3">
               <span className="text-[15px] text-text">Email</span>
               <span className="truncate text-sm text-muted">{user?.email}</span>
+            </Row>
+            <Row>
+              <Link
+                to="/settings/password"
+                className="flex w-full items-center justify-between gap-3 text-[15px] text-text"
+              >
+                <span>Đặt / đổi mật khẩu</span>
+                <span className="text-muted" aria-hidden>
+                  ›
+                </span>
+              </Link>
             </Row>
             <Row>
               <button

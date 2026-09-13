@@ -10,6 +10,7 @@ Bản đồ tổng quan và thứ tự ưu tiên: [../../overview.md](../../over
 
 | Tính năng | Phase | Trạng thái |
 |---|---|---|
+| [Đăng nhập](p1-auth.md) | 1 | ✅ Đã đặc tả |
 | [Ghép đôi](p1-pairing.md) | 1 | ✅ Đã đặc tả |
 | [Hồ sơ đôi](p1-couple-profile.md) | 1 | ✅ Đã đặc tả |
 | [Home / Dashboard](p1-home-dashboard.md) | 1 | ✅ Đã đặc tả |
@@ -30,8 +31,9 @@ Bản đồ tổng quan và thứ tự ưu tiên: [../../overview.md](../../over
 | [Tổng kết năm](p6-wrapped.md) | 6 | ✅ Đã đặc tả |
 | [Album & sao lưu](p6-albums-export.md) | 6 | ✅ Đã đặc tả |
 
-> ✅ **Toàn bộ 19 tính năng đã có đặc tả đầy đủ** (2026-09-11). Prototype 36 màn hình
-> dựng theo các đặc tả này: [prototype.html](../design/frontend/ui/prototype.html).
+> ✅ **Toàn bộ 20 tính năng đã có đặc tả đầy đủ** (bổ sung [p1-auth.md](p1-auth.md)
+> 2026-09-13). Prototype dựng theo các đặc tả này:
+> [prototype.html](../design/frontend/ui/prototype.html).
 >
 > Đặc tả có thể còn thay đổi khi chạm vào code thật. Sửa thì sửa ở đây trước, rồi mới
 > sửa `tasks/`.
