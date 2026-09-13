@@ -59,7 +59,7 @@ export function NudgeSheet({
       // Policy chặn khi vượt 5 lần/ngày hoặc chưa qua 10 phút
       setStatus('error')
       setMessage(
-        'Gửi hơi dày rồi — đợi vài phút, hoặc để mai nhé.',
+        'Gửi hơi dày rồi — đợi vài phút, hoặc để mai.',
       )
       return
     }
@@ -103,7 +103,7 @@ export function NudgeSheet({
 
         {status === 'sent' ? (
           <p className="py-10 text-center text-[15px] text-accent">
-            Đã gửi rồi nha 💌
+            Đã gửi
           </p>
         ) : (
           <>

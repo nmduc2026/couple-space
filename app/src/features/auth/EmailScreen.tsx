@@ -41,7 +41,7 @@ export function EmailScreen() {
 
     if (!trimmed) {
       setStatus('error')
-      setErrorMessage('Nhập email trước nhé.')
+      setErrorMessage('Nhập email.')
       return
     }
 
@@ -51,7 +51,7 @@ export function EmailScreen() {
     if (mode === 'password') {
       if (!password) {
         setStatus('error')
-        setErrorMessage('Nhập mật khẩu đã đặt trong Cài đặt.')
+        setErrorMessage('Nhập mật khẩu.')
         return
       }
 
@@ -62,9 +62,7 @@ export function EmailScreen() {
 
       if (error) {
         setStatus('error')
-        setErrorMessage(
-          'Email hoặc mật khẩu chưa đúng. Thử lại, dùng tab Mã OTP, hoặc đặt mật khẩu trong Cài đặt sau khi vào bằng OTP.',
-        )
+        setErrorMessage('Email hoặc mật khẩu chưa đúng.')
         return
       }
 
@@ -101,7 +99,7 @@ export function EmailScreen() {
           <Sub>
             {mode === 'password'
               ? 'Nhập mật khẩu để tiếp tục.'
-              : 'Chưa có mật khẩu? Đăng nhập bằng OTP.'}
+              : 'Hoặc đăng nhập bằng mã OTP.'}
           </Sub>
 
           <div className="mt-6 flex gap-1 rounded-2xl border border-border bg-surface p-1">

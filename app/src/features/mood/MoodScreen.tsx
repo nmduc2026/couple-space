@@ -115,7 +115,7 @@ export function MoodScreen() {
           </div>
           {mineToday ? (
             <p className="mt-2 text-[12.5px] text-muted">
-              Chạm lại để đổi — sửa thoải mái trong hôm nay.
+              Đổi được trong ngày.
             </p>
           ) : null}
         </section>
@@ -149,7 +149,7 @@ export function MoodScreen() {
 
         {streak > 0 ? (
           <p className="mt-3 text-center text-[13px] text-muted">
-            🔥 Cả hai cùng check-in {streak} ngày liền
+            Cùng check-in {streak} ngày
           </p>
         ) : null}
 
@@ -220,10 +220,10 @@ function buildInsight(
   const diff = avg(mine) - avg(theirs)
 
   if (Math.abs(diff) < 0.5) {
-    return 'Mấy tuần này hai đứa khá đồng điệu.'
+    return 'Hai người gần giống nhau.'
   }
   return diff > 0
-    ? `Dạo này ${partnerName} xuống hơn bạn một chút. Hỏi thăm một câu xem sao.`
+    ? `Dạo này ${partnerName} thấp hơn bạn vài ngày gần đây.`
     : `Dạo này bạn xuống hơn ${partnerName} một chút.`
 }
 

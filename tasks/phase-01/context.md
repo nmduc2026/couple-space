@@ -43,14 +43,12 @@ Timeline · ảnh · chi tiêu · sự kiện · mục tiêu · widget · theme 
 ## 3. Tiến độ
 
 ### ✅ Đã xong
-- Nhóm A–G (code): auth OTP, pairing RPC, Home/đếm ngày, settings/unpair, push client + Edge Function skeleton
+- Nhóm A–G (code): auth theo [p1-auth.md](../../docs/features/p1-auth.md) (OTP + mật khẩu), pairing RPC, Home/đếm ngày, settings/unpair, push client + Edge Function skeleton
 - Migration RPC/push/realtime đã `db push`
+- Còn cấu hình Redirect URLs quên mật khẩu trên Supabase khi deploy
 
 ### 🔄 Đang làm
 - **P1-10 / P1-21 / P1-23 / nhóm H** — cần thao tác tay: thử RLS trên app, ghi VAPID secrets, deploy function + Vercel, cài PWA iPhone
-
-### ✅ Auth mật khẩu (code)
-- P1-37 → P1-39 code xong; còn cấu hình Redirect URLs trên Supabase khi deploy
 
 ### 🔲 Chưa làm
 P1-34 → P1-36 (deploy máy thật)
@@ -64,7 +62,7 @@ P1-34 → P1-36 (deploy máy thật)
 | D6 | ✅ Ngày bắt đầu yêu tính là **ngày thứ 1** (không phải ngày thứ 0) |
 | D4 | ✅ Space `archived` giữ ảnh **6 tháng** |
 | D5 | ✅ Ảnh do A đăng thì **B vẫn tải về được** |
-| D8 | ✅ Auth lâu dài: **OTP lần đầu** + **mật khẩu tuỳ chọn** (đặt trong Cài đặt); không Google/Apple ở Phase 1 — [p1-auth.md](../../docs/features/p1-auth.md) |
+| D8 | ✅ Auth: **OTP lần đầu** + **mật khẩu tuỳ chọn** (đặt trong Cài đặt); không Google/Apple ở Phase 1 — [p1-auth.md](../../docs/features/p1-auth.md) |
 
 **Không còn task nào bị chặn.** Toàn bộ danh sách sẵn sàng làm.
 
@@ -91,6 +89,9 @@ P1-34 → P1-36 (deploy máy thật)
 | 2026-09-11 | Xác nhận P1-07: 2 user Auth → 2 dòng `profiles` (trigger OK). P1-10 phép thử đọc chéo để sau login app | Sẵn sàng nhóm C | **P1-11** Welcome — [c-auth.md](steps/c-auth.md) |
 | 2026-09-11 | Implement phần lớn Phase 1 (C–G): OTP, guards thật, pairing RPC, Home, settings/unpair, push SW + `send-notification` | Còn VAPID secrets, deploy function/Vercel, thử tay trên 2 máy | P1-21 secrets → deploy function → P1-34 Vercel |
 | 2026-09-11 | Review + làm lại toàn bộ UI Phase 1 theo `prototype.html`: bảng màu hồng đất, font Be Vietnam Pro, primitive dùng chung (`components/ui.tsx` + `lib/ui-classes.ts`), viết lại 9 màn hình, tách **màn huỷ ghép đôi riêng** `/settings/unpair`. Sửa: ẩn tab mật khẩu khỏi bản build thật, safe-area iPhone bị đè, input trong suốt ở dark mode, `:focus-visible`, bỏ 2 chỗ setState-trong-effect | Build + lint + test sạch, chưa xem trên máy thật | P1-21 secrets → deploy function → P1-34 Vercel |
-| 2026-09-13 | Phase 1 docs+prototype hướng B auth: thêm [p1-auth.md](../../docs/features/p1-auth.md) (OTP + mật khẩu lâu dài), cập nhật pairing/flows/README; prototype thêm email-pw · forgot · reset · set-password; task P1-37→P1-39 | Chưa đụng code app | **P1-37** — bỏ gate DEV, login 2 tab |
-| 2026-09-13 | P1-37: bỏ gate DEV trên EmailScreen, luôn 2 tab (mặc định OTP), copy lỗi cho user thường, link Quên mật khẩu → ForgotPasswordScreen + route /login/forgot | Chưa P1-38/39 reset | **P1-38** đặt MK trong Cài đặt |
-| 2026-09-13 | P1-38+P1-39: SetPasswordScreen /settings/password, ResetPasswordScreen /login/reset (ngoài GuestOnly), link Settings, lib/password.ts; cập nhật DEPLOY Redirect URL | Chờ review + cấu hình Supabase Redirect | P1-34 Vercel hoặc review tay auth |
+| 2026-09-13 | Viết/chỉnh đặc tả [p1-auth.md](../../docs/features/p1-auth.md) + prototype auth (email 2 tab, quên MK, đặt MK) + task P1-37→P1-39 theo thiết kế auth Phase 1 | Chưa đụng code app | **P1-37** tab mật khẩu trên EmailScreen |
+| 2026-09-13 | P1-37: EmailScreen hai tab (mặc định OTP), link Quên mật khẩu → /login/forgot | Còn P1-38/39 | **P1-38** đặt MK trong Cài đặt |
+| 2026-09-13 | P1-38+P1-39: /settings/password, /login/reset, mắt hiện/ẩn MK; DEPLOY ghi Redirect URL | Review xong; còn Redirect Supabase khi deploy | Đồng bộ docs (bỏ giọng bổ sung) + audit prototype vs app |
+| 2026-09-13 | Đồng bộ docs auth như thiết kế ban đầu (README/features/c-auth/tasks); audit prototype vs code (Home, Eat/Spin, Map…) — liệt kê lệch chờ review, chưa sửa proto | Chờ chốt chỗ sửa prototype | Sửa prototype theo ưu tiên đã chốt |
+| 2026-09-13 | Đồng bộ prototype.html theo app: Home 8 shortcut, Eat reel/box + list, Map tiến độ tỉnh, Settings/Choice/Join/Forgot/…; 39 màn; bỏ home-p1…p4 | Chờ review proto trên trình duyệt | P1-34 Vercel hoặc chỉnh tiếp nếu còn lệch |
+| 2026-09-13 | Rà copy UI vibe AI → production: `hai đứa`→`hai người`, xoá mọi copy nợ nần; áp override #1–17,27–28,34,39; #51 giữ nguyên | Copy app xong; chưa đụng prototype | Review copy trên máy / tiếp task phase |

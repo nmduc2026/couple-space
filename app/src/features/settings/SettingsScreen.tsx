@@ -355,9 +355,6 @@ export function SettingsScreen() {
             ))}
           </div>
 
-          <p className="mt-4 px-1 text-[12.5px] text-muted">
-            Màu nhấn của riêng bạn. Người kia chọn màu khác cũng được.
-          </p>
           <div className="mt-2 flex gap-2">
             {COUPLE_THEMES.map((t) => {
               const active = (myTheme ?? 'rose') === t.key
@@ -438,15 +435,13 @@ export function SettingsScreen() {
               </button>
               {!isStandalonePwa() ? (
                 <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-                  Trên iPhone phải mở từ icon đã cài: Safari → Chia sẻ → Thêm vào
-                  Màn hình chính.
+                  Cần cài ra Màn hình chính (Safari → Chia sẻ).
                 </p>
               ) : null}
             </Row>
           </Group>
           <p className="mt-2 px-1 text-[12.5px] leading-relaxed text-muted">
-            Nhắc gửi lúc 9 giờ sáng theo giờ máy bạn. Rơi vào giờ yên lặng thì
-            hoãn tới lúc hết, không bỏ.
+            Ngoài giờ yên lặng; trong giờ thì hoãn.
           </p>
         </div>
 

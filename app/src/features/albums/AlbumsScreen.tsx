@@ -112,10 +112,10 @@ export function AlbumsScreen() {
             {fresh.length > 0 ? (
               <section className={albums.length > 0 ? 'mt-7' : ''}>
                 <h2 className="text-[14px] font-semibold text-muted">
-                  App gom thử
+                  Gợi ý nhóm
                 </h2>
                 <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
-                  Chưa lưu gì cả — giữ lại cái nào bạn thấy đúng.
+                  Chưa lưu — giữ lại cái nào đúng.
                 </p>
                 <ul className="mt-3 flex flex-col gap-2.5">
                   {fresh.map((s) => (
@@ -177,12 +177,7 @@ function EmptyState({ hasPosts }: { hasPosts: boolean }) {
         🖼️
       </p>
       <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có album nào
-      </p>
-      <p className="mt-2 max-w-[32ch] text-sm leading-relaxed text-muted">
-        {hasPosts
-          ? 'App tự gom khi có từ ba kỉ niệm cùng một chuyến hoặc cùng một kiểu. Chưa đủ thì bạn tự tạo một album cũng được.'
-          : 'Đăng vài kỉ niệm trước đã — album gom từ những gì đã có, không tạo thêm gì mới.'}
+        Chưa có album.
       </p>
       <Link
         to={hasPosts ? '/timeline' : '/compose'}

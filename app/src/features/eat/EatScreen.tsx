@@ -75,7 +75,7 @@ export function EatScreen() {
 
       <div className="px-4 pt-3">
         <Link to="/eat/spin" className={btn.primary}>
-          🎲 Quay đi, khỏi cãi nhau
+          Chọn quán ngẫu nhiên
         </Link>
 
         <RatingPrompt />
@@ -84,7 +84,7 @@ export function EatScreen() {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Thêm quán — dán cả link cũng được"
+            placeholder="Tên quán hoặc link"
             className={`${input} flex-1`}
           />
           <button
@@ -125,8 +125,8 @@ export function EatScreen() {
         ) : list.length === 0 ? (
           <p className="py-16 text-center text-sm leading-relaxed text-muted">
             {tab === 'want'
-              ? 'Chưa có quán nào trong danh sách.\nThấy quán ngon ở đâu thì quăng link vào đây.'
-              : 'Chưa đi quán nào cả.'}
+              ? 'Chưa có quán nào.'
+              : 'Chưa đi quán nào.'}
           </p>
         ) : (
           <ul className="flex flex-col gap-2.5">

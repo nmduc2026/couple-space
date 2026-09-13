@@ -2,10 +2,11 @@
 
 Đặc tả: [p1-auth.md](../../../docs/features/p1-auth.md).
 
-**Hai cách đăng nhập:** email OTP (lần đầu / mặc định) và mật khẩu (sau khi đã đặt
-trong Cài đặt). Không làm Google/Apple ở Phase 1.
+Auth Phase 1: **email OTP** (lần đầu / mặc định) và **mật khẩu** (sau khi đã đặt trong
+Cài đặt). Không làm Google/Apple.
 
-P1-11 → P1-14 đã xong (OTP). P1-37 → P1-39 bổ sung mật khẩu theo đặc tả mới.
+Thứ tự task: Welcome → email/OTP → phiên → điều hướng → tab mật khẩu trên màn email →
+đặt mật khẩu trong Cài đặt → quên / đặt lại mật khẩu.
 
 ---
 
@@ -34,11 +35,13 @@ P1-11 → P1-14 đã xong (OTP). P1-37 → P1-39 bổ sung mật khẩu theo đ�
 
 ## P1-12 · Nhập email → gửi OTP
 
-**Mục tiêu:** nhập email, nhận được mã 6 số trong hộp thư.
+**Mục tiêu:** nhập email, nhận được mã 6 số trong hộp thư. Màn có hai tab
+(**Mã OTP** mặc định · **Mật khẩu**) theo [p1-auth.md](../../../docs/features/p1-auth.md);
+luồng mật khẩu đủ ở P1-37.
 
 **Các bước**
 
-1. Tạo `src/features/auth/EmailScreen.tsx`: một ô nhập email + nút [Tiếp tục].
+1. Tạo `src/features/auth/EmailScreen.tsx`: ô email + nút [Tiếp tục] (tab OTP).
 
 2. Gọi Supabase:
    ```ts
@@ -135,19 +138,17 @@ P1-11 → P1-14 đã xong (OTP). P1-37 → P1-39 bổ sung mật khẩu theo đ�
 
 ---
 
-## P1-37 · Login hai tab (OTP + mật khẩu) trên bản production
+## P1-37 · Màn email — tab Mật khẩu
 
-**Mục tiêu:** bản deploy cũng có tab Mật khẩu — không còn gắn `import.meta.env.DEV`.
+**Mục tiêu:** đăng nhập bằng mật khẩu khi đã đặt trong Cài đặt (cùng màn với OTP).
 
 **Các bước**
 
-1. Trong `EmailScreen.tsx`, bỏ `DEV_PASSWORD_LOGIN` / `import.meta.env.DEV`.
-2. Luôn hiện hai tab; **mặc định = OTP**.
-3. Tab Mật khẩu gọi `signInWithPassword`; sửa copy lỗi cho user thường (bỏ câu
-   “tạo trên Supabase”).
-4. Thêm link **Quên mật khẩu?** trên tab Mật khẩu → màn P1-39.
+1. Trong `EmailScreen.tsx`, luôn hiện hai tab; **mặc định = OTP**.
+2. Tab Mật khẩu gọi `signInWithPassword`; copy lỗi hướng về OTP hoặc Cài đặt nếu chưa đặt MK.
+3. Link **Quên mật khẩu?** → màn P1-39.
 
-**Xong khi:** `npm run build` / bản Vercel vẫn thấy hai tab; OTP vẫn là đường vào lần đầu.
+**Xong khi:** cả hai tab dùng được trên bản build / Vercel; OTP vẫn là đường vào lần đầu.
 
 **Bẫy**
 - User OTP chưa đặt mật khẩu sẽ fail ở tab Mật khẩu — message phải hướng về OTP hoặc

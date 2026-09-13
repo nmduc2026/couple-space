@@ -165,13 +165,10 @@ function EmptyState({ hasPosts }: { hasPosts: boolean }) {
         📷
       </p>
       <p className="mt-5 text-[17px] font-semibold text-text">
-        Kỉ niệm đầu tiên của hai đứa nằm ở đây nè
-      </p>
-      <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-        Một tấm ảnh, một dòng caption. Người kia sẽ nhận được thông báo ngay.
+        Chưa có kỉ niệm
       </p>
       <Link to="/compose" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Thêm kỉ niệm đầu tiên
+        Thêm
       </Link>
     </div>
   )

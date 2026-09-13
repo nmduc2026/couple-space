@@ -20,14 +20,14 @@ export function expenseInsight(input: InsightInput): string | null {
   if (outingCount === 0) return null
 
   if (!previous || previous.outingCount === 0) {
-    return 'Tháng đầu tiên tụi mình ghi chi tiêu 🎉'
+    return 'Tháng đầu tiên ghi chi tiêu'
   }
 
   // Ưu tiên so danh mục dùng nhiều nhất — cụ thể hơn là so tổng
   const diff = outingCount - previous.outingCount
   if (diff !== 0) {
     const word = diff > 0 ? 'nhiều hơn' : 'ít hơn'
-    return `Tháng này tụi mình ghi ${outingCount} khoản — ${word} tháng trước ${Math.abs(diff)}`
+    return `Tháng này ghi ${outingCount} khoản — ${word} tháng trước ${Math.abs(diff)}`
   }
 
   // Bằng nhau về số lần thì nói về tiền

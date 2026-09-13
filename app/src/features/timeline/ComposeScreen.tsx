@@ -132,7 +132,7 @@ export function ComposeScreen() {
     if (!couple || !user) return
     if (!caption.trim() && photos.length === 0) {
       setStatus('error')
-      setErrorMessage('Thêm một tấm ảnh hoặc viết vài chữ đã nhé.')
+      setErrorMessage('Thêm một tấm ảnh hoặc viết vài chữ.')
       return
     }
 
@@ -151,7 +151,7 @@ export function ComposeScreen() {
     } catch {
       setStatus('error')
       setProgress('')
-      setErrorMessage('Không đọc được một tấm ảnh. Thử bỏ tấm đó ra nhé.')
+      setErrorMessage('Không đọc được một tấm ảnh. Thử bỏ tấm đó ra.')
       return
     }
 
@@ -317,17 +317,13 @@ export function ComposeScreen() {
             hidden
             onChange={(e) => void pickFiles(e.target.files)}
           />
-          <p className="mt-2 text-xs text-muted">
-            Ảnh được nén về cạnh 1600px trước khi tải lên.
-          </p>
-
           <div className="mt-5 space-y-4">
             <Field label="Caption">
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 rows={3}
-                placeholder="Hôm nay tụi mình..."
+                placeholder="Hôm nay..."
                 className={`${input} h-auto py-3 leading-relaxed`}
               />
             </Field>
@@ -345,7 +341,7 @@ export function ComposeScreen() {
               <input
                 value={placeName}
                 onChange={(e) => setPlaceName(e.target.value)}
-                placeholder="Không bắt buộc"
+                placeholder="Địa điểm"
                 className={input}
               />
               <button
@@ -362,7 +358,7 @@ export function ComposeScreen() {
                 <p className="mt-2 rounded-2xl bg-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-text">
                   {located.address}
                   <span className="mt-1 block text-[11px] text-muted">
-                    Địa chỉ từ OpenStreetMap · sẽ lưu kèm kỉ niệm
+                    Từ bản đồ
                   </span>
                 </p>
               ) : null}
@@ -403,11 +399,8 @@ export function ComposeScreen() {
             </span>
             <span className="min-w-0 flex-1">
               <b className="block text-[15px] font-semibold text-text">
-                Thêm chi phí
+                Thêm chi tiêu
               </b>
-              <small className="block text-[12.5px] text-muted">
-                Ghi luôn khoản chi cho buổi này
-              </small>
             </span>
             <span
               aria-hidden
@@ -438,7 +431,7 @@ export function ComposeScreen() {
                 </div>
               </Field>
 
-              <Field label="Ai trả" hint="Chỉ để thống kê — app không tính nợ.">
+              <Field label="Ai trả">
                 <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
                   {(couple?.members ?? []).map((m) => (
                     <button

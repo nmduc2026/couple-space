@@ -22,7 +22,7 @@ export function WelcomeScreen() {
           Couple Space
         </h1>
         <p className="mt-3 max-w-[26ch] text-[15px] leading-relaxed text-muted">
-          Nơi hai người cùng viết lại chuyện tình của mình.
+          Không gian chung của hai người.
         </p>
       </div>
 

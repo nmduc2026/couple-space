@@ -95,13 +95,10 @@ export function ResetPasswordScreen() {
       <Screen>
         <Stage className="justify-center">
           <Title>Link không còn hiệu lực</Title>
-          <Sub>
-            Đường dẫn đặt lại mật khẩu đã hết hạn hoặc đã dùng. Gửi lại một cái
-            mới nhé.
-          </Sub>
+          <Sub>Link hết hạn hoặc đã dùng. Gửi lại.</Sub>
           <Spacer />
           <Link to="/login/forgot" className={btn.primary}>
-            Gửi lại đường dẫn
+            Gửi lại
           </Link>
           <Link to="/login" className={`${btn.ghost} mt-2`}>
             Về đăng nhập
@@ -117,7 +114,7 @@ export function ResetPasswordScreen() {
     <Screen>
       <Stage>
         <Title>Mật khẩu mới</Title>
-        <Sub>Chọn mật khẩu bạn sẽ nhớ được — lần sau khỏi chờ email.</Sub>
+        <Sub>Mật khẩu dùng để đăng nhập lần sau.</Sub>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col">
           <div className="space-y-4">

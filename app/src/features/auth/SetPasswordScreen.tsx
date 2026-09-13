@@ -42,7 +42,7 @@ export function SetPasswordScreen() {
       setStatus('error')
       setErrorMessage(
         error.message.includes('same')
-          ? 'Mật khẩu mới trùng mật khẩu cũ. Chọn mật khẩu khác nhé.'
+          ? 'Mật khẩu mới trùng mật khẩu cũ.'
           : 'Không lưu được mật khẩu. Thử lại sau.',
       )
       return
@@ -59,9 +59,7 @@ export function SetPasswordScreen() {
       <form onSubmit={handleSubmit} className="contents">
         <Stage>
           <Title>Đặt mật khẩu</Title>
-          <Sub>
-            Đặt mật khẩu để đăng nhập vào lần sau.
-          </Sub>
+          <Sub>Mật khẩu dùng để đăng nhập lần sau.</Sub>
 
           <div className="mt-6 space-y-4">
             <Field label="Mật khẩu mới">

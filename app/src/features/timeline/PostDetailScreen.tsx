@@ -306,7 +306,7 @@ export function PostDetailScreen() {
               value={edit.caption}
               onChange={(e) => setEdit({ ...edit, caption: e.target.value })}
               rows={3}
-              placeholder="Viết gì đó..."
+              placeholder="Viết chú thích..."
               className={`${input} h-auto py-3 leading-relaxed`}
             />
             <input
@@ -419,7 +419,7 @@ export function PostDetailScreen() {
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Viết gì đó..."
+          placeholder="Viết bình luận..."
           className={`${input} flex-1`}
         />
         <button

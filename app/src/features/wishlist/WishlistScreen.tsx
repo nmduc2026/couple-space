@@ -148,7 +148,7 @@ export function WishlistScreen() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Thêm món — dán cả link cũng được"
+              placeholder="Tên món hoặc link"
               className={`${input} flex-1`}
             />
             <button
@@ -166,7 +166,7 @@ export function WishlistScreen() {
         {tab === 'theirs' && stale.length > 0 ? (
           <p className="mb-3 rounded-2xl bg-soft p-3.5 text-[13.5px] leading-relaxed text-muted">
             ⚠️ {stale.length} món bạn đã đánh dấu vừa được bỏ khỏi wishlist.
-            Kiểm tra lại trước khi mua nhé.
+            Kiểm tra lại trước khi mua.
           </p>
         ) : null}
 
@@ -176,14 +176,7 @@ export function WishlistScreen() {
               🎁
             </p>
             <p className="mt-5 text-[17px] font-semibold text-text">
-              {tab === 'mine'
-                ? 'Bạn chưa ghi món nào'
-                : 'Người ấy chưa ghi món nào'}
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              {tab === 'mine'
-                ? 'Ghi vào đây thì khỏi phải gợi ý vòng vo. Bạn sẽ không biết người kia đã xem gì.'
-                : 'Khi người ấy thêm món, bạn sẽ thấy ở đây.'}
+              {tab === 'mine' ? 'Chưa có món nào.' : 'Người ấy chưa ghi món nào.'}
             </p>
           </div>
         ) : (
@@ -266,8 +259,7 @@ export function WishlistScreen() {
 
         {tab === 'mine' ? (
           <p className="mt-6 px-2 text-center text-[12.5px] leading-relaxed text-muted">
-            Bạn không thấy được người ấy đã xem hay đánh dấu món nào — đó là
-            toàn bộ lý do tính năng này tồn tại.
+            Người ấy không thấy bạn đã xem gì.
           </p>
         ) : null}
       </div>

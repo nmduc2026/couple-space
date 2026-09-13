@@ -105,7 +105,7 @@ export function UnpairScreen() {
       <TopBar to="/settings" />
       <Stage>
         <Title>Trước khi huỷ ghép đôi</Title>
-        <Sub>Tụi mình nói thẳng chuyện sẽ xảy ra.</Sub>
+        <Sub>Những gì sẽ xảy ra.</Sub>
 
         {pending ? (
           <p className="mt-6 rounded-2xl bg-soft p-4 text-[14px] leading-relaxed text-muted">
@@ -127,12 +127,11 @@ export function UnpairScreen() {
 
         {locked.length > 0 && !pending ? (
           <p className="mt-3 rounded-2xl border border-accent/30 bg-soft p-4 text-[14px] leading-relaxed text-text">
-            💌 Còn{' '}
+            Còn{' '}
             <b className="font-semibold">
-              {locked.length} lá thư chưa mở
+              {locked.length} thư chưa mở
             </b>
-            , sẽ mở vào {lockedYears.join(' và ')}. Huỷ ghép đôi rồi thì không ai
-            nhận được nhắc nữa.
+            , sẽ mở vào {lockedYears.join(' và ')}.
           </p>
         ) : null}
 
@@ -143,7 +142,7 @@ export function UnpairScreen() {
           disabled={exporting}
           className={`${btn.outline} mt-4`}
         >
-          {exporting ? 'Đang đóng gói...' : '⬇ Tải toàn bộ dữ liệu về máy'}
+          {exporting ? 'Đang đóng gói...' : 'Tải dữ liệu'}
         </button>
 
         <Spacer />

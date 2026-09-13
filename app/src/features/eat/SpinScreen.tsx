@@ -209,28 +209,28 @@ export function SpinScreen() {
 
       <Stage className="text-center">
         <Title>Tối nay ăn gì?</Title>
-        <Sub>Quay xong thì đi, không cãi nữa.</Sub>
+        <Sub>Chọn cách quay</Sub>
 
         {mode === null ? (
           <div className="mt-8 space-y-3">
             <ModeCard
               emoji="🎞️"
               title="Dải quay"
-              desc="Lướt qua danh sách rồi dừng lại ở một món."
+              desc="Quay danh sách"
               onClick={() => void chooseMode('reel')}
             />
             <ModeCard
               emoji="🎁"
               title="Hộp bí mật"
-              desc="Mỗi món một hộp, xáo lên rồi tự chọn hộp mà mở."
+              desc="Chọn hộp"
               onClick={() => void chooseMode('box')}
             />
           </div>
         ) : phase === 'empty' ? (
           <p className="mt-8 rounded-3xl bg-soft px-5 py-10 text-sm leading-relaxed text-muted">
-            Không còn quán nào để quay.
+            Hết quán để quay.
             <br />
-            Thêm quán mới, hoặc chờ hết 14 ngày kể từ lần ghé gần nhất.
+            Thêm quán hoặc thử lại sau.
           </p>
         ) : picking ? (
           <PickDishes
@@ -335,9 +335,9 @@ export function SpinScreen() {
 
       {askCompose ? (
         <ConfirmSheet
-          title="Đăng luôn một kỉ niệm?"
-          body={`Đã ghi lại lần đi ${winner?.name ?? 'này'}.`}
-          confirmLabel="Thêm ảnh, viết vài chữ"
+          title="Đăng kỉ niệm?"
+          body="Có thể thêm ảnh và chú thích."
+          confirmLabel="Thêm"
           cancelLabel="Để sau"
           onConfirm={() =>
             navigate(

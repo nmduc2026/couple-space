@@ -122,7 +122,7 @@ export function LettersScreen() {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Tiêu đề lá thư"
+          placeholder="Tiêu đề"
           maxLength={80}
           className={`${input} mt-4`}
         />
@@ -130,7 +130,7 @@ export function LettersScreen() {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={10}
-          placeholder="Gửi tụi mình của tương lai..."
+          placeholder="Nội dung thư"
           className={`${input} mt-3 h-auto py-3 leading-[1.75]`}
         />
 
@@ -140,7 +140,7 @@ export function LettersScreen() {
         <DateField
           value={openOn}
           min={today}
-          placeholder="Chọn ngày mở khoá"
+          placeholder="Ngày mở"
           onChange={setOpenOn}
           className={`${input} mt-2 flex items-center`}
         />
@@ -165,10 +165,10 @@ export function LettersScreen() {
           disabled={!title.trim() || !openOn || saving}
           className={`${btn.primary} mt-6`}
         >
-          {saving ? 'Đang khoá...' : 'Khoá lại tới ngày đó'}
+          {saving ? 'Đang khoá...' : 'Khoá đến ngày mở'}
         </button>
         <p className="mt-2.5 text-center text-[12.5px] leading-relaxed text-muted">
-          Sau ngày mở thì không sửa được nữa — đó là cả ý nghĩa của nó.
+          Sau ngày mở không sửa được.
         </p>
       </form>
     )
@@ -197,12 +197,15 @@ export function LettersScreen() {
               💌
             </p>
             <p className="mt-5 text-[17px] font-semibold text-text">
-              Viết cho tụi mình của tương lai
+              Chưa có thư.
             </p>
-            <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-              Một lá thư, hẹn ngày mở. Tới ngày đó nó tự mở ra — không ai đọc
-              trộm được trước.
-            </p>
+            <button
+              type="button"
+              onClick={() => setWriting(true)}
+              className={`${btn.primary} mt-7 max-w-[18rem]`}
+            >
+              Viết thư
+            </button>
           </div>
         ) : null}
 

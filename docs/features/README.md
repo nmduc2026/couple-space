@@ -31,8 +31,7 @@ Bản đồ tổng quan và thứ tự ưu tiên: [../../overview.md](../../over
 | [Tổng kết năm](p6-wrapped.md) | 6 | ✅ Đã đặc tả |
 | [Album & sao lưu](p6-albums-export.md) | 6 | ✅ Đã đặc tả |
 
-> ✅ **Toàn bộ 20 tính năng đã có đặc tả đầy đủ** (bổ sung [p1-auth.md](p1-auth.md)
-> 2026-09-13). Prototype dựng theo các đặc tả này:
+> ✅ **Toàn bộ 20 tính năng đã có đặc tả đầy đủ.** Prototype dựng theo các đặc tả này:
 > [prototype.html](../design/frontend/ui/prototype.html).
 >
 > Đặc tả có thể còn thay đổi khi chạm vào code thật. Sửa thì sửa ở đây trước, rồi mới

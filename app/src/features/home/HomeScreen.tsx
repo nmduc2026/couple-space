@@ -182,8 +182,8 @@ export function HomeScreen() {
               </b>
               <span className="block text-[12.5px] text-muted">
                 {season.final
-                  ? 'Số liệu đã chốt — xem và chia sẻ'
-                  : 'Tạm tính tới hôm nay, chốt vào 31/12'}
+                  ? `Xem tổng kết ${season.year}`
+                  : 'Tạm tính · chốt 31/12'}
               </span>
             </span>
             <IconChevronRight size={17} className="shrink-0 text-muted" />
@@ -227,7 +227,7 @@ export function HomeScreen() {
               Tối nay ăn gì?
             </b>
             <small className="block text-[12.5px] text-muted">
-              Quay một cái cho khỏi cãi nhau
+              Chọn quán / món tối nay
             </small>
           </span>
           <IconChevronRight size={17} className="ml-auto shrink-0 text-muted" />
@@ -340,8 +340,8 @@ export function HomeScreen() {
           {posts.length === 0 ? (
             <p className="py-8 text-center text-[13.5px] leading-relaxed text-muted">
               {waiting
-                ? `Khi ${rightName} vào, tụi mình mở khoá dòng thời gian và mọi thứ còn lại.`
-                : 'Chưa có kỉ niệm nào. Bấm nút + để thêm tấm đầu tiên.'}
+                ? `Đang chờ ${rightName} tham gia.`
+                : 'Chưa có kỉ niệm.'}
             </p>
           ) : (
             <div className="mt-2.5 grid grid-cols-4 gap-1.5">

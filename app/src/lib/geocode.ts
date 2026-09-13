@@ -41,7 +41,7 @@ export function currentPosition(): Promise<{ lat: number; lng: number }> {
         if (err.code === err.PERMISSION_DENIED) {
           reject(new Error('Bạn chưa cho phép app dùng vị trí.'))
         } else if (err.code === err.TIMEOUT) {
-          reject(new Error('Tìm vị trí lâu quá. Thử lại ngoài trời nhé.'))
+          reject(new Error('Tìm vị trí lâu quá. Thử lại ngoài trời.'))
         } else {
           reject(new Error('Không lấy được vị trí.'))
         }

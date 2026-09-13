@@ -106,7 +106,7 @@ export function EatDetailScreen() {
 
         {stat && stat.nope_count > 0 ? (
           <p className="mt-3 rounded-2xl border border-border bg-surface p-3.5 text-[13px] leading-relaxed text-muted">
-            😕 Có người đã chê chỗ này, nên vòng quay sẽ không chọn nó nữa.
+            Đã bị đánh dấu “thôi” — không đưa vào vòng quay.
           </p>
         ) : null}
 

@@ -112,10 +112,6 @@ export function ExpensesScreen() {
                   </b>
                 </span>
               </div>
-
-              <p className="mt-3 border-t border-border pt-3 text-[12px] leading-relaxed text-muted">
-                Đây là tiền hai đứa đã tiêu cùng nhau — app không tính ai nợ ai.
-              </p>
             </section>
 
             {insight ? (
@@ -170,14 +166,10 @@ function EmptyState() {
         🧾
       </p>
       <p className="mt-5 text-[17px] font-semibold text-text">
-        Tháng này chưa ghi khoản nào
-      </p>
-      <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-        Ghi lại để cuối tháng biết hai đứa đã đi đâu, tiêu bao nhiêu — không
-        phải để tính nợ nhau.
+        Chưa có chi tiêu.
       </p>
       <Link to="/expenses/new" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Ghi khoản đầu tiên
+        Thêm
       </Link>
     </div>
   )

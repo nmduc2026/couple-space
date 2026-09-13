@@ -106,7 +106,7 @@ export function ExportPdfScreen() {
     })
     setStarting(false)
     if (fnErr) {
-      setErrorMessage('Không bắt đầu được. Thử lại sau một chút nhé.')
+      setErrorMessage('Không bắt đầu được. Thử lại sau một chút.')
       return
     }
     await queryClient.invalidateQueries({ queryKey: ['pdf_exports'] })
@@ -118,7 +118,7 @@ export function ExportPdfScreen() {
       .from('couple-exports')
       .createSignedUrl(job.storage_path, 60 * 60)
     if (error || !data) {
-      setErrorMessage('Link đã hết hạn. Xuất lại một bản mới nhé.')
+      setErrorMessage('Link đã hết hạn. Xuất lại một bản mới.')
       return
     }
     window.open(data.signedUrl, '_blank')
@@ -129,8 +129,8 @@ export function ExportPdfScreen() {
       <TopBar to="/albums" />
       <Stage>
         <Title>Xuất sách ảnh</Title>
-        <Sub>
-          Sinh ở máy chủ nên bạn đóng app cũng được — xong sẽ có thông báo.
+          <Sub>
+          Xuất trên máy chủ. Link tải hết hạn sau 24 giờ.
         </Sub>
 
         <div className="mt-6 space-y-4">
@@ -201,7 +201,7 @@ export function ExportPdfScreen() {
           {busy ? 'Đang sinh sách...' : starting ? 'Đang gửi...' : 'Xuất PDF'}
         </button>
         <p className="mt-2 text-center text-[12px] leading-relaxed text-muted">
-          Link tải có hạn 24 giờ. Hết hạn thì xuất lại, không mất gì.
+          Link tải hết hạn sau 24 giờ.
         </p>
       </Stage>
     </Screen>
@@ -212,7 +212,7 @@ function JobRow({ job, onDownload }: { job: Export; onDownload: () => void }) {
   if (job.status === 'failed') {
     return (
       <p className="mt-5 rounded-2xl border border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
-        Lần xuất gần nhất hỏng: {job.error ?? 'không rõ lý do'}. Thử lại nhé.
+        Lần xuất gần nhất hỏng: {job.error ?? 'không rõ lý do'}. Thử lại.
       </p>
     )
   }

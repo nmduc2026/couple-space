@@ -234,7 +234,7 @@ export function JoinScreen() {
       <form onSubmit={redeem} className="contents">
         <Stage>
           <Title>Gọi bạn là gì?</Title>
-          <Sub>Ngày bắt đầu yêu đã có sẵn — không cần nhập lại.</Sub>
+          <Sub>Ngày bắt đầu yêu đã có sẵn.</Sub>
           <div className="mt-7">
             <Field label="Biệt danh của bạn">
               <input
@@ -242,7 +242,7 @@ export function JoinScreen() {
                 maxLength={24}
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                placeholder="Nhập tên đi"
+                placeholder="Biệt danh"
                 className={input}
               />
             </Field>

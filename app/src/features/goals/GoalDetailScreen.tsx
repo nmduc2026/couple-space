@@ -234,7 +234,7 @@ export function GoalDetailScreen() {
               <input
                 value={stepTitle}
                 onChange={(e) => setStepTitle(e.target.value)}
-                placeholder="Thêm một bước"
+                placeholder="Tên bước"
                 className={`${input} flex-1`}
               />
               <button
@@ -285,7 +285,7 @@ export function GoalDetailScreen() {
                 inputMode="numeric"
                 value={amount}
                 onChange={(e) => setAmount(formatAmountInput(e.target.value))}
-                placeholder="Nạp thêm bao nhiêu?"
+                placeholder="0"
                 className={`${input} flex-1 text-right tabular-nums`}
               />
               <button
@@ -297,8 +297,7 @@ export function GoalDetailScreen() {
               </button>
             </form>
             <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-              Nạp quỹ ghi tay — app không tự trừ từ chi tiêu chung. Tiêu chung
-              và để dành là hai việc khác nhau.
+              Ghi tay. Không tự trừ từ chi tiêu.
             </p>
           </div>
         ) : null}

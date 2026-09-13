@@ -216,7 +216,7 @@ function DayQuestion({
             onChange={(e) => setDraft(e.target.value)}
             rows={compact ? 3 : 5}
             autoFocus={!compact}
-            placeholder="Câu trả lời của bạn..."
+            placeholder="Câu trả lời"
             className={`${input} h-auto py-3 leading-relaxed`}
           />
           <button
@@ -228,7 +228,7 @@ function DayQuestion({
           </button>
           {compact ? null : (
             <p className="mt-2.5 text-center text-[12.5px] leading-relaxed text-muted">
-              Trả lời rồi mới thấy câu của {partnerName} — và ngược lại.
+              Trả lời để xem câu của {partnerName}.
             </p>
           )}
         </form>
@@ -290,11 +290,7 @@ function MissedList({
           ✅
         </p>
         <p className="mt-5 text-[17px] font-semibold text-text">
-          Không bỏ lỡ ngày nào
-        </p>
-        <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-          Câu chưa trả lời của bảy ngày gần nhất sẽ hiện ở đây. Quá bảy ngày
-          thì thôi — không nợ nần gì cả.
+          Không có câu bỏ lỡ.
         </p>
       </div>
     )
@@ -383,9 +379,9 @@ function Book({ history }: { history: Answer[] }) {
         <p className="text-5xl" aria-hidden>
           📖
         </p>
-        <p className="mt-5 text-[17px] font-semibold text-text">Sách còn trắng</p>
+        <p className="mt-5 text-[17px] font-semibold text-text">Các câu đã trả lời</p>
         <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-          Mỗi ngày trả lời một câu. Sau một năm chỗ này là một cuốn sách thật.
+          Các câu đã trả lời sẽ nằm ở đây.
         </p>
       </div>
     )
@@ -396,7 +392,7 @@ function Book({ history }: { history: Answer[] }) {
       <input
         value={term}
         onChange={(e) => setTerm(e.target.value)}
-        placeholder="Tìm trong sách..."
+        placeholder="Tìm..."
         className={input}
       />
 

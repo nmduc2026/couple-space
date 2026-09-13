@@ -55,7 +55,7 @@ export function GoalsScreen() {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Muốn cùng nhau làm gì?"
+          placeholder="Tên mục tiêu"
           className={`${input} flex-1`}
         />
         <button
@@ -75,10 +75,7 @@ export function GoalsScreen() {
             ✨
           </p>
           <p className="mt-5 text-[17px] font-semibold text-text">
-            Những điều muốn làm cùng nhau
-          </p>
-          <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-            Đi Đà Lạt, xem hết 22 phim Marvel, để dành mua xe
+            Chưa có mục tiêu.
           </p>
         </div>
       ) : (

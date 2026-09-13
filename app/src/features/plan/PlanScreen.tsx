@@ -105,9 +105,11 @@ export function PlanScreen() {
         {suggestion && suggestFor ? (
           <div className="mb-3 rounded-2xl border border-accent/30 bg-soft p-3.5">
             <p className="text-[13.5px] leading-relaxed text-text">
-              Còn {suggestFor.days_away === 0 ? 'hôm nay' : `${suggestFor.days_away} ngày`}{' '}
-              là <b className="font-semibold">{suggestFor.title}</b> — {suggestion.toLowerCase()}{' '}
-              chưa?
+              Còn{' '}
+              {suggestFor.days_away === 0
+                ? 'hôm nay'
+                : `${suggestFor.days_away} ngày`}{' '}
+              · <b className="font-semibold">{suggestFor.title}</b>
             </p>
             <div className="mt-2.5 flex gap-2">
               <button
@@ -180,14 +182,10 @@ function EmptyState() {
         🎂
       </p>
       <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có dịp nào được đánh dấu
-      </p>
-      <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-        Sinh nhật, ngày cưới, chuyến đi sắp tới — thêm một lần, cả hai máy
-        cùng được nhắc.
+        Chưa có sự kiện.
       </p>
       <Link to="/plan/new" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Thêm dịp đầu tiên
+        Thêm
       </Link>
     </div>
   )

@@ -28,7 +28,7 @@ export function ForgotPasswordScreen() {
     const trimmed = email.trim()
     if (!trimmed) {
       setStatus('error')
-      setErrorMessage('Nhập email trước nhé.')
+      setErrorMessage('Nhập email.')
       return
     }
 
@@ -61,12 +61,11 @@ export function ForgotPasswordScreen() {
       <form onSubmit={handleSubmit} className="contents">
         <Stage>
           <Title>Quên mật khẩu</Title>
-          <Sub>Tụi mình gửi một đường dẫn để đặt mật khẩu mới.</Sub>
+          <Sub>Gửi link đặt lại mật khẩu đến email.</Sub>
 
           {status === 'sent' ? (
             <p className="mt-6 rounded-2xl border border-border bg-soft px-4 py-3.5 text-[14px] leading-relaxed text-text">
-              Nếu email này có trong hệ thống, bạn sẽ nhận được đường dẫn trong
-              vài phút. Không thấy? Kiểm tra hộp thư rác.
+              Đã gửi. Không thấy mail vui lòng xem hộp thư rác.
             </p>
           ) : (
             <div className="mt-6">
@@ -101,7 +100,7 @@ export function ForgotPasswordScreen() {
           ) : (
             <>
               <button type="submit" disabled={busy} className={btn.primary}>
-                {busy ? 'Đang gửi...' : 'Gửi đường dẫn'}
+                {busy ? 'Đang gửi...' : 'Gửi link'}
               </button>
               <Link to="/login" className={`${btn.ghost} mt-2`}>
                 Quay lại

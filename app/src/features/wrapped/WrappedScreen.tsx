@@ -57,10 +57,7 @@ export function WrappedScreen() {
             🌱
           </p>
           <p className="mt-5 text-[17px] font-semibold text-text">
-            Còn sớm quá
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Tổng kết sẽ mở khi hai đứa đi cùng nhau đủ lâu để có chuyện mà kể.
+            Chưa đủ dữ liệu.
           </p>
         </div>
       </>
@@ -98,7 +95,7 @@ export function WrappedScreen() {
       <div className="flex-1 px-4 py-4">
         {season.visible && !season.final ? (
           <p className="mb-3 rounded-2xl border border-border bg-surface px-4 py-2.5 text-center text-[12.5px] text-muted">
-            Tạm tính tới hôm nay — số liệu chốt vào 31/12.
+            Tạm tính · chốt 31/12.
           </p>
         ) : null}
 

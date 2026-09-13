@@ -115,13 +115,11 @@ export function MapScreen() {
                   📍
                 </span>
                 <span className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-text">
-                  Chưa nhận ra <b className="font-semibold">
-                    {unresolved[0].placeName}
-                  </b>
+                  Chọn tỉnh cho “{unresolved[0].placeName}”
                   {unresolved.length > 1
                     ? ` và ${unresolved.length - 1} nơi nữa`
                     : ''}
-                  . Chỉ giúp một lần, lần sau tự nhận.
+                  .
                 </span>
                 <span aria-hidden className="shrink-0 text-muted">
                   ›
@@ -158,11 +156,6 @@ export function MapScreen() {
                 </div>
               </section>
             ))}
-
-            <p className="mt-6 text-center text-[12px] leading-relaxed text-muted">
-              Đây chưa phải bản đồ vẽ thật — mới là lưới theo vùng. Bản SVG 63
-              tỉnh sẽ thay vào đúng chỗ này.
-            </p>
           </>
         )}
       </div>
@@ -259,7 +252,7 @@ function AskProvince({
             <input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
-              placeholder="Gõ tên tỉnh..."
+              placeholder="Tên tỉnh"
               autoFocus
               className={`${input} pl-10`}
             />
@@ -435,18 +428,13 @@ function EmptyState({ hasPosts }: { hasPosts: boolean }) {
         🗺️
       </p>
       <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có dấu chân nào
-      </p>
-      <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-        {hasPosts
-          ? 'Kỉ niệm đã có rồi nhưng chưa gắn địa điểm. Mở một bài và thêm nơi chốn vào là bản đồ sáng lên ngay.'
-          : 'Đăng một kỉ niệm có gắn địa điểm, chỗ đó sẽ hiện lên đây.'}
+        Chưa có địa điểm trên bản đồ.
       </p>
       <Link
         to={hasPosts ? '/timeline' : '/compose'}
         className={`${btn.primary} mt-7 max-w-[18rem]`}
       >
-        {hasPosts ? 'Mở kỉ niệm gần nhất' : 'Thêm kỉ niệm'}
+        {hasPosts ? 'Mở kỉ niệm' : 'Thêm kỉ niệm'}
       </Link>
     </div>
   )

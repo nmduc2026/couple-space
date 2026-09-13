@@ -79,7 +79,7 @@ export function WaitingScreen() {
       <div className="top-safe" />
       <Stage>
         <Title>Gửi lời mời cho {partnerName}</Title>
-        <Sub>Không gian chỉ mở khi có đủ hai người.</Sub>
+        <Sub>Đang chờ người ấy vào.</Sub>
 
         <button
           type="button"
@@ -110,7 +110,7 @@ export function WaitingScreen() {
           Chia sẻ lời mời
         </button>
         <Link to="/" className={`${btn.ghost} mt-1`}>
-          Cứ vào xem trước
+          Vào Trang chủ
         </Link>
       </Stage>
     </Screen>

@@ -1,6 +1,6 @@
 export function buildInviteShare(code: string, origin = window.location.origin) {
   const link = `${origin}/join?code=${code}`
-  const text = `Mình vừa tạo một nơi để tụi mình lưu kỉ niệm. Vào bằng mã ${code} nhé: ${link}`
+  const text = `Tham gia Couple Space bằng mã ${code}: ${link}`
   return { link, text }
 }
 

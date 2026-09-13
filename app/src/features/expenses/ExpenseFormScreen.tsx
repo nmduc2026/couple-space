@@ -89,7 +89,7 @@ export function ExpenseFormScreen() {
     const minor = parseAmountInput(value.amount)
     if (minor <= 0) {
       setStatus('error')
-      setErrorMessage('Nhập số tiền đã nhé.')
+      setErrorMessage('Nhập số tiền.')
       return
     }
     if (!couple || !user || PREVIEW) return
@@ -97,7 +97,6 @@ export function ExpenseFormScreen() {
     setStatus('saving')
     setErrorMessage('')
 
-    // Không có số dư nợ nào phải tính lại — sửa khoản chi chỉ là ghi đè bản ghi
     const payload = {
       couple_id: couple.id,
       post_id: postId,
@@ -206,7 +205,7 @@ export function ExpenseFormScreen() {
               <input
                 value={value.note}
                 onChange={(e) => patch({ note: e.target.value })}
-                placeholder="Ăn lẩu ở Ba Toa"
+                placeholder="Ghi chú"
                 maxLength={80}
                 className={input}
               />
@@ -221,10 +220,7 @@ export function ExpenseFormScreen() {
               />
             </Field>
 
-            <Field
-              label="Ai trả"
-              hint="Chỉ để thống kê — app không tính ai nợ ai."
-            >
+            <Field label="Người trả">
               <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
                 {(couple?.members ?? []).map((m) => (
                   <button

@@ -30,10 +30,10 @@ Web Push (VAPID). Xem [tech-stack.md](../../docs/decisions/tech-stack.md).
 Đặc tả: [p1-auth.md](../../docs/features/p1-auth.md)
 
 - [x] **P1-11** Màn hình Welcome
-- [x] **P1-12** Nhập email → gửi OTP
+- [x] **P1-12** Nhập email → gửi OTP (màn có tab OTP + Mật khẩu)
 - [x] **P1-13** Nhập OTP → đăng nhập, lưu phiên, tự đăng nhập lại khi mở app
 - [x] **P1-14** Điều hướng theo trạng thái: chưa đăng nhập / chưa có space / đã ghép đôi
-- [x] **P1-37** Login hai tab (OTP + mật khẩu) trên bản production — bỏ gate `import.meta.env.DEV`
+- [x] **P1-37** Tab Mật khẩu trên màn email (`signInWithPassword`)
 - [x] **P1-38** Đặt / đổi mật khẩu trong Cài đặt
 - [x] **P1-39** Quên mật khẩu + màn đặt lại từ email — còn cấu hình Redirect URLs trên Supabase (tay)
 
