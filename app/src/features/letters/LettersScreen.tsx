@@ -218,7 +218,7 @@ export function LettersScreen() {
               {upcoming.map((l) => (
                 <li
                   key={l.id}
-                  className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-3.5"
+                  className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-surface p-3.5"
                 >
                   <span aria-hidden className="text-xl">
                     🔒
@@ -251,7 +251,7 @@ export function LettersScreen() {
                   <button
                     type="button"
                     onClick={() => setReading(l)}
-                    className="flex w-full items-center gap-3 rounded-2xl border border-border bg-surface p-3.5 text-left"
+                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface p-3.5 text-left"
                   >
                     <span aria-hidden className="text-xl">
                       💌

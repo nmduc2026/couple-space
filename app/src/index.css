@@ -100,6 +100,31 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/*
+ * iPhone Safari phóng to cả trang khi focus ô nhập có chữ < 16px.
+ * App đang `zoom: var(--ui-scale)` (0.8) nên chữ 16px thật chỉ còn ~12.8px
+ * trên màn — vẫn bị zoom. Bù ngược: font-size = 16 / scale → sau zoom đúng 16px.
+ * Utility kiểu text-[22px] vẫn thắng vì nằm layer utilities.
+ */
+@layer base {
+  input:not(
+    [type='button'],
+    [type='submit'],
+    [type='reset'],
+    [type='checkbox'],
+    [type='radio'],
+    [type='file'],
+    [type='hidden'],
+    [type='image'],
+    [type='range'],
+    [type='color']
+  ),
+  textarea,
+  select {
+    font-size: calc(16px / var(--ui-scale));
+  }
+}
+
 body {
   margin: 0;
   background-color: var(--color-bg);

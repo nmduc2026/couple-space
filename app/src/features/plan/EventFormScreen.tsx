@@ -183,7 +183,7 @@ export function EventFormScreen() {
             </Field>
 
             <Field label="Lặp lại">
-              <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+              <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
                 {RECURRENCES.map(([key, label]) => (
                   <button
                     key={key}

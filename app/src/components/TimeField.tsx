@@ -92,7 +92,7 @@ function TimeSheet({
   }, [])
 
   const column =
-    'flex-1 max-h-56 overflow-y-auto rounded-2xl border border-border bg-surface p-1'
+    'flex-1 max-h-56 overflow-y-auto rounded-xl border border-border bg-surface p-1'
   const cell = (active: boolean) =>
     `w-full rounded-xl py-2.5 text-center text-[15px] tabular-nums transition ${
       active ? 'bg-accent font-bold text-on-accent' : 'text-text'

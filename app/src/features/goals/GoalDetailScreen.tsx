@@ -195,7 +195,7 @@ export function GoalDetailScreen() {
 
         {goal.kind === 'checklist' ? (
           <>
-            <ul className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface divide-y divide-border">
+            <ul className="mt-6 overflow-hidden rounded-xl border border-border bg-surface divide-y divide-border">
               {goal.goal_steps
                 .slice()
                 .sort((a, b) => a.sort_order - b.sort_order)
@@ -240,7 +240,7 @@ export function GoalDetailScreen() {
               <button
                 type="submit"
                 disabled={!stepTitle.trim()}
-                className="h-12 shrink-0 rounded-2xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
+                className="h-12 shrink-0 rounded-xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
               >
                 Thêm
               </button>
@@ -249,7 +249,7 @@ export function GoalDetailScreen() {
         ) : null}
 
         {goal.kind === 'count' ? (
-          <div className="mt-6 flex items-center justify-center gap-6 rounded-2xl border border-border bg-surface p-5">
+          <div className="mt-6 flex items-center justify-center gap-6 rounded-xl border border-border bg-surface p-5">
             <button
               type="button"
               onClick={() => void bumpCount(-1)}
@@ -272,7 +272,7 @@ export function GoalDetailScreen() {
 
         {goal.kind === 'amount' ? (
           <div className="mt-6">
-            <div className="rounded-2xl border border-border bg-surface p-4 text-center">
+            <div className="rounded-xl border border-border bg-surface p-4 text-center">
               <p className="text-[24px] font-extrabold text-text">
                 {formatVnd(saved)}
               </p>
@@ -291,7 +291,7 @@ export function GoalDetailScreen() {
               <button
                 type="submit"
                 disabled={!amount}
-                className="h-12 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
+                className="h-12 shrink-0 rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
               >
                 Nạp
               </button>

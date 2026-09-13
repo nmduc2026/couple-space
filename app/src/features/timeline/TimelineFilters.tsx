@@ -24,7 +24,7 @@ import {
 export type TimeFilter = { kind: 'all' } | { kind: 'year'; year: string }
 
 const trigger =
-  'flex w-full items-center gap-2 rounded-2xl border bg-surface px-3.5 py-2.5 text-[13.5px] text-text'
+  'flex w-full items-center gap-2 rounded-xl border bg-surface px-3.5 py-2.5 text-[13.5px] text-text'
 
 export function TimelineFilters({
   years,
@@ -253,7 +253,7 @@ function Dropdown({
       </button>
 
       {open ? (
-        <div className="absolute top-full right-0 left-0 z-30 mt-1.5 max-h-72 overflow-y-auto rounded-2xl border border-border bg-surface p-1 shadow-xl">
+        <div className="absolute top-full right-0 left-0 z-30 mt-1.5 max-h-72 overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-xl">
           {children}
         </div>
       ) : null}

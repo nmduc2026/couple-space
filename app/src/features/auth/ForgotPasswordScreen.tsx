@@ -64,7 +64,7 @@ export function ForgotPasswordScreen() {
           <Sub>Gửi link đặt lại mật khẩu đến email.</Sub>
 
           {status === 'sent' ? (
-            <p className="mt-6 rounded-2xl border border-border bg-soft px-4 py-3.5 text-[14px] leading-relaxed text-text">
+            <p className="mt-6 rounded-xl border border-border bg-soft px-4 py-3.5 text-[14px] leading-relaxed text-text">
               Đã gửi. Không thấy mail vui lòng xem hộp thư rác.
             </p>
           ) : (

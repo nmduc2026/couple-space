@@ -75,7 +75,7 @@ export function PlanScreen() {
       />
 
       <div className="px-4 pt-3">
-        <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+        <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
           {(
             [
               ['events', 'Sự kiện'],
@@ -103,7 +103,7 @@ export function PlanScreen() {
         hidden={tab !== 'events'}
       >
         {suggestion && suggestFor ? (
-          <div className="mb-3 rounded-2xl border border-accent/30 bg-soft p-3.5">
+          <div className="mb-3 rounded-xl border border-accent/30 bg-soft p-3.5">
             <p className="text-[13.5px] leading-relaxed text-text">
               Còn{' '}
               {suggestFor.days_away === 0
@@ -156,7 +156,7 @@ export function PlanScreen() {
             <button
               type="button"
               onClick={() => setShowPast((v) => !v)}
-              className="flex w-full items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-muted"
+              className="flex w-full items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted"
             >
               <span>Đã qua ({past.length})</span>
               <span aria-hidden>{showPast ? '▾' : '▸'}</span>
@@ -216,7 +216,7 @@ function AgendaRow({ item }: { item: AgendaItem }) {
   )
 
   const className =
-    'flex items-center gap-3.5 rounded-2xl border border-border bg-surface p-3.5'
+    'flex items-center gap-3.5 rounded-xl border border-border bg-surface p-3.5'
 
   // Mốc hệ thống không sửa, không xoá — chỉ tắt nhắc được trong Cài đặt
   if (item.is_system) {

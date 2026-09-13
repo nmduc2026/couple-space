@@ -123,7 +123,7 @@ export function WishlistScreen() {
       <TopHeader title="Wishlist quà" back="/" />
 
       <div className="px-4 pt-3">
-        <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+        <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
           {(
             [
               ['theirs', 'Của người ấy'],
@@ -154,7 +154,7 @@ export function WishlistScreen() {
             <button
               type="submit"
               disabled={!title.trim() || saving}
-              className="h-12 shrink-0 rounded-2xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
+              className="h-12 shrink-0 rounded-xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
             >
               Thêm
             </button>
@@ -164,7 +164,7 @@ export function WishlistScreen() {
 
       <div className="flex-1 px-4 py-3">
         {tab === 'theirs' && stale.length > 0 ? (
-          <p className="mb-3 rounded-2xl bg-soft p-3.5 text-[13.5px] leading-relaxed text-muted">
+          <p className="mb-3 rounded-xl bg-soft p-3.5 text-[13.5px] leading-relaxed text-muted">
             ⚠️ {stale.length} món bạn đã đánh dấu vừa được bỏ khỏi wishlist.
             Kiểm tra lại trước khi mua.
           </p>
@@ -184,7 +184,7 @@ export function WishlistScreen() {
             {list.map((item) => (
               <li
                 key={item.id}
-                className={`rounded-2xl border border-border bg-surface p-3.5 ${
+                className={`rounded-xl border border-border bg-surface p-3.5 ${
                   item.status === 'archived' ? 'opacity-55' : ''
                 }`}
               >

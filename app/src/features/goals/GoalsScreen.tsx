@@ -61,7 +61,7 @@ export function GoalsScreen() {
         <button
           type="submit"
           disabled={!title.trim() || saving}
-          className="h-12 shrink-0 rounded-2xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
+          className="h-12 shrink-0 rounded-xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
         >
           Thêm
         </button>
@@ -91,7 +91,7 @@ export function GoalsScreen() {
           <button
             type="button"
             onClick={() => setShowDone((v) => !v)}
-            className="flex w-full items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-muted"
+            className="flex w-full items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted"
           >
             <span>Đã hoàn thành ({done.length})</span>
             <span aria-hidden>{showDone ? '▾' : '▸'}</span>
@@ -117,7 +117,7 @@ function GoalCard({ goal, today }: { goal: Goal; today: string }) {
     <li>
       <Link
         to={`/plan/goals/${goal.id}`}
-        className={`block rounded-2xl border border-border bg-surface p-3.5 ${
+        className={`block rounded-xl border border-border bg-surface p-3.5 ${
           overdue ? 'opacity-55' : ''
         }`}
       >

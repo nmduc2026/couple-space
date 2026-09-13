@@ -135,7 +135,7 @@ export function ExportPdfScreen() {
 
         <div className="mt-6 space-y-4">
           <Field label="Khổ giấy">
-            <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+            <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
               {PAGE_SIZES.map(([value, label]) => (
                 <button
                   key={value}
@@ -152,7 +152,7 @@ export function ExportPdfScreen() {
           </Field>
 
           <Field label="Mật độ ảnh">
-            <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+            <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
               {DENSITIES.map(([value, label]) => (
                 <button
                   key={value}
@@ -169,7 +169,7 @@ export function ExportPdfScreen() {
           </Field>
 
           <Field label="Phạm vi">
-            <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+            <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
               {[null, thisYear, thisYear - 1].map((y) => (
                 <button
                   key={String(y)}
@@ -211,7 +211,7 @@ export function ExportPdfScreen() {
 function JobRow({ job, onDownload }: { job: Export; onDownload: () => void }) {
   if (job.status === 'failed') {
     return (
-      <p className="mt-5 rounded-2xl border border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
+      <p className="mt-5 rounded-xl border border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
         Lần xuất gần nhất hỏng: {job.error ?? 'không rõ lý do'}. Thử lại.
       </p>
     )
@@ -219,7 +219,7 @@ function JobRow({ job, onDownload }: { job: Export; onDownload: () => void }) {
 
   if (job.status !== 'done') {
     return (
-      <p className="mt-5 rounded-2xl border border-border bg-soft p-4 text-center text-[13.5px] text-accent">
+      <p className="mt-5 rounded-xl border border-border bg-soft p-4 text-center text-[13.5px] text-accent">
         {job.progress ?? 'Đang bắt đầu'} — cứ đóng app, xong sẽ có thông báo.
       </p>
     )
@@ -228,7 +228,7 @@ function JobRow({ job, onDownload }: { job: Export; onDownload: () => void }) {
   const expired = job.expires_at ? new Date(job.expires_at) < new Date() : false
 
   return (
-    <div className="mt-5 rounded-2xl border border-border bg-surface p-4">
+    <div className="mt-5 rounded-xl border border-border bg-surface p-4">
       <b className="block text-[15px] font-semibold text-text">
         Sách {job.page_count} trang đã xong
       </b>

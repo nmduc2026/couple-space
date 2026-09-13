@@ -71,7 +71,7 @@ export function MapScreen() {
           <EmptyState hasPosts={posts.length > 0} />
         ) : (
           <>
-            <section className="rounded-2xl border border-border bg-surface p-4">
+            <section className="rounded-xl border border-border bg-surface p-4">
               <p className="text-[30px] leading-tight font-extrabold text-text">
                 {visitedCount}
                 <span className="text-[17px] font-semibold text-muted">
@@ -109,7 +109,7 @@ export function MapScreen() {
               <button
                 type="button"
                 onClick={() => setAsking(unresolved[0])}
-                className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-accent/30 bg-soft p-3.5 text-left"
+                className="mt-3 flex w-full items-center gap-3 rounded-xl border border-accent/30 bg-soft p-3.5 text-left"
               >
                 <span aria-hidden className="text-xl">
                   📍
@@ -259,7 +259,7 @@ function AskProvince({
           </div>
         </div>
 
-        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border bg-surface">
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-surface">
           {matches.length === 0 ? (
             <p className="px-4 py-10 text-center text-sm leading-relaxed text-muted">
               Không có tỉnh nào tên như vậy.
@@ -351,7 +351,7 @@ function ProvinceDrill({
           </p>
         </div>
 
-        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border bg-surface">
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-surface">
           {wards.map((w) => {
             const key = w.ward ?? ''
             const isOpen = openWard === key

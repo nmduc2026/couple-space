@@ -85,7 +85,7 @@ export function WaitingScreen() {
           type="button"
           onClick={() => void copyCode()}
           disabled={!code}
-          className="mt-8 w-full rounded-2xl bg-soft py-6 text-[38px] font-extrabold tracking-[0.16em] text-accent transition active:scale-[0.99] disabled:opacity-60"
+          className="mt-8 w-full rounded-xl bg-soft py-6 text-[38px] font-extrabold tracking-[0.16em] text-accent transition active:scale-[0.99] disabled:opacity-60"
         >
           {code ?? '······'}
         </button>
@@ -94,7 +94,7 @@ export function WaitingScreen() {
         </p>
 
         {code ? (
-          <p className="mt-5 rounded-2xl border border-dashed border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
+          <p className="mt-5 rounded-xl border border-dashed border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
             “{buildInviteShare(code).text}”
           </p>
         ) : null}

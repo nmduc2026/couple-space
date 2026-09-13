@@ -94,7 +94,7 @@ export function WrappedScreen() {
 
       <div className="flex-1 px-4 py-4">
         {season.visible && !season.final ? (
-          <p className="mb-3 rounded-2xl border border-border bg-surface px-4 py-2.5 text-center text-[12.5px] text-muted">
+          <p className="mb-3 rounded-xl border border-border bg-surface px-4 py-2.5 text-center text-[12.5px] text-muted">
             Tạm tính · chốt 31/12.
           </p>
         ) : null}
@@ -140,7 +140,7 @@ export function WrappedScreen() {
             <h2 className="mt-6 text-[14px] font-semibold text-muted">
               Chọn thứ muốn khoe
             </h2>
-            <ul className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface divide-y divide-border">
+            <ul className="mt-2 overflow-hidden rounded-xl border border-border bg-surface divide-y divide-border">
               {lines.map((l) => (
                 <li
                   key={l.key}
@@ -190,7 +190,7 @@ export function WrappedScreen() {
                 <img
                   src={pngUrl}
                   alt={`Tổng kết ${year}`}
-                  className="mx-auto rounded-2xl border border-border"
+                  className="mx-auto rounded-xl border border-border"
                 />
                 <p className="mt-2 text-[12.5px] text-muted">
                   Nhấn giữ vào ảnh để lưu về máy.

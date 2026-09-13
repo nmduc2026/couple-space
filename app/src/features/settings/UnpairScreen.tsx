@@ -108,12 +108,12 @@ export function UnpairScreen() {
         <Sub>Những gì sẽ xảy ra.</Sub>
 
         {pending ? (
-          <p className="mt-6 rounded-2xl bg-soft p-4 text-[14px] leading-relaxed text-muted">
+          <p className="mt-6 rounded-xl bg-soft p-4 text-[14px] leading-relaxed text-muted">
             Không gian này chưa có người thứ hai — huỷ là xoá thẳng, không có gì
             để giữ lại.
           </p>
         ) : (
-          <ul className="mt-6 space-y-2.5 rounded-2xl bg-soft p-4 text-[14px] leading-relaxed text-muted">
+          <ul className="mt-6 space-y-2.5 rounded-xl bg-soft p-4 text-[14px] leading-relaxed text-muted">
             {CONSEQUENCES.map((line) => (
               <li key={line} className="flex gap-2.5">
                 <span aria-hidden className="text-accent">
@@ -126,7 +126,7 @@ export function UnpairScreen() {
         )}
 
         {locked.length > 0 && !pending ? (
-          <p className="mt-3 rounded-2xl border border-accent/30 bg-soft p-4 text-[14px] leading-relaxed text-text">
+          <p className="mt-3 rounded-xl border border-accent/30 bg-soft p-4 text-[14px] leading-relaxed text-text">
             Còn{' '}
             <b className="font-semibold">
               {locked.length} thư chưa mở

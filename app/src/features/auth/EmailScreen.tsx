@@ -102,7 +102,7 @@ export function EmailScreen() {
               : 'Hoặc đăng nhập bằng mã OTP.'}
           </Sub>
 
-          <div className="mt-6 flex gap-1 rounded-2xl border border-border bg-surface p-1">
+          <div className="mt-6 flex gap-1 rounded-xl border border-border bg-surface p-1">
             {(
               [
                 ['otp', 'Mã OTP'],

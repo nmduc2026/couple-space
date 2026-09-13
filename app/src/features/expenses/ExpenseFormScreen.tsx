@@ -221,7 +221,7 @@ export function ExpenseFormScreen() {
             </Field>
 
             <Field label="Người trả">
-              <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+              <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
                 {(couple?.members ?? []).map((m) => (
                   <button
                     key={m.user_id}

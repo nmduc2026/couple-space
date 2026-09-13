@@ -153,7 +153,7 @@ export function HomeScreen() {
         ) : null}
 
         {waiting ? (
-          <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-soft px-4 py-3">
+          <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-soft px-4 py-3">
             <p className="text-[13.5px] text-muted">
               Đang chờ{' '}
               <span className="font-semibold text-text">{rightName}</span> tham
@@ -173,7 +173,7 @@ export function HomeScreen() {
         {season.visible ? (
           <Link
             to="/wrapped"
-            className="mb-3 flex items-center gap-3 rounded-2xl border border-accent/30 bg-soft p-4"
+            className="mb-3 flex items-center gap-3 rounded-xl border border-accent/30 bg-soft p-4"
           >
             <IconSparkle size={22} className="shrink-0 text-accent" />
             <span className="min-w-0 flex-1">
@@ -195,7 +195,7 @@ export function HomeScreen() {
             hệt nhau xếp thành lưới làm màn hình vụn ra, mà viền thì vẽ thêm
             tám đường kẻ chẳng phân biệt được gì — chúng nó vốn là một nhóm,
             nên vẽ một khung cho cả nhóm. */}
-        <nav className="grid grid-cols-4 gap-y-1 overflow-hidden rounded-2xl border border-border bg-surface py-2">
+        <nav className="grid grid-cols-4 gap-y-1 overflow-hidden rounded-xl border border-border bg-surface py-2">
           {[
             { to: '/question', Icon: IconQuestion, label: 'Câu hỏi' },
             { to: '/mood', Icon: IconMood, label: 'Tâm trạng' },
@@ -219,7 +219,7 @@ export function HomeScreen() {
 
         <Link
           to="/eat"
-          className="mt-3 flex w-full items-center gap-3.5 rounded-2xl border border-border bg-surface p-3.5 text-left"
+          className="mt-3 flex w-full items-center gap-3.5 rounded-xl border border-border bg-surface p-3.5 text-left"
         >
           <IconBowl size={22} className="shrink-0 text-accent" />
           <span className="min-w-0">
@@ -246,7 +246,7 @@ export function HomeScreen() {
             {/* Cùng một danh sách thì vẽ một khung, ngăn nhau bằng đường kẻ.
                 Mỗi mục một thẻ viền riêng làm chúng nó trông như những thứ
                 chẳng liên quan gì tới nhau. */}
-            <ul className="mt-2.5 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+            <ul className="mt-2.5 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
               {agenda.slice(0, 2).map((item) => (
                 <li key={item.id}>
                   <Link to="/plan" className="flex items-center gap-3 p-3.5">
@@ -273,7 +273,7 @@ export function HomeScreen() {
         {summary && summary.outing_count > 0 ? (
           <Link
             to="/expenses"
-            className="mt-6 flex items-center gap-4 rounded-2xl border border-border bg-surface p-4"
+            className="mt-6 flex items-center gap-4 rounded-xl border border-border bg-surface p-4"
           >
             <span className="min-w-0 flex-1">
               <span className="block text-[13px] font-medium text-muted">
@@ -296,7 +296,7 @@ export function HomeScreen() {
         {activeGoal ? (
           <Link
             to={`/plan/goals/${activeGoal.id}`}
-            className="mt-3 block rounded-2xl border border-border bg-surface p-4"
+            className="mt-3 block rounded-xl border border-border bg-surface p-4"
           >
             <span className="block text-[13px] font-medium text-muted">
               Mục tiêu

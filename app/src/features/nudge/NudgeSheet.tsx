@@ -114,7 +114,7 @@ export function NudgeSheet({
                   type="button"
                   disabled={status === 'sending'}
                   onClick={() => void send(n)}
-                  className="flex flex-col items-center gap-1.5 rounded-2xl border border-border py-5 text-[14px] font-semibold text-text transition active:scale-95 disabled:opacity-50"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-5 text-[14px] font-semibold text-text transition active:scale-95 disabled:opacity-50"
                 >
                   <span aria-hidden className="text-3xl">
                     {n.emoji}

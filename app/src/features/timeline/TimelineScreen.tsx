@@ -179,7 +179,7 @@ function CardView({ posts }: { posts: Post[] }) {
     <div>
       {groupByMonth(posts).map((group) => (
         <section key={group.key}>
-          <h2 className="sticky top-[calc(env(safe-area-inset-top)+2.9rem)] z-[5] -mx-4 border-b border-border/40 bg-bg/40 px-4 py-2 text-[13.5px] font-semibold tracking-[-0.01em] text-text backdrop-blur-md">
+          <h2 className="sticky top-[calc(env(safe-area-inset-top)+2.9rem)] z-[5] -mx-4 bg-bg/40 px-4 py-2 text-[13.5px] font-semibold tracking-[-0.01em] text-text backdrop-blur-md">
             {group.label}
           </h2>
           <div className="flex flex-col gap-3.5 pb-3">
@@ -200,7 +200,7 @@ function PostCard({ post }: { post: Post }) {
   return (
     <Link
       to={`/timeline/${post.id}`}
-      className="block overflow-hidden rounded-[17px] border border-border bg-surface transition active:scale-[0.995]"
+      className="block overflow-hidden rounded-xl border border-border bg-surface transition active:scale-[0.995]"
     >
       {cover ? (
         <div className="relative aspect-[4/3] bg-soft">

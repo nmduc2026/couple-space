@@ -425,7 +425,7 @@ export function PostDetailScreen() {
         <button
           type="submit"
           disabled={!draft.trim() || sending}
-          className="h-12 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
+          className="h-12 shrink-0 rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
         >
           Gửi
         </button>

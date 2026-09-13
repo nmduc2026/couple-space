@@ -88,7 +88,7 @@ export function ExpensesScreen() {
           <EmptyState />
         ) : (
           <>
-            <section className="rounded-2xl border border-border bg-surface p-4">
+            <section className="rounded-xl border border-border bg-surface p-4">
               <p className="text-[13px] font-medium text-muted">
                 Tổng chi
               </p>
@@ -115,7 +115,7 @@ export function ExpensesScreen() {
             </section>
 
             {insight ? (
-              <p className="mt-3 rounded-2xl border border-border bg-soft px-4 py-3 text-[13.5px] leading-relaxed text-text">
+              <p className="mt-3 rounded-xl border border-border bg-soft px-4 py-3 text-[13.5px] leading-relaxed text-text">
                 {insight}
               </p>
             ) : null}
@@ -129,7 +129,7 @@ export function ExpensesScreen() {
                   <li key={e.id}>
                     <Link
                       to={`/expenses/${e.id}`}
-                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
+                      className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3.5"
                     >
                       <span aria-hidden className="text-xl">
                         {cat.emoji}
@@ -194,7 +194,7 @@ function CategoryChart({ byCategory }: { byCategory: Record<string, number> }) {
   })
 
   return (
-    <section className="mt-4 flex items-center gap-5 rounded-2xl border border-border bg-surface p-4">
+    <section className="mt-4 flex items-center gap-5 rounded-xl border border-border bg-surface p-4">
       <span
         aria-hidden
         className="grid h-24 w-24 flex-none place-items-center rounded-full"

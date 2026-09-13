@@ -90,13 +90,13 @@ export function EatScreen() {
           <button
             type="submit"
             disabled={!name.trim() || saving}
-            className="h-12 shrink-0 rounded-2xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
+            className="h-12 shrink-0 rounded-xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
           >
             Thêm
           </button>
         </form>
 
-        <div className="mt-4 flex gap-1 rounded-2xl border border-border bg-surface p-1">
+        <div className="mt-4 flex gap-1 rounded-xl border border-border bg-surface p-1">
           {(
             [
               ['want', 'Muốn thử'],
@@ -133,7 +133,7 @@ export function EatScreen() {
             {list.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
+                className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3.5"
               >
                 <Link
                   to={`/eat/${item.id}`}

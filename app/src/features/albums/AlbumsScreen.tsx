@@ -121,7 +121,7 @@ export function AlbumsScreen() {
                   {fresh.map((s) => (
                     <li
                       key={s.key}
-                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3"
+                      className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3"
                     >
                       <Cover post={coverOf(s.postIds)} small />
                       <div className="min-w-0 flex-1">
@@ -159,7 +159,7 @@ function Cover({ post, small = false }: { post?: Post; small?: boolean }) {
   const url = post?.media[0]?.url
   const size = small
     ? 'h-14 w-14 flex-none rounded-xl'
-    : 'aspect-square w-full rounded-2xl'
+    : 'aspect-square w-full rounded-xl'
 
   return url ? (
     <img src={url} alt="" className={`${size} bg-soft object-cover`} />

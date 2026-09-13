@@ -29,7 +29,7 @@ export function ChoiceScreen() {
             <Link
               key={option.to}
               to={option.to}
-              className="flex items-center gap-3.5 rounded-2xl border border-border bg-surface p-4 text-left transition active:scale-[0.99]"
+              className="flex items-center gap-3.5 rounded-xl border border-border bg-surface p-4 text-left transition active:scale-[0.99]"
             >
               <span aria-hidden className="text-2xl">
                 {option.emoji}

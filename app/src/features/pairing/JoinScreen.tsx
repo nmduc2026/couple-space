@@ -153,7 +153,7 @@ export function JoinScreen() {
               spellCheck={false}
               placeholder="A7K2M9"
               aria-label="Mã mời"
-              className="mt-8 h-16 w-full rounded-2xl border border-border bg-surface text-center text-[26px] font-bold tracking-[0.3em] text-text uppercase outline-none transition placeholder:text-muted/40 focus:border-accent focus:ring-4 focus:ring-accent/15"
+              className="mt-8 h-16 w-full rounded-xl border border-border bg-surface text-center text-[26px] font-bold tracking-[0.3em] text-text uppercase outline-none transition placeholder:text-muted/40 focus:border-accent focus:ring-4 focus:ring-accent/15"
             />
             <Spacer />
             <button

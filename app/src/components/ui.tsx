@@ -121,7 +121,7 @@ export function SectionLabel({
 /** Nhóm các hàng cài đặt, bo góc chung, kẻ ngăn giữa các hàng. */
 export function Group({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface divide-y divide-border">
+    <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface divide-y divide-border">
       {children}
     </div>
   )

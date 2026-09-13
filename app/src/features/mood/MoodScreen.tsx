@@ -88,7 +88,7 @@ export function MoodScreen() {
       <TopHeader title="Tâm trạng" back="/" />
 
       <div className="flex-1 px-4 py-4">
-        <section className="rounded-2xl border border-border bg-surface p-4 text-center">
+        <section className="rounded-xl border border-border bg-surface p-4 text-center">
           <p className="text-[13px] text-muted">
             {mineToday ? 'Hôm nay bạn thấy' : 'Hôm nay bạn thấy thế nào?'}
           </p>
@@ -154,7 +154,7 @@ export function MoodScreen() {
         ) : null}
 
         {insight ? (
-          <p className="mt-3 rounded-2xl bg-soft p-3.5 text-center text-[13.5px] leading-relaxed text-muted">
+          <p className="mt-3 rounded-xl bg-soft p-3.5 text-center text-[13.5px] leading-relaxed text-muted">
             {insight}
           </p>
         ) : null}
@@ -162,7 +162,7 @@ export function MoodScreen() {
         <button
           type="button"
           onClick={() => setNudgeOpen(true)}
-          className="mt-5 w-full rounded-2xl border border-border bg-surface py-3 text-[14px] font-semibold text-accent"
+          className="mt-5 w-full rounded-xl border border-border bg-surface py-3 text-[14px] font-semibold text-accent"
         >
           Gửi một cái chạm cho {partnerName}
         </button>
@@ -242,7 +242,7 @@ function MoodChart({
     checkins.find((c) => c.mood_date === ymd && c.user_id === userId)
 
   return (
-    <div className="mt-2.5 rounded-2xl border border-border bg-surface p-3.5">
+    <div className="mt-2.5 rounded-xl border border-border bg-surface p-3.5">
       <div className="flex h-28 items-end gap-1">
         {days.map((ymd) => {
           const a = find(ymd, myId)

@@ -328,7 +328,7 @@ export function ComposeScreen() {
               />
             </Field>
 
-            <Field label="Ngày xảy ra">
+            <Field label="Ngày kỉ niệm">
               <DateField
                 value={happenedOn}
                 max={todayYmd()}
@@ -348,14 +348,14 @@ export function ComposeScreen() {
                 type="button"
                 onClick={() => void fillFromLocation()}
                 disabled={locating}
-                className="mt-2 flex w-full items-center gap-2 rounded-2xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-accent disabled:opacity-50"
+                className="mt-2 flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-accent disabled:opacity-50"
               >
                 <span aria-hidden>📍</span>
                 {locating ? 'Đang tìm vị trí...' : 'Lấy vị trí hiện tại'}
               </button>
 
               {located?.address ? (
-                <p className="mt-2 rounded-2xl bg-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-text">
+                <p className="mt-2 rounded-xl bg-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-text">
                   {located.address}
                   <span className="mt-1 block text-[11px] text-muted">
                     Từ bản đồ
@@ -390,7 +390,7 @@ export function ComposeScreen() {
           <button
             type="button"
             onClick={() => setAddExpense((v) => !v)}
-            className={`mt-4 flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition ${
+            className={`mt-4 flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition ${
               addExpense ? 'border-accent bg-soft' : 'border-border bg-surface'
             }`}
           >
@@ -415,7 +415,7 @@ export function ComposeScreen() {
           </button>
 
           {addExpense ? (
-            <div className="mt-2 space-y-3 rounded-2xl border border-accent/30 bg-soft p-3.5">
+            <div className="mt-2 space-y-3 rounded-xl border border-accent/30 bg-soft p-3.5">
               <Field label="Số tiền">
                 <div className="relative">
                   <input
@@ -431,8 +431,8 @@ export function ComposeScreen() {
                 </div>
               </Field>
 
-              <Field label="Ai trả">
-                <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
+              <Field label="Người thanh toán">
+                <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
                   {(couple?.members ?? []).map((m) => (
                     <button
                       key={m.user_id}

@@ -38,13 +38,14 @@ const THEMES: Array<[Theme, string]> = [
   ['dark', 'Tối'],
 ]
 
-/** Ô nhập nằm bên phải một hàng cài đặt — không viền, canh phải. */
+/** Ô nhập nằm bên phải một hàng cài đặt — không viền, canh phải.
+ *  Cỡ chữ ≥ 16px sau --ui-scale để iOS Safari không zoom khi focus. */
 const rowInput =
-  'flex min-w-0 flex-1 items-center bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
+  'flex min-w-0 flex-1 items-center bg-transparent text-right text-[length:calc(16px/var(--ui-scale))] text-text outline-none focus:text-accent'
 
 /** Ô giờ thì không giãn: hai ô đứng cạnh nhau trong cùng một hàng. */
 const rowTimeInput =
-  'bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
+  'bg-transparent text-right text-[length:calc(16px/var(--ui-scale))] text-text outline-none focus:text-accent'
 
 export function SettingsScreen() {
   const navigate = useNavigate()
@@ -335,7 +336,7 @@ export function SettingsScreen() {
 
         <div className="mt-7">
           <SectionLabel>Giao diện</SectionLabel>
-          <div className="mt-2 flex gap-1 rounded-2xl border border-border bg-surface p-1">
+          <div className="mt-2 flex gap-1 rounded-xl border border-border bg-surface p-1">
             {THEMES.map(([value, label]) => (
               <button
                 key={value}
