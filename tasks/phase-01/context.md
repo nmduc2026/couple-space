@@ -3,7 +3,7 @@
 > **Mục tiêu:** hai máy nhìn thấy nhau. Đăng nhập được, ghép đôi được, mở app thấy
 > số ngày yêu, và người kia nhận được thông báo.
 
-**Trạng thái:** 🔲 Chưa bắt đầu — mọi quyết định chặn đã được gỡ, **có thể bắt đầu ngay**
+**Trạng thái:** 🔄 Đang làm — nhóm A (khởi tạo) xong, tiếp nhóm B (database)
 **Ước lượng:** 2–3 tuần (vừa học vừa làm)
 **Nền tảng:** Vite + React + TypeScript + Tailwind → PWA · Supabase · Web Push
 **Task:** [tasks.md](tasks.md) · **Hướng dẫn từng bước:** [steps/](steps/)
@@ -43,13 +43,14 @@ Timeline · ảnh · chi tiêu · sự kiện · mục tiêu · widget · theme 
 ## 3. Tiến độ
 
 ### ✅ Đã xong
-*(chưa có)*
+- Nhóm A–G (code): auth OTP, pairing RPC, Home/đếm ngày, settings/unpair, push client + Edge Function skeleton
+- Migration RPC/push/realtime đã `db push`
 
 ### 🔄 Đang làm
-*(chưa bắt đầu)*
+- **P1-10 / P1-21 / P1-23 / nhóm H** — cần thao tác tay: thử RLS trên app, ghi VAPID secrets, deploy function + Vercel, cài PWA iPhone
 
 ### 🔲 Chưa làm
-Toàn bộ — xem [tasks.md](tasks.md).
+P1-34 → P1-36 (deploy máy thật)
 
 ## 4. Quyết định đã chốt
 
@@ -81,3 +82,8 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | 2026-09-11 | Tổ chức lại toàn bộ tài liệu: tách `docs/features/`, đổi `others/` → `decisions/`, dựng `tasks/`, viết `AGENTS.md` | Đặc tả Phase 1–2 xong, chưa có dòng code nào | Chốt các quyết định đang treo |
 | 2026-09-11 | Chốt D1–D5. Đổi nền tảng sang **Vite + React (bỏ Expo)**, viết lại `tech-stack.md` và `distribution.md`. Đánh số file feature theo phase (`p1-`, `p2-`…). Viết 8 file hướng dẫn từng bước trong `steps/` | Tài liệu đã đủ để bắt đầu code | **Bắt đầu P1-01** — theo [steps/a-setup.md](steps/a-setup.md) |
 | 2026-09-11 | Viết nốt đặc tả Phase 3–6, chốt D6 (không ghi nợ), lưu prototype 36 màn hình vào `docs/design/frontend/ui/` | Không đổi gì trong phase này | Không đổi |
+| 2026-09-11 | Làm xong nhóm A (P1-01→P1-05b): scaffold app, Tailwind/theme, PWA+logo, router+mock guards, Supabase `PUBLISHABLE_KEY`, Query+Zustand theme | Kết thúc [a-setup.md](steps/a-setup.md) | **P1-06** — [b-database.md](steps/b-database.md) |
+| 2026-09-11 | P1-06→P1-09 + push RLS nền: `profiles`, `couples`, `couple_members`, `invites`, `is_member_of`/`can_write_to` | P1-10 còn thử 2 account | Kiểm chứng RLS rồi sang nhóm C (auth) |
+| 2026-09-11 | Xác nhận P1-07: 2 user Auth → 2 dòng `profiles` (trigger OK). P1-10 phép thử đọc chéo để sau login app | Sẵn sàng nhóm C | **P1-11** Welcome — [c-auth.md](steps/c-auth.md) |
+| 2026-09-11 | Implement phần lớn Phase 1 (C–G): OTP, guards thật, pairing RPC, Home, settings/unpair, push SW + `send-notification` | Còn VAPID secrets, deploy function/Vercel, thử tay trên 2 máy | P1-21 secrets → deploy function → P1-34 Vercel |
+| 2026-09-11 | Review + làm lại toàn bộ UI Phase 1 theo `prototype.html`: bảng màu hồng đất, font Be Vietnam Pro, primitive dùng chung (`components/ui.tsx` + `lib/ui-classes.ts`), viết lại 9 màn hình, tách **màn huỷ ghép đôi riêng** `/settings/unpair`. Sửa: ẩn tab mật khẩu khỏi bản build thật, safe-area iPhone bị đè, input trong suốt ở dark mode, `:focus-visible`, bỏ 2 chỗ setState-trong-effect | Build + lint + test sạch, chưa xem trên máy thật | P1-21 secrets → deploy function → P1-34 Vercel |

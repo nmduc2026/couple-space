@@ -11,22 +11,38 @@
 — mở bằng trình duyệt. Sửa tính năng thì **sửa prototype cùng lúc với đặc tả**, để nó không
 lệch khỏi tài liệu.
 
+## Đưa lên thật
+
+Bước đang chặn mọi thứ còn lại: **[DEPLOY.md](DEPLOY.md)** — thứ tự bắt buộc
+(secrets → deploy function → DB settings → `db push`), kèm những việc phải
+kiểm chứng bằng tay sau đó.
+
 ## Phase đang chạy
 
-> ### 🔄 **Phase 1 — Nền móng**
-> Chưa bắt đầu viết code. Đang hoàn thiện đặc tả.
-> → [phase-01/context.md](phase-01/context.md) · [phase-01/tasks.md](phase-01/tasks.md)
+> ### ✅ **Code xong · backend đã chạy thật · đã có dữ liệu mẫu**
+> 20 migration đã push, 4 Edge Function đã deploy, cron đang chạy, dữ liệu mẫu
+> đã đổ. RLS kiểm bằng token thật của cả hai người — tất cả đạt. Xuất PDF chạy
+> thật ra sách 13 trang.
+>
+> **Còn 4 task, đều cần máy thật:**
+>
+> | Phase | Còn |
+> |---|---|
+> | 1 | P1-34 Vercel · P1-35 cài PWA · P1-36 checklist DoD |
+> | 3 | P3-28 để máy qua đêm, xác nhận giờ push |
+>
+> Chi tiết và những cái bẫy đã vấp: **[DEPLOY.md](DEPLOY.md)**.
 
 ## Toàn cảnh
 
 | Phase | Tên | Mục tiêu | Task | Hướng dẫn từng bước | Trạng thái |
 |---|---|---|---|---|---|
-| [1](phase-01/context.md) | Nền móng | Hai máy nhìn thấy nhau | 36 | ✅ [steps/](phase-01/steps/) | 🔲 Chưa bắt đầu |
-| [2](phase-02/context.md) | Kỉ niệm | App có nội dung | 26 | ✅ [steps/](phase-02/steps/) | 🔲 Chưa bắt đầu |
-| [3](phase-03/context.md) | Nhịp sống | Có lý do mở app hằng ngày | 28 | ✅ [steps/](phase-03/steps/) | 🔲 Chưa bắt đầu |
-| [4](phase-04/context.md) | Cùng nhau | Khác biệt so với app cùng loại | 38 | ✅ [steps/](phase-04/steps/) | 🔲 Chưa bắt đầu |
-| [5](phase-05/context.md) | Gắn kết | Giữ chân | 42 | ✅ [steps/](phase-05/steps/) | 🔲 Chưa bắt đầu |
-| [6](phase-06/context.md) | Lan truyền | Tăng trưởng | 50 | ✅ [steps/](phase-06/steps/) | 🔲 Chưa bắt đầu |
+| [1](phase-01/context.md) | Nền móng | Hai máy nhìn thấy nhau | 36 | ✅ [steps/](phase-01/steps/) | 🔄 Code xong · còn deploy |
+| [2](phase-02/context.md) | Kỉ niệm | App có nội dung | 26 | ✅ [steps/](phase-02/steps/) | ✅ Code xong |
+| [3](phase-03/context.md) | Nhịp sống | Có lý do mở app hằng ngày | 28 | ✅ [steps/](phase-03/steps/) | 🔄 Code xong · còn test qua đêm |
+| [4](phase-04/context.md) | Cùng nhau | Khác biệt so với app cùng loại | 38 | ✅ [steps/](phase-04/steps/) | ✅ Code xong |
+| [5](phase-05/context.md) | Gắn kết | Giữ chân | 42 | ✅ [steps/](phase-05/steps/) | 🔄 Code xong · còn kiểm chứng RLS |
+| [6](phase-06/context.md) | Lan truyền | Tăng trưởng | 50 | ✅ [steps/](phase-06/steps/) | 🔄 Code xong · còn test 2 tài khoản |
 
 **220 task** cho cả 6 phase. Đặc tả nghiệp vụ đã đầy đủ cho **cả 19 tính năng**.
 
@@ -50,6 +66,7 @@ Ký hiệu: 🔲 chưa bắt đầu · 🔄 đang làm · ✅ xong · ⏸ tạm 
 | D3 | Có khu vực "chỉ mình thấy" trong không gian chung không? | ✅ **Không có nhật ký riêng.** Mọi thứ trong space là chung. Chỉ 3 ngoại lệ có kiểm soát. | [../overview.md](../overview.md) mục 3 |
 | D4 | Space `archived` giữ ảnh bao lâu? | ✅ **6 tháng** không ai truy cập → báo trước 30 ngày → xoá ảnh, giữ phần chữ | [p1-breakup.md](../docs/features/p1-breakup.md) |
 | D5 | Ảnh do A đăng thì B có tải về được không? | ✅ **Có.** Kỉ niệm là chung — đó là toàn bộ định vị của app. | [p1-breakup.md](../docs/features/p1-breakup.md) |
+| D7 | Theme màu thuộc về space hay từng người? | ✅ **Từng người.** Đặc tả ban đầu xếp nó vào nhóm "thuộc về space" kèm đồng bộ realtime; chủ dự án chốt lại vì hai người có gu khác nhau. Lưu ở `profiles.color_theme`, không phải localStorage — yêu cầu là theo *người dùng*, không theo *máy*. Sáng/tối thì vẫn theo máy. | [p1-couple-profile.md](../docs/features/p1-couple-profile.md) mục 2 |
 | D6 | Chi tiêu có ghi nợ nhau không? | ✅ **Không.** Bỏ số dư nợ, nút "đã thanh toán", và cách chia. Chỉ ghi ai trả để thống kê. Trái định vị sản phẩm, và là nguồn phức tạp lớn nhất của Phase 4. | [p4-expenses.md](../docs/features/p4-expenses.md) mục 1 |
 
 ## Quyết định đang treo

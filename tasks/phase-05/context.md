@@ -53,3 +53,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 |---|---|---|---|
 | 2026-09-11 | Tạo khung phase | Chưa bắt đầu | Chờ phase trước đạt DoD |
 | 2026-09-11 | Viết đặc tả đầy đủ 4 tính năng Phase 5 + dựng 6 màn hình prototype | Đã có đặc tả, chưa chia task | Chờ Phase 4 đạt DoD |
+| 2026-09-11 | Phase 5: migration `question_answers`/`letters`/`mood_checkins`/`nudges`/`eat_ratings` + múi giờ của space. RLS có điều kiện: câu trả lời người kia chỉ đọc được sau khi mình trả lời; thư chưa tới `open_on` không trả `body`; nudge giới hạn 5 lần/ngày và cách 10 phút ngay trong policy. Frontend: màn câu hỏi 4 trạng thái (ô mờ là khối giả), thư tương lai, tâm trạng + biểu đồ + streak chung, bảng nudge trượt. 115 câu hỏi tiếng Việt | Build/lint/test sạch. Chưa `db push` | P5-06/P5-16 kiểm chứng RLS bằng API · P5-10/11 bỏ lỡ + sách hỏi đáp · P5-39→42 đánh giá quán |

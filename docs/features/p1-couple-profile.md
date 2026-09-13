@@ -18,7 +18,7 @@ của hai người — không bao giờ dùng "đối tác", "người dùng B".
 |---|---|---|
 | Ngày bắt đầu yêu | ✅ | Kiểu **`date`**, không phải `timestamp`. Nền tảng của [đếm ngày](p1-day-counter.md). |
 | Ảnh bìa đôi | — | Hiển thị đầu [Home](p1-home-dashboard.md). |
-| Theme màu | — | Chọn từ bộ có sẵn. Dùng **biến màu ngay từ đầu**. |
+| ~~Theme màu~~ | — | ⚠️ **Đã chuyển sang "thuộc về từng người"** — xem [tasks/README.md](../../tasks/README.md) quyết định D7. Lưu ở `profiles.color_theme`. |
 
 ### Thuộc về từng người
 
@@ -26,6 +26,7 @@ của hai người — không bao giờ dùng "đối tác", "người dùng B".
 |---|---|---|
 | Biệt danh | ✅ | Cách người kia gọi mình. Hiện khắp app. |
 | Avatar | — | Bỏ qua được, dùng chữ cái đầu làm ảnh mặc định. |
+| Theme màu | — | Chọn từ bộ có sẵn. Dùng **biến màu ngay từ đầu**. |
 
 ## 3. Luật nghiệp vụ
 
@@ -43,7 +44,7 @@ của hai người — không bao giờ dùng "đối tác", "người dùng B".
 | Ngày bắt đầu yêu ở tương lai | Chặn ngay khi nhập. |
 | Ngày quá xa quá khứ (ví dụ 1950) | Cảnh báo nhẹ, vẫn cho lưu. |
 | Biệt danh rỗng / toàn khoảng trắng | Chặn. |
-| Đổi theme khi người kia đang mở app | Áp dụng realtime cho cả hai — theme thuộc về space. |
+| Đổi theme khi người kia đang mở app | ~~Áp dụng realtime cho cả hai~~ — không còn áp dụng, theme giờ là của từng người (quyết định D7). |
 
 ## 5. Ngoài phạm vi
 
