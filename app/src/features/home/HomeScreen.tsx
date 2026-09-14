@@ -34,7 +34,7 @@ import {
 
 export function HomeScreen() {
   const { user } = useSession()
-  const { couple, refetch, isLoading, isFetching } = useCouple()
+  const { couple, refetch, isLoading } = useCouple()
   const { profile } = useMyProfile()
   const myTheme = profile?.color_theme ?? couple?.theme
   const posts = useRecentPosts(6)
@@ -365,17 +365,6 @@ export function HomeScreen() {
             </div>
           )}
         </section>
-
-        <div className="mt-7 flex justify-center">
-          <button
-            type="button"
-            onClick={() => void refetch()}
-            disabled={isFetching}
-            className="rounded-full border border-border px-4 py-2 text-xs font-medium text-muted transition active:scale-95 disabled:opacity-50"
-          >
-            {isFetching ? 'Đang tải lại...' : 'Tải lại'}
-          </button>
-        </div>
       </div>
   </div>
   )

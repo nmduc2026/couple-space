@@ -25,7 +25,7 @@ import {
   Title,
   TopBar,
 } from '../../components/ui'
-import { btn, input } from '../../lib/ui-classes'
+import { btn, input, inputChrome } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
 import { SegmentedControl } from '../../components/SegmentedControl'
 
@@ -334,7 +334,7 @@ export function ComposeScreen() {
                 value={happenedOn}
                 max={todayYmd()}
                 onChange={setHappenedOn}
-                className={`${input} flex items-center`}
+                className={`${inputChrome} flex items-center text-[15px]`}
               />
             </Field>
 

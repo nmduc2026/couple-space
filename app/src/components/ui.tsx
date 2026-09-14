@@ -150,8 +150,9 @@ export function Row({
 }
 
 /** Công tắc bật/tắt — thay cho checkbox mặc định của trình duyệt.
- *  Transition chỉ bật sau mount: nếu để từ đầu, mỗi lần vào màn nút tròn
- *  animate từ vị trí “tắt” → “bật” dù giá trị vốn đã là true. */
+ *  Transition chỉ bật sau khi đã paint xong frame đầu (double rAF):
+ *  một lần rAF vẫn chạy trước paint → trình duyệt animate từ vị trí
+ *  mặc định (tắt) → bật dù `checked` vốn đã là true. */
 export function Switch({
   checked,
   onChange,
@@ -163,8 +164,14 @@ export function Switch({
 }) {
   const [motion, setMotion] = useState(false)
   useEffect(() => {
-    const id = window.requestAnimationFrame(() => setMotion(true))
-    return () => window.cancelAnimationFrame(id)
+    let inner = 0
+    const outer = window.requestAnimationFrame(() => {
+      inner = window.requestAnimationFrame(() => setMotion(true))
+    })
+    return () => {
+      window.cancelAnimationFrame(outer)
+      window.cancelAnimationFrame(inner)
+    }
   }, [])
 
   return (
@@ -175,13 +182,13 @@ export function Switch({
       aria-label={label}
       onClick={() => onChange(!checked)}
       className={`relative h-7 w-12 shrink-0 rounded-full ${
-        motion ? 'transition' : ''
+        motion ? 'transition-colors' : ''
       } ${checked ? 'bg-accent' : 'bg-border'}`}
     >
       <span
-        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-sm ${
-          motion ? 'transition-all' : ''
-        } ${checked ? 'left-[1.375rem]' : 'left-0.5'}`}
+        className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow-sm ${
+          motion ? 'transition-transform' : ''
+        } ${checked ? 'translate-x-5' : 'translate-x-0'}`}
       />
     </button>
   )

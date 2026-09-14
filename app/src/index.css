@@ -34,14 +34,15 @@
   color-scheme: light;
   accent-color: var(--color-accent);
 
-  /* Thu nhỏ toàn bộ giao diện. Đổi đúng một số này là đổi cả app.
-     1 = giữ nguyên, 0.8 = nhỏ còn 80%. */
-  --ui-scale: 0.8;
+  /*
+   * Tỉ lệ toàn app. PHẢI để 1.
+   * Trước dùng 0.8 + zoom → Safari bắt input ≥16px trên màn nên phải
+   * phóng chữ ô nhập, lệch nhãn; mọi “fix” cỡ chữ đều quanh quẩn ở đây.
+   */
+  --ui-scale: 1;
 }
 
-/* `zoom` thu nhỏ MỌI thứ bên trong — chữ, khoảng cách, viền, ảnh — bằng một
-   dòng. Không dùng `transform: scale` vì transform không chiếm lại chỗ: nó vẽ
-   nhỏ đi nhưng vẫn giữ nguyên kích thước bố cục, gây tràn và cuộn ngang. */
+/* Giữ biến --ui-scale cho safe-area / max-width; zoom chỉ khi khác 1. */
 #root {
   zoom: var(--ui-scale);
 }
@@ -98,31 +99,6 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-}
-
-/*
- * iPhone Safari phóng to cả trang khi focus ô nhập có chữ < 16px.
- * App đang `zoom: var(--ui-scale)` (0.8) nên chữ 16px thật chỉ còn ~12.8px
- * trên màn — vẫn bị zoom. Bù ngược: font-size = 16 / scale → sau zoom đúng 16px.
- * Utility kiểu text-[22px] vẫn thắng vì nằm layer utilities.
- */
-@layer base {
-  input:not(
-    [type='button'],
-    [type='submit'],
-    [type='reset'],
-    [type='checkbox'],
-    [type='radio'],
-    [type='file'],
-    [type='hidden'],
-    [type='image'],
-    [type='range'],
-    [type='color']
-  ),
-  textarea,
-  select {
-    font-size: calc(16px / var(--ui-scale));
-  }
 }
 
 body {

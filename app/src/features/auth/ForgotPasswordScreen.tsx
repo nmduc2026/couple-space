@@ -58,7 +58,7 @@ export function ForgotPasswordScreen() {
   return (
     <Screen>
       <TopBar to="/login" />
-      <form onSubmit={handleSubmit} className="contents">
+      <form onSubmit={handleSubmit} noValidate className="contents">
         <Stage>
           <Title>Quên mật khẩu</Title>
           <Sub>Gửi link đặt lại mật khẩu đến email.</Sub>
@@ -75,7 +75,6 @@ export function ForgotPasswordScreen() {
                   name="email"
                   autoComplete="email"
                   inputMode="email"
-                  required
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value)

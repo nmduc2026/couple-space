@@ -42,14 +42,13 @@ const THEMES: Array<[Theme, string]> = [
   ['dark', 'Tối'],
 ]
 
-/** Ô nhập nằm bên phải một hàng cài đặt — không viền, canh phải.
- *  Cỡ chữ ≥ 16px sau --ui-scale để iOS Safari không zoom khi focus. */
+/** Ô nhập trong hàng cài đặt — không viền, canh phải. 16px chống Safari zoom. */
 const rowInput =
-  'flex min-w-0 flex-1 items-center bg-transparent text-right text-[length:calc(16px/var(--ui-scale))] text-text outline-none focus:text-accent'
+  'flex min-w-0 flex-1 items-center bg-transparent text-right text-[16px] text-text outline-none focus:text-accent'
 
-/** Ô giờ thì không giãn: hai ô đứng cạnh nhau trong cùng một hàng. */
-const rowTimeInput =
-  'bg-transparent text-right text-[length:calc(16px/var(--ui-scale))] text-text outline-none focus:text-accent'
+/** DateField / TimeField là <button>, không bị Safari zoom — giữ cùng cỡ nhãn. */
+const rowValue =
+  'bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
 
 export function SettingsScreen() {
   const navigate = useNavigate()
@@ -277,7 +276,7 @@ export function SettingsScreen() {
                 max={todayYmd()}
                 value={startDate}
                 onChange={setDraftStartDate}
-                className={`${rowInput} justify-end`}
+                className={`${rowValue} justify-end`}
               />
             </Row>
             <Row className="flex items-center justify-between gap-3">
@@ -374,21 +373,31 @@ export function SettingsScreen() {
         <div className="mt-7">
           <SectionLabel>Thông báo</SectionLabel>
           <Group>
-            {NOTIFY_TOGGLES.map(([key, label, fallback]) => (
-              <Row
-                key={key}
-                className="flex items-center justify-between gap-3"
-              >
-                <span className="text-[15px] text-text">{label}</span>
-                <Switch
-                  label={label}
-                  checked={
-                    (prefsQuery.data?.[key] as boolean | undefined) ?? fallback
-                  }
-                  onChange={(next) => void savePrefs({ [key]: next })}
-                />
-              </Row>
-            ))}
+            {NOTIFY_TOGGLES.map(([key, label, fallback]) => {
+              // isPending = chưa có kết quả fetch lần nào. Không dùng skeleton
+              // màu xám (trông như đang tắt) rồi thay bằng switch đỏ — nhìn
+              // như tự chuyển false → true.
+              const ready = !prefsQuery.isPending
+              const checked =
+                (prefsQuery.data?.[key] as boolean | undefined) ?? fallback
+              return (
+                <Row
+                  key={key}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="text-[15px] text-text">{label}</span>
+                  {ready ? (
+                    <Switch
+                      label={label}
+                      checked={checked}
+                      onChange={(next) => void savePrefs({ [key]: next })}
+                    />
+                  ) : (
+                    <span aria-hidden className="h-7 w-12 shrink-0" />
+                  )}
+                </Row>
+              )
+            })}
 
             <Row className="flex items-center justify-between gap-3">
               <span className="shrink-0 text-[15px] text-text">
@@ -401,7 +410,7 @@ export function SettingsScreen() {
                   onChange={(next) =>
                     void savePrefs({ quiet_hours_from: next || null })
                   }
-                  className={rowTimeInput}
+                  className={rowValue}
                 />
                 <span className="text-muted">–</span>
                 <TimeField
@@ -410,7 +419,7 @@ export function SettingsScreen() {
                   onChange={(next) =>
                     void savePrefs({ quiet_hours_to: next || null })
                   }
-                  className={rowTimeInput}
+                  className={rowValue}
                 />
               </span>
             </Row>

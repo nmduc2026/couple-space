@@ -39,11 +39,8 @@ const TABS: Tab[] = [
 
 /** Thanh điều hướng dưới đáy — thứ làm PWA trông giống app nhất.
  *  Nút + ở giữa nhô lên, đúng bố cục trong prototype.
- *
- *  Kích thước ở đây CỐ Ý to hơn phần còn lại của app. Cả giao diện đã thu nhỏ
- *  bằng `--ui-scale`, nhưng thanh tab là thứ chạm vào nhiều nhất và chạm bằng
- *  ngón cái, nên bị thu nhỏ theo là quá bé. Không lồng thêm `zoom` để bù vì
- *  `pb-safe` chia theo `--ui-scale`, lồng hai lớp là tính sai vùng an toàn. */
+ *  Cỡ chữ/icon theo prototype (10.5px / ~19px / nút + 46px). Trước đây cố ý
+ *  to hơn để bù `--ui-scale: 0.8`; scale đã về 1 nên trả về cỡ design. */
 export function TabBar() {
   const { pathname } = useLocation()
 
@@ -56,9 +53,9 @@ export function TabBar() {
       <Link
         to="/compose"
         aria-label="Thêm kỉ niệm"
-        className="-mt-8 grid h-16 w-16 flex-none place-items-center rounded-full bg-accent text-on-accent shadow-[0_8px_20px_-6px_var(--color-accent)] transition active:scale-95"
+        className="-mt-4 grid h-[46px] w-[46px] flex-none place-items-center rounded-full bg-accent text-on-accent shadow-[0_6px_16px_-6px_var(--color-accent)] transition active:scale-95"
       >
-        <IconPlus size={28} />
+        <IconPlus size={24} />
       </Link>
 
       {TABS.slice(2).map((tab) => (
@@ -74,11 +71,11 @@ function TabLink({ tab, active }: { tab: Tab; active: boolean }) {
     <Link
       to={tab.to}
       aria-current={active ? 'page' : undefined}
-      className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[13px] transition ${
+      className={`flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1 text-[10.5px] transition ${
         active ? 'font-semibold text-accent' : 'text-muted'
       }`}
     >
-      <Icon size={24} />
+      <Icon size={20} />
       {tab.label}
     </Link>
   )

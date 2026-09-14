@@ -13,5 +13,9 @@ export const btn = {
   danger: `${BTN} border border-accent bg-transparent text-accent`,
 }
 
-export const input =
-  'h-12 w-full rounded-xl border border-border bg-surface px-4 text-[length:calc(16px/var(--ui-scale))] text-text outline-none transition placeholder:text-muted/50 focus:border-accent focus:ring-4 focus:ring-accent/15 disabled:opacity-60'
+/** Viền / padding ô nhập — không gắn cỡ chữ (AmountInput tự set cỡ lớn). */
+export const inputChrome =
+  'h-12 w-full rounded-xl border border-border bg-surface px-4 text-text outline-none transition placeholder:text-muted/50 focus:border-accent focus:ring-4 focus:ring-accent/15 disabled:opacity-60'
+
+/** Ô nhập thường: 16px — đủ để Safari iOS không phóng trang khi focus. */
+export const input = `${inputChrome} text-[16px]`

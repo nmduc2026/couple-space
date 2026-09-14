@@ -98,3 +98,4 @@ P1-34 → P1-36 (deploy máy thật)
 | 2026-09-13 | Placeholder input theo bảng review; sửa bug Cài đặt: thiếu RLS UPDATE `couple_members` (biệt danh không lưu), đẩy toast lên trên TabBar | Policy đã push remote | Thử lại đổi biệt danh + ngày trên máy |
 | 2026-09-13 | Thêm `sonner` + `AppToaster`; thay toast tự viết ở Settings / SetPassword | Xong | Thử toast trên Cài đặt |
 | 2026-09-13 | Shared UI A+B: PasswordField, EmptyState/InlineLoading, SegmentedControl, QuickAddRow, BottomSheet (+Confirm/Date/Time/Map/Nudge), AmountInput; Settings/PostDetail → Screen(+Stage); Home/Wrapped/GoalDetail → Group+Row | `tsc` sạch; chờ review UI trên máy | Review từng màn / Phase C chỉ khi còn đau |
+| 2026-09-14 | Chẩn đoán lệch cỡ chữ ≠ shared component — do bù iOS `16px/--ui-scale` áp cả Date/Time button; sửa Settings `rowValue` 15px + nickname focus-bump; Switch prefs chỉ mount sau khi load (hết flash false→true) | Chờ review trên máy | Thử Cài đặt + login email |

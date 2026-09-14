@@ -1,20 +1,20 @@
 import { formatAmountInput } from '../lib/money'
-import { input } from '../lib/ui-classes'
+import { inputChrome } from '../lib/ui-classes'
 
 const VARIANTS = {
   lg: {
     wrap: 'relative',
-    field: `${input} h-16 pr-12 text-right text-[28px] font-bold tabular-nums`,
+    field: `${inputChrome} h-16 pr-12 text-right text-[28px] font-bold tabular-nums`,
     unit: 'pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-lg text-muted',
   },
   md: {
     wrap: 'relative',
-    field: `${input} h-14 pr-10 text-right text-[22px] font-bold tabular-nums`,
+    field: `${inputChrome} h-14 pr-10 text-right text-[22px] font-bold tabular-nums`,
     unit: 'pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted',
   },
   inline: {
     wrap: 'relative min-w-0 flex-1',
-    field: `${input} w-full pr-10 text-right tabular-nums`,
+    field: `${inputChrome} w-full pr-10 text-right text-[16px] tabular-nums`,
     unit: 'pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-muted',
   },
 } as const

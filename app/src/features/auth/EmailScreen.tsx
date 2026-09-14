@@ -18,6 +18,11 @@ import { btn, input } from '../../lib/ui-classes'
 
 type Mode = 'otp' | 'password'
 
+type FieldErrors = {
+  email?: string
+  password?: string
+}
+
 /** Hai cách đăng nhập luôn hiện (OTP mặc định + mật khẩu nếu đã đặt).
  *  Đặc tả: docs/features/p1-auth.md · task P1-37. */
 export function EmailScreen() {
@@ -27,7 +32,8 @@ export function EmailScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [formError, setFormError] = useState('')
 
   async function goHomeAfterLogin() {
     sessionStorage.removeItem('pendingInviteCode')
@@ -38,23 +44,27 @@ export function EmailScreen() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     const trimmed = email.trim()
+    const next: FieldErrors = {}
 
-    if (!trimmed) {
+    if (!trimmed) next.email = 'Nhập email.'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      next.email = 'Email chưa đúng định dạng.'
+    }
+
+    if (mode === 'password' && !password) next.password = 'Nhập mật khẩu.'
+
+    if (next.email || next.password) {
+      setFieldErrors(next)
+      setFormError('')
       setStatus('error')
-      setErrorMessage('Nhập email.')
       return
     }
 
     setStatus('loading')
-    setErrorMessage('')
+    setFieldErrors({})
+    setFormError('')
 
     if (mode === 'password') {
-      if (!password) {
-        setStatus('error')
-        setErrorMessage('Nhập mật khẩu.')
-        return
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
         email: trimmed,
         password,
@@ -62,7 +72,7 @@ export function EmailScreen() {
 
       if (error) {
         setStatus('error')
-        setErrorMessage('Email hoặc mật khẩu chưa đúng.')
+        setFormError('Email hoặc mật khẩu chưa đúng.')
         return
       }
 
@@ -77,7 +87,7 @@ export function EmailScreen() {
 
     if (error) {
       setStatus('error')
-      setErrorMessage(
+      setFormError(
         error.message.includes('rate') || error.status === 429
           ? 'Gửi quá nhiều lần. Đợi vài phút rồi thử lại.'
           : 'Không gửi được mã. Kiểm tra email và thử lại.',
@@ -93,7 +103,7 @@ export function EmailScreen() {
   return (
     <Screen>
       <TopBar to="/welcome" />
-      <form onSubmit={handleSubmit} className="contents">
+      <form onSubmit={handleSubmit} noValidate className="contents">
         <Stage>
           <Title>Email của bạn</Title>
           <Sub>
@@ -111,28 +121,41 @@ export function EmailScreen() {
             onChange={(next) => {
               setMode(next)
               setStatus('idle')
+              setFieldErrors({})
+              setFormError('')
             }}
             className="mt-6"
           />
 
           <div className="mt-6 space-y-4">
-            <Field label="Email">
-              <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                inputMode="email"
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-                  if (status === 'error') setStatus('idle')
-                }}
-                disabled={busy}
-                placeholder="email@example.com"
-                className={input}
-              />
-            </Field>
+            <div>
+              <Field label="Email">
+                <input
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (fieldErrors.email) {
+                      setFieldErrors((prev) => ({ ...prev, email: undefined }))
+                    }
+                    if (formError) {
+                      setFormError('')
+                      setStatus('idle')
+                    }
+                  }}
+                  disabled={busy}
+                  placeholder="email@example.com"
+                  aria-invalid={!!fieldErrors.email}
+                  className={input}
+                />
+              </Field>
+              {fieldErrors.email ? (
+                <ErrorText>{fieldErrors.email}</ErrorText>
+              ) : null}
+            </div>
 
             {mode === 'password' ? (
               <div>
@@ -141,12 +164,24 @@ export function EmailScreen() {
                   value={password}
                   onChange={(next) => {
                     setPassword(next)
-                    if (status === 'error') setStatus('idle')
+                    if (fieldErrors.password) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        password: undefined,
+                      }))
+                    }
+                    if (formError) {
+                      setFormError('')
+                      setStatus('idle')
+                    }
                   }}
                   autoComplete="current-password"
                   disabled={busy}
                   placeholder="******"
                 />
+                {fieldErrors.password ? (
+                  <ErrorText>{fieldErrors.password}</ErrorText>
+                ) : null}
                 <Link
                   to="/login/forgot"
                   state={{ email: email.trim() }}
@@ -158,7 +193,7 @@ export function EmailScreen() {
             ) : null}
           </div>
 
-          {status === 'error' ? <ErrorText>{errorMessage}</ErrorText> : null}
+          {formError ? <ErrorText>{formError}</ErrorText> : null}
 
           <Spacer />
 
