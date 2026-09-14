@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Couple Space">
+  <rect width="512" height="512" fill="#e11d48"/>
+  <path
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="72"
+    stroke-linecap="round"
+    d="M 348 148 A 148 148 0 1 0 348 364"
+  />
+</svg>

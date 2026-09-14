@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.env*
+!.env.example
+
+# Khoá VAPID + CRON_SECRET sinh ra lúc cài đặt (tasks/DEPLOY.md bước 4).
+# `.env*` ở trên KHÔNG khớp tên này vì nó bắt đầu bằng `.vapid`, nên phải ghi
+# riêng — thiếu dòng này là khoá riêng bị commit lên git.
+.vapid.env
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ảnh chụp màn hình để review UI (npm run shots)
+.shots*/
+.shots-compare.html

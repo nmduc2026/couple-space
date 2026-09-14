@@ -3,7 +3,7 @@
 > **Mục tiêu:** hai máy nhìn thấy nhau. Đăng nhập được, ghép đôi được, mở app thấy
 > số ngày yêu, và người kia nhận được thông báo.
 
-**Trạng thái:** 🔲 Chưa bắt đầu — mọi quyết định chặn đã được gỡ, **có thể bắt đầu ngay**
+**Trạng thái:** 🔄 Đang làm — nhóm A (khởi tạo) xong, tiếp nhóm B (database)
 **Ước lượng:** 2–3 tuần (vừa học vừa làm)
 **Nền tảng:** Vite + React + TypeScript + Tailwind → PWA · Supabase · Web Push
 **Task:** [tasks.md](tasks.md) · **Hướng dẫn từng bước:** [steps/](steps/)
@@ -12,7 +12,7 @@
 
 Phase 1 xong khi **cả năm điều** sau đúng trên **máy thật của cả hai người**:
 
-- [ ] Cả hai đăng nhập được bằng email OTP
+- [ ] Cả hai đăng nhập được bằng email OTP (và bằng mật khẩu nếu đã đặt — [p1-auth.md](../../docs/features/p1-auth.md))
 - [ ] Người thứ nhất tạo space, người thứ hai vào bằng mã mời → cả hai thấy cùng một space
 - [ ] Home hiện đúng số ngày yêu (kiểm tra cả trường hợp hai máy khác múi giờ)
 - [ ] Người thứ hai tham gia → người thứ nhất **nhận được push** trên iPhone (PWA)
@@ -24,7 +24,7 @@ Phase 1 xong khi **cả năm điều** sau đúng trên **máy thật của cả
 
 | Tính năng | Đặc tả |
 |---|---|
-| Auth email OTP | (Supabase Auth, không cần đặc tả riêng) |
+| Đăng nhập (OTP + mật khẩu) | [p1-auth.md](../../docs/features/p1-auth.md) |
 | Ghép đôi | [pairing.md](../../docs/features/p1-pairing.md) |
 | Hồ sơ đôi | [couple-profile.md](../../docs/features/p1-couple-profile.md) |
 | Home (bản tối giản) | [home-dashboard.md](../../docs/features/p1-home-dashboard.md) |
@@ -43,13 +43,15 @@ Timeline · ảnh · chi tiêu · sự kiện · mục tiêu · widget · theme 
 ## 3. Tiến độ
 
 ### ✅ Đã xong
-*(chưa có)*
+- Nhóm A–G (code): auth theo [p1-auth.md](../../docs/features/p1-auth.md) (OTP + mật khẩu), pairing RPC, Home/đếm ngày, settings/unpair, push client + Edge Function skeleton
+- Migration RPC/push/realtime đã `db push`
+- Còn cấu hình Redirect URLs quên mật khẩu trên Supabase khi deploy
 
 ### 🔄 Đang làm
-*(chưa bắt đầu)*
+- **P1-10 / P1-21 / P1-23 / nhóm H** — cần thao tác tay: thử RLS trên app, ghi VAPID secrets, deploy function + Vercel, cài PWA iPhone
 
 ### 🔲 Chưa làm
-Toàn bộ — xem [tasks.md](tasks.md).
+P1-34 → P1-36 (deploy máy thật)
 
 ## 4. Quyết định đã chốt
 
@@ -60,6 +62,7 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | D6 | ✅ Ngày bắt đầu yêu tính là **ngày thứ 1** (không phải ngày thứ 0) |
 | D4 | ✅ Space `archived` giữ ảnh **6 tháng** |
 | D5 | ✅ Ảnh do A đăng thì **B vẫn tải về được** |
+| D8 | ✅ Auth: **OTP lần đầu** + **mật khẩu tuỳ chọn** (đặt trong Cài đặt); không Google/Apple ở Phase 1 — [p1-auth.md](../../docs/features/p1-auth.md) |
 
 **Không còn task nào bị chặn.** Toàn bộ danh sách sẵn sàng làm.
 
@@ -81,3 +84,18 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | 2026-09-11 | Tổ chức lại toàn bộ tài liệu: tách `docs/features/`, đổi `others/` → `decisions/`, dựng `tasks/`, viết `AGENTS.md` | Đặc tả Phase 1–2 xong, chưa có dòng code nào | Chốt các quyết định đang treo |
 | 2026-09-11 | Chốt D1–D5. Đổi nền tảng sang **Vite + React (bỏ Expo)**, viết lại `tech-stack.md` và `distribution.md`. Đánh số file feature theo phase (`p1-`, `p2-`…). Viết 8 file hướng dẫn từng bước trong `steps/` | Tài liệu đã đủ để bắt đầu code | **Bắt đầu P1-01** — theo [steps/a-setup.md](steps/a-setup.md) |
 | 2026-09-11 | Viết nốt đặc tả Phase 3–6, chốt D6 (không ghi nợ), lưu prototype 36 màn hình vào `docs/design/frontend/ui/` | Không đổi gì trong phase này | Không đổi |
+| 2026-09-11 | Làm xong nhóm A (P1-01→P1-05b): scaffold app, Tailwind/theme, PWA+logo, router+mock guards, Supabase `PUBLISHABLE_KEY`, Query+Zustand theme | Kết thúc [a-setup.md](steps/a-setup.md) | **P1-06** — [b-database.md](steps/b-database.md) |
+| 2026-09-11 | P1-06→P1-09 + push RLS nền: `profiles`, `couples`, `couple_members`, `invites`, `is_member_of`/`can_write_to` | P1-10 còn thử 2 account | Kiểm chứng RLS rồi sang nhóm C (auth) |
+| 2026-09-11 | Xác nhận P1-07: 2 user Auth → 2 dòng `profiles` (trigger OK). P1-10 phép thử đọc chéo để sau login app | Sẵn sàng nhóm C | **P1-11** Welcome — [c-auth.md](steps/c-auth.md) |
+| 2026-09-11 | Implement phần lớn Phase 1 (C–G): OTP, guards thật, pairing RPC, Home, settings/unpair, push SW + `send-notification` | Còn VAPID secrets, deploy function/Vercel, thử tay trên 2 máy | P1-21 secrets → deploy function → P1-34 Vercel |
+| 2026-09-11 | Review + làm lại toàn bộ UI Phase 1 theo `prototype.html`: bảng màu hồng đất, font Be Vietnam Pro, primitive dùng chung (`components/ui.tsx` + `lib/ui-classes.ts`), viết lại 9 màn hình, tách **màn huỷ ghép đôi riêng** `/settings/unpair`. Sửa: ẩn tab mật khẩu khỏi bản build thật, safe-area iPhone bị đè, input trong suốt ở dark mode, `:focus-visible`, bỏ 2 chỗ setState-trong-effect | Build + lint + test sạch, chưa xem trên máy thật | P1-21 secrets → deploy function → P1-34 Vercel |
+| 2026-09-13 | Viết/chỉnh đặc tả [p1-auth.md](../../docs/features/p1-auth.md) + prototype auth (email 2 tab, quên MK, đặt MK) + task P1-37→P1-39 theo thiết kế auth Phase 1 | Chưa đụng code app | **P1-37** tab mật khẩu trên EmailScreen |
+| 2026-09-13 | P1-37: EmailScreen hai tab (mặc định OTP), link Quên mật khẩu → /login/forgot | Còn P1-38/39 | **P1-38** đặt MK trong Cài đặt |
+| 2026-09-13 | P1-38+P1-39: /settings/password, /login/reset, mắt hiện/ẩn MK; DEPLOY ghi Redirect URL | Review xong; còn Redirect Supabase khi deploy | Đồng bộ docs (bỏ giọng bổ sung) + audit prototype vs app |
+| 2026-09-13 | Đồng bộ docs auth như thiết kế ban đầu (README/features/c-auth/tasks); audit prototype vs code (Home, Eat/Spin, Map…) — liệt kê lệch chờ review, chưa sửa proto | Chờ chốt chỗ sửa prototype | Sửa prototype theo ưu tiên đã chốt |
+| 2026-09-13 | Đồng bộ prototype.html theo app: Home 8 shortcut, Eat reel/box + list, Map tiến độ tỉnh, Settings/Choice/Join/Forgot/…; 39 màn; bỏ home-p1…p4 | Chờ review proto trên trình duyệt | P1-34 Vercel hoặc chỉnh tiếp nếu còn lệch |
+| 2026-09-13 | Rà copy UI vibe AI → production: `hai đứa`→`hai người`, xoá mọi copy nợ nần; áp override #1–17,27–28,34,39; #51 giữ nguyên | Copy app xong; chưa đụng prototype | Review copy trên máy / tiếp task phase |
+| 2026-09-13 | Placeholder input theo bảng review; sửa bug Cài đặt: thiếu RLS UPDATE `couple_members` (biệt danh không lưu), đẩy toast lên trên TabBar | Policy đã push remote | Thử lại đổi biệt danh + ngày trên máy |
+| 2026-09-13 | Thêm `sonner` + `AppToaster`; thay toast tự viết ở Settings / SetPassword | Xong | Thử toast trên Cài đặt |
+| 2026-09-13 | Shared UI A+B: PasswordField, EmptyState/InlineLoading, SegmentedControl, QuickAddRow, BottomSheet (+Confirm/Date/Time/Map/Nudge), AmountInput; Settings/PostDetail → Screen(+Stage); Home/Wrapped/GoalDetail → Group+Row | `tsc` sạch; chờ review UI trên máy | Review từng màn / Phase C chỉ khi còn đau |
+| 2026-09-14 | Chẩn đoán lệch cỡ chữ ≠ shared component — do bù iOS `16px/--ui-scale` áp cả Date/Time button; sửa Settings `rowValue` 15px + nickname focus-bump; Switch prefs chỉ mount sau khi load (hết flash false→true) | Chờ review trên máy | Thử Cài đặt + login email |

@@ -40,7 +40,7 @@ Code (tên biến, hàm, commit message) viết bằng tiếng Anh.
 | **Nghiệp vụ** một tính năng: làm gì, luật, ca biên | `docs/features/<ten>.md` | SQL, code, tên component |
 | **Thiết kế backend**: schema, RLS, RPC, kiến trúc | `docs/design/backend/` | Nghiệp vụ dài dòng |
 | **Thiết kế frontend**: màn hình, flow, state, UI | `docs/design/frontend/` | Nghiệp vụ dài dòng |
-| **Prototype bấm được** (36 màn hình, HTML/CSS/JS một file) | `docs/design/frontend/ui/prototype.html` | Code thật của app — đây chỉ là bản dựng thử |
+| **Prototype bấm được** (HTML/CSS/JS một file, khớp app hiện tại) | `docs/design/frontend/ui/prototype.html` | Code thật của app — đây chỉ là bản dựng thử |
 | **Quyết định** công nghệ, phân phối, chi phí | `docs/decisions/` | Task, tiến độ |
 | **Task theo phase** + tiến độ + nhật ký | `tasks/phase-XX/context.md`, `tasks.md` | Đặc tả nghiệp vụ |
 | **Hướng dẫn từng bước** cho mỗi nhóm task | `tasks/phase-XX/steps/<a-z>-<ten>.md` | Luật nghiệp vụ (link sang `docs/features/`) |

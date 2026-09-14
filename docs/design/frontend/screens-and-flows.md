@@ -1,7 +1,7 @@
 # Màn hình & User flow (MVP)
 
-> 👉 **Xem trước bằng mắt:** [ui/prototype.html](ui/prototype.html) — 36 màn hình bấm được
-> của cả 6 phase. Mở bằng trình duyệt.
+> 👉 **Xem trước bằng mắt:** [ui/prototype.html](ui/prototype.html) — prototype
+> bấm được của cả 6 phase. Mở bằng trình duyệt.
 >
 > **Phạm vi file này: tầng giao diện** — điều hướng, bố cục màn hình, thứ tự thao tác.
 > **Luật nghiệp vụ và ca biên nằm ở [docs/features/](../../features/README.md)**, không lặp lại ở đây.
@@ -13,7 +13,8 @@
 App
 ├── (chưa đăng nhập)
 │   ├── Welcome
-│   ├── Nhập email → Nhập mã OTP
+│   ├── Nhập email (tab OTP | tab Mật khẩu)
+│   ├── Nhập mã OTP  /  Quên mật khẩu → Đặt lại mật khẩu
 │   └── ─ đăng nhập xong ─┐
 │                         │
 ├── (đã đăng nhập, CHƯA có space)
@@ -47,7 +48,9 @@ App
 Welcome
   │ "Bắt đầu"
   ▼
-Nhập email ──► Nhập mã 6 số (gửi qua email) ──► Đăng nhập xong
+Nhập email ──► (tab Mã OTP, mặc định) ──► Nhập mã 6 số ──► Đăng nhập xong
+       │
+       └── (tab Mật khẩu, nếu đã đặt) ──► Đăng nhập xong
   ▼
 "Bạn đã có mã mời chưa?"
   ├── Chưa, tạo không gian mới ──┐
@@ -66,6 +69,9 @@ Nhập email ──► Nhập mã 6 số (gửi qua email) ──► Đăng nh�
                     └─ [Cứ vào xem trước] → vào Home ở chế độ chờ
 ```
 
+Chi tiết luật đăng nhập (OTP, mật khẩu, quên mật khẩu, đặt mật khẩu trong Cài đặt):
+[p1-auth.md](../../features/p1-auth.md).
+
 **Chi tiết quan trọng:**
 - **Lời mời phải hấp dẫn, không phải một chuỗi ký tự khô khan.** Nội dung chia sẻ nên là: *"Anh vừa tạo một nơi để tụi mình lưu kỉ niệm 🤍 Vào bằng mã A7K2M9 nhé: [link]"* — kèm deep link mở thẳng màn hình nhập mã, mã điền sẵn.
 - **Không chặn người dùng ở phòng chờ.** Cho vào Home xem trước, hiện banner "Đang chờ [tên] tham gia" kèm nút mời lại. Chặn cứng ở màn hình chờ là cách nhanh nhất để người ta bỏ app.
@@ -76,7 +82,7 @@ Nhập email ──► Nhập mã 6 số (gửi qua email) ──► Đăng nh�
 ```
 Mở deep link (hoặc tự tải app)
   ▼
-Nhập email ──► OTP ──► Đăng nhập xong
+Nhập email ──► OTP (hoặc mật khẩu nếu đã đặt) ──► Đăng nhập xong
   ▼
 Màn hình xác nhận lời mời
   ├─ Hiện avatar + biệt danh người mời + ngày bắt đầu yêu

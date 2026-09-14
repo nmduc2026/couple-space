@@ -1,0 +1,2 @@
+alter publication supabase_realtime add table public.couple_members;
+alter publication supabase_realtime add table public.couples;

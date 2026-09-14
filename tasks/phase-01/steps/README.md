@@ -12,9 +12,9 @@ Trong file, mỗi task có một mục riêng theo cùng khuôn:
 
 | File | Nhóm | Task |
 |---|---|---|
-| [a-setup.md](a-setup.md) | Khởi tạo dự án | P1-01 → P1-05 |
+| [a-setup.md](a-setup.md) | Khởi tạo dự án | P1-01 → P1-05b |
 | [b-database.md](b-database.md) | Database | P1-06 → P1-10 |
-| [c-auth.md](c-auth.md) | Đăng nhập | P1-11 → P1-14 |
+| [c-auth.md](c-auth.md) | Đăng nhập | P1-11 → P1-14 · P1-37 → P1-39 |
 | [d-pairing.md](d-pairing.md) | Ghép đôi | P1-15 → P1-20 |
 | [e-notifications.md](e-notifications.md) | Thông báo | P1-21 → P1-25 |
 | [f-home.md](f-home.md) | Home + đếm ngày | P1-26 → P1-29 |

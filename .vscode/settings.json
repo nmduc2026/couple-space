@@ -1,0 +1,13 @@
+{
+  // Edge Function là mã DENO, không phải mã của app Vite.
+  //
+  // `tsconfig.app.json` chỉ include `src`, nên các file dưới
+  // `app/supabase/functions` không thuộc project TypeScript nào. VS Code rơi
+  // về cấu hình mặc định kiểu Node/DOM và báo hàng chục lỗi giả: không hiểu
+  // `jsr:`/`npm:` specifier, không biết biến toàn cục `Deno`.
+  //
+  // Bật Deno LSP cho đúng thư mục đó thì VS Code nhường quyền cho nó, và đống
+  // lỗi giả biến mất. Cần tiện ích `denoland.vscode-deno`.
+  "deno.enablePaths": ["app/supabase/functions"],
+  "deno.lint": true
+}
