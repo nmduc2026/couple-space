@@ -4,13 +4,15 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { goalProgress, goalSaved, useGoals } from '../../hooks/useGoals'
-import { formatVnd, formatAmountInput, parseAmountInput } from '../../lib/money'
+import { formatVnd, parseAmountInput } from '../../lib/money'
 import { formatDay } from '../../lib/formatDate'
 import { supabase } from '../../lib/supabase'
 import { notifyPartner } from '../../lib/notify'
 import { PREVIEW } from '../../dev/preview'
-import { Loading, Screen, Stage, Title, TopBar } from '../../components/ui'
-import { btn, input } from '../../lib/ui-classes'
+import { Group, Loading, Row, Screen, Stage, Title, TopBar } from '../../components/ui'
+import { AmountInput } from '../../components/AmountInput'
+import { QuickAddRow } from '../../components/QuickAddRow'
+import { btn } from '../../lib/ui-classes'
 
 export function GoalDetailScreen() {
   const { id = '' } = useParams()
@@ -82,8 +84,7 @@ export function GoalDetailScreen() {
     await refresh()
   }
 
-  async function addStep(event: FormEvent) {
-    event.preventDefault()
+  async function addStep() {
     const value = stepTitle.trim()
     if (!value || !goal || PREVIEW) return
     await supabase.from('goal_steps').insert({
@@ -195,16 +196,16 @@ export function GoalDetailScreen() {
 
         {goal.kind === 'checklist' ? (
           <>
-            <ul className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface divide-y divide-border">
+            <Group className="mt-6">
               {goal.goal_steps
                 .slice()
                 .sort((a, b) => a.sort_order - b.sort_order)
                 .map((step) => (
-                  <li key={step.id}>
+                  <Row key={step.id}>
                     <button
                       type="button"
                       onClick={() => void toggleStep(step.id, !step.is_done)}
-                      className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+                      className="flex w-full items-center gap-3 text-left"
                     >
                       <span
                         aria-hidden
@@ -226,30 +227,22 @@ export function GoalDetailScreen() {
                         {step.title}
                       </span>
                     </button>
-                  </li>
+                  </Row>
                 ))}
-            </ul>
+            </Group>
 
-            <form onSubmit={addStep} className="mt-3 flex gap-2">
-              <input
-                value={stepTitle}
-                onChange={(e) => setStepTitle(e.target.value)}
-                placeholder="Thêm một bước"
-                className={`${input} flex-1`}
-              />
-              <button
-                type="submit"
-                disabled={!stepTitle.trim()}
-                className="h-12 shrink-0 rounded-2xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
-              >
-                Thêm
-              </button>
-            </form>
+            <QuickAddRow
+              value={stepTitle}
+              onChange={setStepTitle}
+              onSubmit={addStep}
+              placeholder="Tên bước"
+              className="mt-3"
+            />
           </>
         ) : null}
 
         {goal.kind === 'count' ? (
-          <div className="mt-6 flex items-center justify-center gap-6 rounded-2xl border border-border bg-surface p-5">
+          <div className="mt-6 flex items-center justify-center gap-6 rounded-xl border border-border bg-surface p-5">
             <button
               type="button"
               onClick={() => void bumpCount(-1)}
@@ -272,7 +265,7 @@ export function GoalDetailScreen() {
 
         {goal.kind === 'amount' ? (
           <div className="mt-6">
-            <div className="rounded-2xl border border-border bg-surface p-4 text-center">
+            <div className="rounded-xl border border-border bg-surface p-4 text-center">
               <p className="text-[24px] font-extrabold text-text">
                 {formatVnd(saved)}
               </p>
@@ -281,24 +274,21 @@ export function GoalDetailScreen() {
               </p>
             </div>
             <form onSubmit={addContribution} className="mt-3 flex gap-2">
-              <input
-                inputMode="numeric"
+              <AmountInput
+                variant="inline"
                 value={amount}
-                onChange={(e) => setAmount(formatAmountInput(e.target.value))}
-                placeholder="Nạp thêm bao nhiêu?"
-                className={`${input} flex-1 text-right tabular-nums`}
+                onChange={setAmount}
               />
               <button
                 type="submit"
                 disabled={!amount}
-                className="h-12 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
+                className="h-12 shrink-0 rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
               >
                 Nạp
               </button>
             </form>
             <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-              Nạp quỹ ghi tay — app không tự trừ từ chi tiêu chung. Tiêu chung
-              và để dành là hai việc khác nhau.
+              Ghi tay. Không tự trừ từ chi tiêu.
             </p>
           </div>
         ) : null}

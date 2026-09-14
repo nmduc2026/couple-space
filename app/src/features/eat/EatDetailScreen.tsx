@@ -105,8 +105,8 @@ export function EatDetailScreen() {
         </dl>
 
         {stat && stat.nope_count > 0 ? (
-          <p className="mt-3 rounded-2xl border border-border bg-surface p-3.5 text-[13px] leading-relaxed text-muted">
-            😕 Có người đã chê chỗ này, nên vòng quay sẽ không chọn nó nữa.
+          <p className="mt-3 rounded-xl border border-border bg-surface p-3.5 text-[13px] leading-relaxed text-muted">
+            Đã bị đánh dấu “thôi” — không đưa vào vòng quay.
           </p>
         ) : null}
 
@@ -115,7 +115,7 @@ export function EatDetailScreen() {
             href={link}
             target="_blank"
             rel="noreferrer"
-            className="mt-3 block rounded-2xl border border-border bg-surface p-3.5 text-[14px] font-medium text-accent"
+            className="mt-3 block rounded-xl border border-border bg-surface p-3.5 text-[14px] font-medium text-accent"
           >
             {item.map_url ? '📍 Mở bản đồ' : '🔗 Mở link gốc'}
           </a>
@@ -135,7 +135,7 @@ export function EatDetailScreen() {
             {visits.map((v) => (
               <li
                 key={v.id}
-                className="rounded-2xl border border-border bg-surface p-3.5"
+                className="rounded-xl border border-border bg-surface p-3.5"
               >
                 <b className="text-[14px] font-medium text-text">
                   {formatDay(v.visited_on)}
@@ -169,7 +169,7 @@ export function EatDetailScreen() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-3 text-center">
+    <div className="rounded-xl border border-border bg-surface p-3 text-center">
       <dt className="text-[12.5px] font-medium text-muted">
         {label}
       </dt>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BottomSheet } from '../../components/BottomSheet'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { supabase } from '../../lib/supabase'
@@ -59,7 +60,7 @@ export function NudgeSheet({
       // Policy chặn khi vượt 5 lần/ngày hoặc chưa qua 10 phút
       setStatus('error')
       setMessage(
-        'Gửi hơi dày rồi — đợi vài phút, hoặc để mai nhé.',
+        'Gửi hơi dày rồi — đợi vài phút, hoặc để mai.',
       )
       return
     }
@@ -85,66 +86,60 @@ export function NudgeSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end">
+    <BottomSheet
+      onClose={onClose}
+      ariaLabel="Gửi một cái chạm"
+      zClass="z-40"
+    >
+      <span
+        aria-hidden
+        className="mx-auto mb-4 block h-1 w-10 rounded-full bg-border"
+      />
+      <h2 className="text-center text-[17px] font-bold text-text">
+        Gửi một cái chạm
+      </h2>
+
+      {status === 'sent' ? (
+        <p className="py-10 text-center text-[15px] text-accent">Đã gửi</p>
+      ) : (
+        <>
+          <div className="mt-4 grid grid-cols-2 gap-2.5">
+            {NUDGES.map((n) => (
+              <button
+                key={n.kind}
+                type="button"
+                disabled={status === 'sending'}
+                onClick={() => void send(n)}
+                className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-5 text-[14px] font-semibold text-text transition active:scale-95 disabled:opacity-50"
+              >
+                <span aria-hidden className="text-3xl">
+                  {n.emoji}
+                </span>
+                {n.label}
+              </button>
+            ))}
+          </div>
+
+          {lateNight ? (
+            <p className="mt-3 text-center text-[12.5px] text-muted">
+              Giờ này người ấy có thể đang ngủ.
+            </p>
+          ) : null}
+          {status === 'error' ? (
+            <p className="mt-3 text-center text-[13px] text-accent" role="alert">
+              {message}
+            </p>
+          ) : null}
+        </>
+      )}
+
       <button
         type="button"
-        aria-label="Đóng"
         onClick={onClose}
-        className="absolute inset-0 bg-black/40"
-      />
-      <div className="pb-safe relative w-full rounded-t-[1.75rem] border-t border-border bg-surface px-5 pt-3">
-        <span
-          aria-hidden
-          className="mx-auto mb-4 block h-1 w-10 rounded-full bg-border"
-        />
-        <h2 className="text-center text-[17px] font-bold text-text">
-          Gửi một cái chạm
-        </h2>
-
-        {status === 'sent' ? (
-          <p className="py-10 text-center text-[15px] text-accent">
-            Đã gửi rồi nha 💌
-          </p>
-        ) : (
-          <>
-            <div className="mt-4 grid grid-cols-2 gap-2.5">
-              {NUDGES.map((n) => (
-                <button
-                  key={n.kind}
-                  type="button"
-                  disabled={status === 'sending'}
-                  onClick={() => void send(n)}
-                  className="flex flex-col items-center gap-1.5 rounded-2xl border border-border py-5 text-[14px] font-semibold text-text transition active:scale-95 disabled:opacity-50"
-                >
-                  <span aria-hidden className="text-3xl">
-                    {n.emoji}
-                  </span>
-                  {n.label}
-                </button>
-              ))}
-            </div>
-
-            {lateNight ? (
-              <p className="mt-3 text-center text-[12.5px] text-muted">
-                Giờ này người ấy có thể đang ngủ.
-              </p>
-            ) : null}
-            {status === 'error' ? (
-              <p className="mt-3 text-center text-[13px] text-accent" role="alert">
-                {message}
-              </p>
-            ) : null}
-          </>
-        )}
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-4 mb-2 w-full py-3 text-[14px] font-medium text-muted"
-        >
-          Đóng
-        </button>
-      </div>
-    </div>
+        className="mt-4 mb-2 w-full py-3 text-[14px] font-medium text-muted"
+      >
+        Đóng
+      </button>
+    </BottomSheet>
   )
 }

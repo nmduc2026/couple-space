@@ -1,6 +1,8 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState } from '../../components/EmptyState'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { QUESTIONS, questionIndexFor } from '../../lib/questions'
@@ -72,26 +74,18 @@ export function QuestionScreen() {
       <TopHeader title="Câu hỏi mỗi ngày" back="/" />
 
       <div className="px-4 pt-3">
-        <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
-          {(
-            [
-              ['today', 'Hôm nay'],
-              ['missed', missed.length ? `Bỏ lỡ (${missed.length})` : 'Bỏ lỡ'],
-              ['book', 'Sách'],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setTab(value)}
-              className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                tab === value ? 'bg-accent text-on-accent' : 'text-muted'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[
+            { value: 'today', label: 'Hôm nay' },
+            {
+              value: 'missed',
+              label: missed.length ? `Bỏ lỡ (${missed.length})` : 'Bỏ lỡ',
+            },
+            { value: 'book', label: 'Sách' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
       </div>
 
       <div className="flex-1 px-4 py-4">
@@ -193,7 +187,7 @@ function DayQuestion({
       <section
         className={
           compact
-            ? 'rounded-2xl bg-soft p-4'
+            ? 'rounded-xl bg-soft p-4'
             : 'rounded-[1.5rem] bg-soft p-5 text-center'
         }
       >
@@ -216,7 +210,7 @@ function DayQuestion({
             onChange={(e) => setDraft(e.target.value)}
             rows={compact ? 3 : 5}
             autoFocus={!compact}
-            placeholder="Câu trả lời của bạn..."
+            placeholder="Câu trả lời"
             className={`${input} h-auto py-3 leading-relaxed`}
           />
           <button
@@ -228,7 +222,7 @@ function DayQuestion({
           </button>
           {compact ? null : (
             <p className="mt-2.5 text-center text-[12.5px] leading-relaxed text-muted">
-              Trả lời rồi mới thấy câu của {partnerName} — và ngược lại.
+              Trả lời để xem câu của {partnerName}.
             </p>
           )}
         </form>
@@ -284,20 +278,7 @@ function MissedList({
   const [open, setOpen] = useState<string | null>(days[0] ?? null)
 
   if (days.length === 0) {
-    return (
-      <div className="flex flex-col items-center px-6 py-16 text-center">
-        <p className="text-5xl" aria-hidden>
-          ✅
-        </p>
-        <p className="mt-5 text-[17px] font-semibold text-text">
-          Không bỏ lỡ ngày nào
-        </p>
-        <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-          Câu chưa trả lời của bảy ngày gần nhất sẽ hiện ở đây. Quá bảy ngày
-          thì thôi — không nợ nần gì cả.
-        </p>
-      </div>
-    )
+    return <EmptyState emoji="✅" title="Không có câu bỏ lỡ." />
   }
 
   return (
@@ -308,7 +289,7 @@ function MissedList({
         return (
           <li
             key={day}
-            className="overflow-hidden rounded-2xl border border-border bg-surface"
+            className="overflow-hidden rounded-xl border border-border bg-surface"
           >
             <button
               type="button"
@@ -379,15 +360,11 @@ function Book({ history }: { history: Answer[] }) {
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center px-6 py-16 text-center">
-        <p className="text-5xl" aria-hidden>
-          📖
-        </p>
-        <p className="mt-5 text-[17px] font-semibold text-text">Sách còn trắng</p>
-        <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-          Mỗi ngày trả lời một câu. Sau một năm chỗ này là một cuốn sách thật.
-        </p>
-      </div>
+      <EmptyState
+        emoji="📖"
+        title="Các câu đã trả lời"
+        subtitle="Các câu đã trả lời sẽ nằm ở đây."
+      />
     )
   }
 
@@ -396,7 +373,7 @@ function Book({ history }: { history: Answer[] }) {
       <input
         value={term}
         onChange={(e) => setTerm(e.target.value)}
-        placeholder="Tìm trong sách..."
+        placeholder="Tìm..."
         className={input}
       />
 
@@ -409,7 +386,7 @@ function Book({ history }: { history: Answer[] }) {
           {entries.map(({ day, answers, question }) => (
             <li
               key={day}
-              className="rounded-2xl border border-border bg-surface p-4"
+              className="rounded-xl border border-border bg-surface p-4"
             >
               <p className="text-[13px] font-medium text-accent">
                 {formatDay(day)}
@@ -454,7 +431,7 @@ function AnswerCard({
   footer?: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
+    <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center gap-2">
         <span className="grid h-7 w-7 place-items-center rounded-full bg-soft text-xs font-bold text-accent">
           {name.slice(0, 1).toUpperCase()}
@@ -472,7 +449,7 @@ function AnswerCard({
  *  gửi về máy này (RLS chặn), nên không có gì để lộ qua DevTools. */
 function BlurredPlaceholder({ name, day }: { name: string; day: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
+    <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center gap-2">
         <span className="grid h-7 w-7 place-items-center rounded-full bg-soft text-xs font-bold text-accent">
           {name.slice(0, 1).toUpperCase()}

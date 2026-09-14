@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import {
   groupByMonth,
   useInfinitePosts,
@@ -10,7 +11,6 @@ import {
 } from '../../hooks/usePosts'
 import { TimelineFilters, type TimeFilter } from './TimelineFilters'
 import { ACTIVITY_LABELS } from '../../lib/activities'
-import { btn } from '../../lib/ui-classes'
 import { formatDay } from '../../lib/formatDate'
 
 type View = 'cards' | 'grid'
@@ -128,12 +128,22 @@ export function TimelineScreen() {
 
       <div className="flex-1 px-4 pb-8">
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
         ) : posts.length === 0 ? (
           // `posts` giờ là kết quả ĐÃ LỌC nên luôn rỗng ở nhánh này; `years`
           // lấy từ toàn bộ bài nên mới phân biệt được "chưa có kỉ niệm nào"
           // với "lọc không ra gì".
-          <EmptyState hasPosts={years.length > 0} />
+          years.length > 0 ? (
+            <p className="py-20 text-center text-sm text-muted">
+              Không có kỉ niệm nào khớp bộ lọc.
+            </p>
+          ) : (
+            <EmptyState
+              emoji="📷"
+              title="Chưa có kỉ niệm"
+              action={{ type: 'link', to: '/compose', label: 'Thêm' }}
+            />
+          )
         ) : view === 'grid' ? (
           <GridView posts={posts} />
         ) : (
@@ -150,39 +160,12 @@ export function TimelineScreen() {
   )
 }
 
-
-function EmptyState({ hasPosts }: { hasPosts: boolean }) {
-  if (hasPosts) {
-    return (
-      <p className="py-20 text-center text-sm text-muted">
-        Không có kỉ niệm nào khớp bộ lọc.
-      </p>
-    )
-  }
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <p className="text-5xl" aria-hidden>
-        📷
-      </p>
-      <p className="mt-5 text-[17px] font-semibold text-text">
-        Kỉ niệm đầu tiên của hai đứa nằm ở đây nè
-      </p>
-      <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-        Một tấm ảnh, một dòng caption. Người kia sẽ nhận được thông báo ngay.
-      </p>
-      <Link to="/compose" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Thêm kỉ niệm đầu tiên
-      </Link>
-    </div>
-  )
-}
-
 function CardView({ posts }: { posts: Post[] }) {
   return (
     <div>
       {groupByMonth(posts).map((group) => (
         <section key={group.key}>
-          <h2 className="sticky top-[calc(env(safe-area-inset-top)+2.9rem)] z-[5] bg-bg/90 py-2.5 text-[14px] font-semibold text-muted backdrop-blur">
+          <h2 className="sticky top-[calc(env(safe-area-inset-top)+2.9rem)] z-[5] -mx-4 bg-bg/40 px-4 py-2 text-[13.5px] font-semibold tracking-[-0.01em] text-text backdrop-blur-md">
             {group.label}
           </h2>
           <div className="flex flex-col gap-3.5 pb-3">
@@ -203,7 +186,7 @@ function PostCard({ post }: { post: Post }) {
   return (
     <Link
       to={`/timeline/${post.id}`}
-      className="block overflow-hidden rounded-[17px] border border-border bg-surface transition active:scale-[0.995]"
+      className="block overflow-hidden rounded-xl border border-border bg-surface transition active:scale-[0.995]"
     >
       {cover ? (
         <div className="relative aspect-[4/3] bg-soft">

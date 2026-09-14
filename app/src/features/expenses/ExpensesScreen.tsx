@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import { useCouple } from '../../hooks/useCouple'
 import { shiftMonth, useExpenses } from '../../hooks/useExpenses'
 import { expenseInsight } from '../../lib/expenseInsight'
@@ -11,7 +12,6 @@ import {
   EXPENSE_CATEGORIES,
 } from '../../lib/money'
 import { todayYmd } from '../../lib/dateCount'
-import { btn } from '../../lib/ui-classes'
 
 export function ExpensesScreen() {
   const [month, setMonth] = useState(() => `${todayYmd().slice(0, 7)}-01`)
@@ -83,12 +83,16 @@ export function ExpensesScreen() {
 
       <div className="flex-1 px-4 pb-8">
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
         ) : expenses.length === 0 ? (
-          <EmptyState />
+          <EmptyState
+            emoji="🧾"
+            title="Chưa có chi tiêu."
+            action={{ type: 'link', to: '/expenses/new', label: 'Thêm' }}
+          />
         ) : (
           <>
-            <section className="rounded-2xl border border-border bg-surface p-4">
+            <section className="rounded-xl border border-border bg-surface p-4">
               <p className="text-[13px] font-medium text-muted">
                 Tổng chi
               </p>
@@ -112,14 +116,10 @@ export function ExpensesScreen() {
                   </b>
                 </span>
               </div>
-
-              <p className="mt-3 border-t border-border pt-3 text-[12px] leading-relaxed text-muted">
-                Đây là tiền hai đứa đã tiêu cùng nhau — app không tính ai nợ ai.
-              </p>
             </section>
 
             {insight ? (
-              <p className="mt-3 rounded-2xl border border-border bg-soft px-4 py-3 text-[13.5px] leading-relaxed text-text">
+              <p className="mt-3 rounded-xl border border-border bg-soft px-4 py-3 text-[13.5px] leading-relaxed text-text">
                 {insight}
               </p>
             ) : null}
@@ -133,7 +133,7 @@ export function ExpensesScreen() {
                   <li key={e.id}>
                     <Link
                       to={`/expenses/${e.id}`}
-                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
+                      className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3.5"
                     >
                       <span aria-hidden className="text-xl">
                         {cat.emoji}
@@ -163,26 +163,6 @@ export function ExpensesScreen() {
   )
 }
 
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <p className="text-5xl" aria-hidden>
-        🧾
-      </p>
-      <p className="mt-5 text-[17px] font-semibold text-text">
-        Tháng này chưa ghi khoản nào
-      </p>
-      <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-        Ghi lại để cuối tháng biết hai đứa đã đi đâu, tiêu bao nhiêu — không
-        phải để tính nợ nhau.
-      </p>
-      <Link to="/expenses/new" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Ghi khoản đầu tiên
-      </Link>
-    </div>
-  )
-}
-
 /** Biểu đồ tròn bằng conic-gradient — không kéo thêm thư viện vẽ. */
 function CategoryChart({ byCategory }: { byCategory: Record<string, number> }) {
   const entries = EXPENSE_CATEGORIES.map((c) => ({
@@ -202,7 +182,7 @@ function CategoryChart({ byCategory }: { byCategory: Record<string, number> }) {
   })
 
   return (
-    <section className="mt-4 flex items-center gap-5 rounded-2xl border border-border bg-surface p-4">
+    <section className="mt-4 flex items-center gap-5 rounded-xl border border-border bg-surface p-4">
       <span
         aria-hidden
         className="grid h-24 w-24 flex-none place-items-center rounded-full"

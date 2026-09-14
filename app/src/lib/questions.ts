@@ -47,7 +47,7 @@ export const QUESTIONS: Question[] = [
   { text: 'Món nào người kia nấu mà bạn khen cho vui lòng thôi?', tone: 'vui' },
   { text: 'Nếu trúng số, tiêu khoản đầu tiên vào việc gì?', tone: 'vui' },
   { text: 'Biệt danh xấu xí nào bạn muốn đặt cho người kia?', tone: 'vui' },
-  { text: 'Ai là người dễ dỗ hơn trong hai đứa?', tone: 'vui' },
+  { text: 'Ai là người dễ dỗ hơn trong hai người?', tone: 'vui' },
   { text: 'Trò gì bạn chơi dở nhất?', tone: 'vui' },
   { text: 'Nếu được xoá một thói quen của người kia, bạn xoá cái nào?', tone: 'vui' },
   { text: 'Tình huống xấu hổ nhất bạn từng gặp trước mặt người kia?', tone: 'vui' },

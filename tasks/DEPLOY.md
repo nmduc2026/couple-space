@@ -406,6 +406,7 @@ Làm xong trên máy thứ hai thì ghép đôi: một người tạo mã mời,
 Đánh dấu từng dòng:
 
 - [ ] Cả hai người đăng nhập được bằng mã gửi qua email
+- [ ] (Tuỳ chọn) Đặt mật khẩu trong Cài đặt → đăng xuất → đăng nhập bằng tab Mật khẩu
 - [ ] Ghép đôi xong, cả hai thấy **cùng một không gian**
 - [ ] Màn hình chính hiện **đúng số ngày yêu** trên cả hai máy
 - [ ] Một người đăng ảnh → người kia **nhận được thông báo** trên iPhone
@@ -483,6 +484,7 @@ thấy.
 | Vercel build lỗi *"No framework detected"* | Quên đặt **Root Directory = `app`** ở bước 10.2. |
 | App mở lên trắng trơn | Thiếu hoặc sai biến môi trường trên Vercel. Kiểm tra lại 3 dòng ở bước 10.3, sửa xong nhớ **Redeploy**. |
 | Không nhận được email mã đăng nhập | Xem hộp thư rác. Gói miễn phí Supabase giới hạn vài email mỗi giờ — chờ một lát rồi thử lại. |
+| Quên mật khẩu: bấm link email bị đá về Home / không đổi được MK | Thiếu Redirect URL. Dashboard → Authentication → URL Configuration → thêm `https://<app>.vercel.app/login/reset` (và localhost lúc dev). |
 | Không có thông báo đẩy | Ba khả năng, theo thứ tự hay gặp: (1) đang mở trong tab Safari chứ không phải từ icon màn hình chính; (2) `VITE_VAPID_PUBLIC_KEY` sai hoặc thiếu; (3) chưa bấm Cho phép khi iPhone hỏi. |
 | Nhắc dịp đặc biệt không tới, dù thông báo khác vẫn tới | Quên bước 7. Chạy lại bước 7 rồi kiểm bằng lệnh ở [Phụ lục A](#phụ-lục-a--cho-người-có-code). |
 | Sách ảnh PDF chạy mãi không xong | Xem lại bước 5: lệnh deploy `export-pdf` có tải lên đủ 2 file `.ttf` và 2 file `.wasm` không. Thiếu thì chạy lại lệnh đó. |

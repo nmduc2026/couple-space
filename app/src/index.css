@@ -34,14 +34,15 @@
   color-scheme: light;
   accent-color: var(--color-accent);
 
-  /* Thu nhỏ toàn bộ giao diện. Đổi đúng một số này là đổi cả app.
-     1 = giữ nguyên, 0.8 = nhỏ còn 80%. */
-  --ui-scale: 0.8;
+  /*
+   * Tỉ lệ toàn app. PHẢI để 1.
+   * Trước dùng 0.8 + zoom → Safari bắt input ≥16px trên màn nên phải
+   * phóng chữ ô nhập, lệch nhãn; mọi “fix” cỡ chữ đều quanh quẩn ở đây.
+   */
+  --ui-scale: 1;
 }
 
-/* `zoom` thu nhỏ MỌI thứ bên trong — chữ, khoảng cách, viền, ảnh — bằng một
-   dòng. Không dùng `transform: scale` vì transform không chiếm lại chỗ: nó vẽ
-   nhỏ đi nhưng vẫn giữ nguyên kích thước bố cục, gây tràn và cuộn ngang. */
+/* Giữ biến --ui-scale cho safe-area / max-width; zoom chỉ khi khác 1. */
 #root {
   zoom: var(--ui-scale);
 }

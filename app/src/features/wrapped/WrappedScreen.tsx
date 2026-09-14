@@ -10,6 +10,7 @@ import { formatShortVnd } from '../../lib/money'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW, previewWrapped } from '../../dev/preview'
 import { btn } from '../../lib/ui-classes'
+import { Group, Row, Switch } from '../../components/ui'
 
 type Stats = Record<string, number | string | null>
 
@@ -57,10 +58,7 @@ export function WrappedScreen() {
             🌱
           </p>
           <p className="mt-5 text-[17px] font-semibold text-text">
-            Còn sớm quá
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Tổng kết sẽ mở khi hai đứa đi cùng nhau đủ lâu để có chuyện mà kể.
+            Chưa đủ dữ liệu.
           </p>
         </div>
       </>
@@ -97,8 +95,8 @@ export function WrappedScreen() {
 
       <div className="flex-1 px-4 py-4">
         {season.visible && !season.final ? (
-          <p className="mb-3 rounded-2xl border border-border bg-surface px-4 py-2.5 text-center text-[12.5px] text-muted">
-            Tạm tính tới hôm nay — số liệu chốt vào 31/12.
+          <p className="mb-3 rounded-xl border border-border bg-surface px-4 py-2.5 text-center text-[12.5px] text-muted">
+            Tạm tính · chốt 31/12.
           </p>
         ) : null}
 
@@ -143,42 +141,31 @@ export function WrappedScreen() {
             <h2 className="mt-6 text-[14px] font-semibold text-muted">
               Chọn thứ muốn khoe
             </h2>
-            <ul className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface divide-y divide-border">
+            <Group>
               {lines.map((l) => (
-                <li
+                <Row
                   key={l.key}
-                  className="flex items-center gap-3 px-4 py-3 text-[14px]"
+                  className="flex items-center gap-3 text-[14px]"
                 >
                   <span aria-hidden>{l.emoji}</span>
                   <span className="min-w-0 flex-1 truncate text-text">
                     {l.label}
                   </span>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={!off.has(l.key)}
-                    aria-label={l.label}
-                    onClick={() =>
+                  <Switch
+                    checked={!off.has(l.key)}
+                    label={l.label}
+                    onChange={(on) =>
                       setOff((prev) => {
                         const next = new Set(prev)
-                        if (next.has(l.key)) next.delete(l.key)
+                        if (on) next.delete(l.key)
                         else next.add(l.key)
                         return next
                       })
                     }
-                    className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-                      off.has(l.key) ? 'bg-border' : 'bg-accent'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 h-6 w-6 rounded-full bg-white transition-all ${
-                        off.has(l.key) ? 'left-0.5' : 'left-[1.375rem]'
-                      }`}
-                    />
-                  </button>
-                </li>
+                  />
+                </Row>
               ))}
-            </ul>
+            </Group>
 
             <button
               type="button"
@@ -193,7 +180,7 @@ export function WrappedScreen() {
                 <img
                   src={pngUrl}
                   alt={`Tổng kết ${year}`}
-                  className="mx-auto rounded-2xl border border-border"
+                  className="mx-auto rounded-xl border border-border"
                 />
                 <p className="mt-2 text-[12.5px] text-muted">
                   Nhấn giữ vào ảnh để lưu về máy.

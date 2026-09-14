@@ -1,11 +1,13 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState } from '../../components/EmptyState'
+import { QuickAddRow } from '../../components/QuickAddRow'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW, previewWishlist } from '../../dev/preview'
-import { input } from '../../lib/ui-classes'
 
 type Item = {
   id: string
@@ -74,8 +76,7 @@ export function WishlistScreen() {
   // ở máy mình, chủ wishlist không biết gì.
   const stale = theirs.filter((i) => i.status === 'archived' && markOf(i.id))
 
-  async function addItem(event: FormEvent) {
-    event.preventDefault()
+  async function addItem() {
     const raw = title.trim()
     if (!raw || !couple || !user || PREVIEW) return
     setSaving(true)
@@ -123,75 +124,48 @@ export function WishlistScreen() {
       <TopHeader title="Wishlist quà" back="/" />
 
       <div className="px-4 pt-3">
-        <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
-          {(
-            [
-              ['theirs', 'Của người ấy'],
-              ['mine', 'Của mình'],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setTab(value)}
-              className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                tab === value ? 'bg-accent text-on-accent' : 'text-muted'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[
+            { value: 'theirs', label: 'Của người ấy' },
+            { value: 'mine', label: 'Của mình' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
 
         {tab === 'mine' ? (
-          <form onSubmit={addItem} className="mt-3 flex gap-2">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Thêm món — dán cả link cũng được"
-              className={`${input} flex-1`}
-            />
-            <button
-              type="submit"
-              disabled={!title.trim() || saving}
-              className="h-12 shrink-0 rounded-2xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
-            >
-              Thêm
-            </button>
-          </form>
+          <QuickAddRow
+            value={title}
+            onChange={setTitle}
+            onSubmit={addItem}
+            placeholder="Tên món hoặc link"
+            disabled={saving}
+            className="mt-3"
+          />
         ) : null}
       </div>
 
       <div className="flex-1 px-4 py-3">
         {tab === 'theirs' && stale.length > 0 ? (
-          <p className="mb-3 rounded-2xl bg-soft p-3.5 text-[13.5px] leading-relaxed text-muted">
+          <p className="mb-3 rounded-xl bg-soft p-3.5 text-[13.5px] leading-relaxed text-muted">
             ⚠️ {stale.length} món bạn đã đánh dấu vừa được bỏ khỏi wishlist.
-            Kiểm tra lại trước khi mua nhé.
+            Kiểm tra lại trước khi mua.
           </p>
         ) : null}
 
         {list.length === 0 ? (
-          <div className="px-6 py-16 text-center">
-            <p className="text-5xl" aria-hidden>
-              🎁
-            </p>
-            <p className="mt-5 text-[17px] font-semibold text-text">
-              {tab === 'mine'
-                ? 'Bạn chưa ghi món nào'
-                : 'Người ấy chưa ghi món nào'}
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              {tab === 'mine'
-                ? 'Ghi vào đây thì khỏi phải gợi ý vòng vo. Bạn sẽ không biết người kia đã xem gì.'
-                : 'Khi người ấy thêm món, bạn sẽ thấy ở đây.'}
-            </p>
-          </div>
+          <EmptyState
+            emoji="🎁"
+            title={
+              tab === 'mine' ? 'Chưa có món nào.' : 'Người ấy chưa ghi món nào.'
+            }
+          />
         ) : (
           <ul className="flex flex-col gap-2.5">
             {list.map((item) => (
               <li
                 key={item.id}
-                className={`rounded-2xl border border-border bg-surface p-3.5 ${
+                className={`rounded-xl border border-border bg-surface p-3.5 ${
                   item.status === 'archived' ? 'opacity-55' : ''
                 }`}
               >
@@ -266,8 +240,7 @@ export function WishlistScreen() {
 
         {tab === 'mine' ? (
           <p className="mt-6 px-2 text-center text-[12.5px] leading-relaxed text-muted">
-            Bạn không thấy được người ấy đã xem hay đánh dấu món nào — đó là
-            toàn bộ lý do tính năng này tồn tại.
+            Người ấy không thấy bạn đã xem gì.
           </p>
         ) : null}
       </div>

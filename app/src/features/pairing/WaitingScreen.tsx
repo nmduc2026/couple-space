@@ -79,13 +79,13 @@ export function WaitingScreen() {
       <div className="top-safe" />
       <Stage>
         <Title>Gửi lời mời cho {partnerName}</Title>
-        <Sub>Không gian chỉ mở khi có đủ hai người.</Sub>
+        <Sub>Đang chờ người ấy vào.</Sub>
 
         <button
           type="button"
           onClick={() => void copyCode()}
           disabled={!code}
-          className="mt-8 w-full rounded-2xl bg-soft py-6 text-[38px] font-extrabold tracking-[0.16em] text-accent transition active:scale-[0.99] disabled:opacity-60"
+          className="mt-8 w-full rounded-xl bg-soft py-6 text-[38px] font-extrabold tracking-[0.16em] text-accent transition active:scale-[0.99] disabled:opacity-60"
         >
           {code ?? '······'}
         </button>
@@ -94,7 +94,7 @@ export function WaitingScreen() {
         </p>
 
         {code ? (
-          <p className="mt-5 rounded-2xl border border-dashed border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
+          <p className="mt-5 rounded-xl border border-dashed border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
             “{buildInviteShare(code).text}”
           </p>
         ) : null}
@@ -110,7 +110,7 @@ export function WaitingScreen() {
           Chia sẻ lời mời
         </button>
         <Link to="/" className={`${btn.ghost} mt-1`}>
-          Cứ vào xem trước
+          Vào Trang chủ
         </Link>
       </Stage>
     </Screen>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
@@ -209,28 +209,28 @@ export function SpinScreen() {
 
       <Stage className="text-center">
         <Title>Tối nay ăn gì?</Title>
-        <Sub>Quay xong thì đi, không cãi nữa.</Sub>
+        <Sub>Chọn cách quay</Sub>
 
         {mode === null ? (
           <div className="mt-8 space-y-3">
             <ModeCard
               emoji="🎞️"
               title="Dải quay"
-              desc="Lướt qua danh sách rồi dừng lại ở một món."
+              desc="Quay danh sách"
               onClick={() => void chooseMode('reel')}
             />
             <ModeCard
               emoji="🎁"
               title="Hộp bí mật"
-              desc="Mỗi món một hộp, xáo lên rồi tự chọn hộp mà mở."
+              desc="Chọn hộp"
               onClick={() => void chooseMode('box')}
             />
           </div>
         ) : phase === 'empty' ? (
-          <p className="mt-8 rounded-3xl bg-soft px-5 py-10 text-sm leading-relaxed text-muted">
-            Không còn quán nào để quay.
+          <p className="mt-8 rounded-2xl bg-soft px-5 py-10 text-sm leading-relaxed text-muted">
+            Hết quán để quay.
             <br />
-            Thêm quán mới, hoặc chờ hết 14 ngày kể từ lần ghé gần nhất.
+            Thêm quán hoặc thử lại sau.
           </p>
         ) : picking ? (
           <PickDishes
@@ -335,9 +335,9 @@ export function SpinScreen() {
 
       {askCompose ? (
         <ConfirmSheet
-          title="Đăng luôn một kỉ niệm?"
-          body={`Đã ghi lại lần đi ${winner?.name ?? 'này'}.`}
-          confirmLabel="Thêm ảnh, viết vài chữ"
+          title="Đăng kỉ niệm?"
+          body="Có thể thêm ảnh và chú thích."
+          confirmLabel="Thêm"
           cancelLabel="Để sau"
           onConfirm={() =>
             navigate(
@@ -367,7 +367,7 @@ function ModeCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-4 rounded-2xl border border-border bg-surface p-4 text-left transition active:scale-[0.98]"
+      className="flex w-full items-center gap-4 rounded-xl border border-border bg-surface p-4 text-left transition active:scale-[0.98]"
     >
       <span aria-hidden className="text-3xl">
         {emoji}
@@ -410,10 +410,10 @@ function Reel({
     items[(cursor + offset + items.length) % items.length]
 
   const side =
-    'flex h-24 w-[26%] flex-none flex-col justify-center rounded-2xl border border-border bg-surface px-2 opacity-40 blur-[1px]'
+    'flex h-24 w-[26%] flex-none flex-col justify-center rounded-xl border border-border bg-surface px-2 opacity-40 blur-[1px]'
 
   return (
-    <div className="relative mt-6 overflow-hidden rounded-[1.75rem] bg-soft px-3 py-6">
+    <div className="relative mt-6 overflow-hidden rounded-2xl bg-soft px-3 py-6">
       {done ? <Fireworks colors={CONFETTI} /> : null}
 
       <div className="flex items-center justify-center gap-2">
@@ -424,7 +424,7 @@ function Reel({
         </div>
 
         <div
-          className={`flex h-32 min-w-0 flex-1 flex-col items-center justify-center rounded-2xl border-2 bg-surface px-3 transition ${
+          className={`flex h-32 min-w-0 flex-1 flex-col items-center justify-center rounded-xl border-2 bg-surface px-3 transition ${
             done ? 'border-accent shadow-lg' : 'border-border'
           }`}
         >
@@ -488,7 +488,7 @@ function Boxes({
 }) {
   if (idle || boxes.length === 0) {
     return (
-      <div className="mt-6 grid min-h-52 place-items-center rounded-[1.75rem] bg-soft px-6 text-center">
+      <div className="mt-6 grid min-h-52 place-items-center rounded-2xl bg-soft px-6 text-center">
         <div>
           <span className="text-6xl" aria-hidden>
             🎁
@@ -502,7 +502,7 @@ function Boxes({
   }
 
   return (
-    <div className="relative mt-6 grid min-h-52 place-items-center rounded-[1.75rem] bg-soft p-4">
+    <div className="relative mt-6 grid min-h-52 place-items-center rounded-2xl bg-soft p-4">
       {opened !== null ? <Fireworks colors={CONFETTI} /> : null}
 
       <div className="grid w-full grid-cols-3 gap-2.5">
@@ -514,7 +514,7 @@ function Boxes({
               type="button"
               disabled={shuffling || opened !== null}
               onClick={() => onOpen(i)}
-              className={`flex h-24 flex-col items-center justify-center gap-1 rounded-2xl border bg-surface px-1.5 transition ${
+              className={`flex h-24 flex-col items-center justify-center gap-1 rounded-xl border bg-surface px-1.5 transition ${
                 isOpen ? 'border-accent shadow-lg' : 'border-border'
               } ${shuffling ? 'animate-pulse' : ''} ${
                 opened !== null && !isOpen ? 'opacity-35' : ''
@@ -563,7 +563,7 @@ function PickDishes({
         </button>
       </div>
 
-      <ul className="mt-3 overflow-hidden rounded-2xl border border-border bg-surface">
+      <ul className="mt-3 overflow-hidden rounded-xl border border-border bg-surface">
         {items.map((item) => {
           const on = chosen.includes(item.id)
           return (

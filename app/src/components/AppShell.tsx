@@ -12,7 +12,7 @@ export function AppShell() {
     <div className="flex min-h-app flex-col bg-bg">
       {pending.length > 0 ? (
         <p className="top-safe sticky top-0 z-20 bg-soft px-4 py-1.5 text-center text-[12.5px] text-accent">
-          {pending.length} việc đang chờ gửi — sẽ tự gửi khi có mạng
+          Đang chờ gửi ({pending.length})
         </p>
       ) : null}
       <Outlet />

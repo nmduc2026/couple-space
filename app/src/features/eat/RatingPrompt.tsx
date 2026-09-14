@@ -36,7 +36,7 @@ export function RatingPrompt() {
   }
 
   return (
-    <section className="mt-3 rounded-2xl border border-accent/30 bg-soft p-3.5">
+    <section className="mt-3 rounded-xl border border-accent/30 bg-soft p-3.5">
       <div className="flex items-start gap-2">
         <p className="flex-1 text-[14px] leading-relaxed text-text">
           <b className="font-semibold">{ask.item_name}</b> ngon không?

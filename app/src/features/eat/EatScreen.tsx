@@ -1,7 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { InlineLoading } from '../../components/EmptyState'
+import { QuickAddRow } from '../../components/QuickAddRow'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { supabase } from '../../lib/supabase'
@@ -9,7 +12,7 @@ import { PREVIEW } from '../../dev/preview'
 import { useEatItems, useEatStats, type EatItem } from '../../hooks/useEatItems'
 import { formatShortVnd } from '../../lib/money'
 import { RatingPrompt } from './RatingPrompt'
-import { btn, input } from '../../lib/ui-classes'
+import { btn } from '../../lib/ui-classes'
 
 type Tab = 'want' | 'tried'
 
@@ -39,8 +42,7 @@ export function EatScreen() {
   }
 
   /** Thêm nhanh: một ô nhập, Enter là xong. Link dán vào thì tách ra cột riêng. */
-  async function quickAdd(event: FormEvent) {
-    event.preventDefault()
+  async function quickAdd() {
     const raw = name.trim()
     if (!raw || !couple || !user || PREVIEW) return
     setSaving(true)
@@ -75,65 +77,52 @@ export function EatScreen() {
 
       <div className="px-4 pt-3">
         <Link to="/eat/spin" className={btn.primary}>
-          🎲 Quay đi, khỏi cãi nhau
+          Chọn quán ngẫu nhiên
         </Link>
 
         <RatingPrompt />
 
-        <form onSubmit={quickAdd} className="mt-3 flex gap-2">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Thêm quán — dán cả link cũng được"
-            className={`${input} flex-1`}
-          />
-          <button
-            type="submit"
-            disabled={!name.trim() || saving}
-            className="h-12 shrink-0 rounded-2xl border border-border px-4 text-sm font-semibold text-text disabled:opacity-40"
-          >
-            Thêm
-          </button>
-        </form>
+        <QuickAddRow
+          value={name}
+          onChange={setName}
+          onSubmit={quickAdd}
+          placeholder="Tên quán hoặc link"
+          disabled={saving}
+          className="mt-3"
+        />
 
-        <div className="mt-4 flex gap-1 rounded-2xl border border-border bg-surface p-1">
-          {(
-            [
-              ['want', 'Muốn thử'],
-              ['tried', 'Đã đi'],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setTab(value)}
-              className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                tab === value
-                  ? 'bg-accent text-on-accent'
-                  : 'text-muted hover:text-text'
-              }`}
-            >
-              {label} ({items.filter((i) => i.status === value).length})
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[
+            {
+              value: 'want',
+              label: `Muốn thử (${items.filter((i) => i.status === 'want').length})`,
+            },
+            {
+              value: 'tried',
+              label: `Đã đi (${items.filter((i) => i.status === 'tried').length})`,
+            },
+          ]}
+          value={tab}
+          onChange={setTab}
+          className="mt-4"
+        />
       </div>
 
       <div className="flex-1 px-4 py-3">
         {isLoading ? (
-          <p className="py-12 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
         ) : list.length === 0 ? (
           <p className="py-16 text-center text-sm leading-relaxed text-muted">
             {tab === 'want'
-              ? 'Chưa có quán nào trong danh sách.\nThấy quán ngon ở đâu thì quăng link vào đây.'
-              : 'Chưa đi quán nào cả.'}
+              ? 'Chưa có quán nào.'
+              : 'Chưa đi quán nào.'}
           </p>
         ) : (
           <ul className="flex flex-col gap-2.5">
             {list.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5"
+                className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3.5"
               >
                 <Link
                   to={`/eat/${item.id}`}

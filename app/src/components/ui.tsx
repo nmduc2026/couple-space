@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { btn } from '../lib/ui-classes'
 import { Link } from 'react-router'
+import { BottomSheet } from './BottomSheet'
 import { IconArrowLeft } from './icons'
 
 /* Ngôn ngữ thiết kế lấy từ docs/design/frontend/ui/prototype.html.
@@ -25,13 +26,16 @@ export function Screen({
 export function Stage({
   children,
   className = '',
+  pad = 'px-5',
 }: {
   children: ReactNode
   className?: string
+  /** Settings dùng px-4 cho sát hơn với hàng Group. */
+  pad?: 'px-5' | 'px-4'
 }) {
   return (
     <div
-      className={`mx-auto flex w-full max-w-[calc(28rem/var(--ui-scale))] flex-1 flex-col px-5 pb-8 ${className}`}
+      className={`mx-auto flex w-full max-w-[calc(28rem/var(--ui-scale))] flex-1 flex-col ${pad} pb-8 ${className}`}
     >
       {children}
     </div>
@@ -119,9 +123,17 @@ export function SectionLabel({
 }
 
 /** Nhóm các hàng cài đặt, bo góc chung, kẻ ngăn giữa các hàng. */
-export function Group({ children }: { children: ReactNode }) {
+export function Group({
+  children,
+  className = 'mt-2',
+}: {
+  children: ReactNode
+  className?: string
+}) {
   return (
-    <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface divide-y divide-border">
+    <div
+      className={`overflow-hidden rounded-xl border border-border bg-surface divide-y divide-border ${className}`}
+    >
       {children}
     </div>
   )
@@ -137,7 +149,10 @@ export function Row({
   return <div className={`px-4 py-3.5 ${className}`}>{children}</div>
 }
 
-/** Công tắc bật/tắt — thay cho checkbox mặc định của trình duyệt. */
+/** Công tắc bật/tắt — thay cho checkbox mặc định của trình duyệt.
+ *  Transition chỉ bật sau khi đã paint xong frame đầu (double rAF):
+ *  một lần rAF vẫn chạy trước paint → trình duyệt animate từ vị trí
+ *  mặc định (tắt) → bật dù `checked` vốn đã là true. */
 export function Switch({
   checked,
   onChange,
@@ -147,6 +162,18 @@ export function Switch({
   onChange: (next: boolean) => void
   label: string
 }) {
+  const [motion, setMotion] = useState(false)
+  useEffect(() => {
+    let inner = 0
+    const outer = window.requestAnimationFrame(() => {
+      inner = window.requestAnimationFrame(() => setMotion(true))
+    })
+    return () => {
+      window.cancelAnimationFrame(outer)
+      window.cancelAnimationFrame(inner)
+    }
+  }, [])
+
   return (
     <button
       type="button"
@@ -154,14 +181,14 @@ export function Switch({
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-        checked ? 'bg-accent' : 'bg-border'
-      }`}
+      className={`relative h-7 w-12 shrink-0 rounded-full ${
+        motion ? 'transition-colors' : ''
+      } ${checked ? 'bg-accent' : 'bg-border'}`}
     >
       <span
-        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-sm transition-all ${
-          checked ? 'left-[1.375rem]' : 'left-0.5'
-        }`}
+        className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow-sm ${
+          motion ? 'transition-transform' : ''
+        } ${checked ? 'translate-x-5' : 'translate-x-0'}`}
       />
     </button>
   )
@@ -211,33 +238,22 @@ export function ConfirmSheet({
   children?: ReactNode
 }) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      onClick={onCancel}
-    >
-      <div
-        className="w-full rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="text-[17px] font-semibold text-text">{title}</p>
-        {body ? (
-          <div className="mt-2 text-[13.5px] leading-relaxed text-muted">
-            {body}
-          </div>
-        ) : null}
-        {children}
-        <div className="mt-5 space-y-2">
-          <button type="button" onClick={onConfirm} className={btn.primary}>
-            {confirmLabel}
-          </button>
-          <button type="button" onClick={onCancel} className={btn.ghost}>
-            {cancelLabel}
-          </button>
+    <BottomSheet onClose={onCancel} ariaLabel={title}>
+      <p className="text-[17px] font-semibold text-text">{title}</p>
+      {body ? (
+        <div className="mt-2 text-[13.5px] leading-relaxed text-muted">
+          {body}
         </div>
+      ) : null}
+      {children}
+      <div className="mt-5 space-y-2">
+        <button type="button" onClick={onConfirm} className={btn.primary}>
+          {confirmLabel}
+        </button>
+        <button type="button" onClick={onCancel} className={btn.ghost}>
+          {cancelLabel}
+        </button>
       </div>
-    </div>
+    </BottomSheet>
   )
 }

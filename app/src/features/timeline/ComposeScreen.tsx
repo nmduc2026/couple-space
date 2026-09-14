@@ -7,9 +7,9 @@ import { MEDIA_BUCKET } from '../../hooks/usePosts'
 import { ACTIVITY_LABELS } from '../../lib/activities'
 import {
   categoryFromActivity,
-  formatAmountInput,
   parseAmountInput,
 } from '../../lib/money'
+import { AmountInput } from '../../components/AmountInput'
 import { todayYmd } from '../../lib/dateCount'
 import { compressImage, readExifDate } from '../../lib/image'
 import { notifyPartner } from '../../lib/notify'
@@ -25,8 +25,9 @@ import {
   Title,
   TopBar,
 } from '../../components/ui'
-import { btn, input } from '../../lib/ui-classes'
+import { btn, input, inputChrome } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 type Picked = {
   file: File
@@ -132,7 +133,7 @@ export function ComposeScreen() {
     if (!couple || !user) return
     if (!caption.trim() && photos.length === 0) {
       setStatus('error')
-      setErrorMessage('Thêm một tấm ảnh hoặc viết vài chữ đã nhé.')
+      setErrorMessage('Thêm một tấm ảnh hoặc viết vài chữ.')
       return
     }
 
@@ -151,7 +152,7 @@ export function ComposeScreen() {
     } catch {
       setStatus('error')
       setProgress('')
-      setErrorMessage('Không đọc được một tấm ảnh. Thử bỏ tấm đó ra nhé.')
+      setErrorMessage('Không đọc được một tấm ảnh. Thử bỏ tấm đó ra.')
       return
     }
 
@@ -317,27 +318,23 @@ export function ComposeScreen() {
             hidden
             onChange={(e) => void pickFiles(e.target.files)}
           />
-          <p className="mt-2 text-xs text-muted">
-            Ảnh được nén về cạnh 1600px trước khi tải lên.
-          </p>
-
           <div className="mt-5 space-y-4">
             <Field label="Caption">
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 rows={3}
-                placeholder="Hôm nay tụi mình..."
+                placeholder="Hôm nay..."
                 className={`${input} h-auto py-3 leading-relaxed`}
               />
             </Field>
 
-            <Field label="Ngày xảy ra">
+            <Field label="Ngày kỉ niệm">
               <DateField
                 value={happenedOn}
                 max={todayYmd()}
                 onChange={setHappenedOn}
-                className={`${input} flex items-center`}
+                className={`${inputChrome} flex items-center text-[15px]`}
               />
             </Field>
 
@@ -345,24 +342,24 @@ export function ComposeScreen() {
               <input
                 value={placeName}
                 onChange={(e) => setPlaceName(e.target.value)}
-                placeholder="Không bắt buộc"
+                placeholder="Địa điểm"
                 className={input}
               />
               <button
                 type="button"
                 onClick={() => void fillFromLocation()}
                 disabled={locating}
-                className="mt-2 flex w-full items-center gap-2 rounded-2xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-accent disabled:opacity-50"
+                className="mt-2 flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-accent disabled:opacity-50"
               >
                 <span aria-hidden>📍</span>
                 {locating ? 'Đang tìm vị trí...' : 'Lấy vị trí hiện tại'}
               </button>
 
               {located?.address ? (
-                <p className="mt-2 rounded-2xl bg-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-text">
+                <p className="mt-2 rounded-xl bg-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-text">
                   {located.address}
                   <span className="mt-1 block text-[11px] text-muted">
-                    Địa chỉ từ OpenStreetMap · sẽ lưu kèm kỉ niệm
+                    Từ bản đồ
                   </span>
                 </p>
               ) : null}
@@ -394,7 +391,7 @@ export function ComposeScreen() {
           <button
             type="button"
             onClick={() => setAddExpense((v) => !v)}
-            className={`mt-4 flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition ${
+            className={`mt-4 flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition ${
               addExpense ? 'border-accent bg-soft' : 'border-border bg-surface'
             }`}
           >
@@ -403,11 +400,8 @@ export function ComposeScreen() {
             </span>
             <span className="min-w-0 flex-1">
               <b className="block text-[15px] font-semibold text-text">
-                Thêm chi phí
+                Thêm chi tiêu
               </b>
-              <small className="block text-[12.5px] text-muted">
-                Ghi luôn khoản chi cho buổi này
-              </small>
             </span>
             <span
               aria-hidden
@@ -422,39 +416,24 @@ export function ComposeScreen() {
           </button>
 
           {addExpense ? (
-            <div className="mt-2 space-y-3 rounded-2xl border border-accent/30 bg-soft p-3.5">
+            <div className="mt-2 space-y-3 rounded-xl border border-accent/30 bg-soft p-3.5">
               <Field label="Số tiền">
-                <div className="relative">
-                  <input
-                    inputMode="numeric"
-                    value={amount}
-                    onChange={(e) => setAmount(formatAmountInput(e.target.value))}
-                    placeholder="0"
-                    className={`${input} h-14 pr-10 text-right text-[22px] font-bold tabular-nums`}
-                  />
-                  <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted">
-                    đ
-                  </span>
-                </div>
+                <AmountInput
+                  variant="md"
+                  value={amount}
+                  onChange={setAmount}
+                />
               </Field>
 
-              <Field label="Ai trả" hint="Chỉ để thống kê — app không tính nợ.">
-                <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
-                  {(couple?.members ?? []).map((m) => (
-                    <button
-                      key={m.user_id}
-                      type="button"
-                      onClick={() => setPaidBy(m.user_id)}
-                      className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                        (paidBy || user?.id) === m.user_id
-                          ? 'bg-accent text-on-accent'
-                          : 'text-muted'
-                      }`}
-                    >
-                      {m.nickname ?? 'Người ấy'}
-                    </button>
-                  ))}
-                </div>
+              <Field label="Người thanh toán">
+                <SegmentedControl
+                  options={(couple?.members ?? []).map((m) => ({
+                    value: m.user_id,
+                    label: m.nickname ?? 'Người ấy',
+                  }))}
+                  value={paidBy || user?.id || ''}
+                  onChange={setPaidBy}
+                />
               </Field>
             </div>
           ) : null}

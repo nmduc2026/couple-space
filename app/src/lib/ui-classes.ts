@@ -2,7 +2,7 @@
    Tách khỏi components/ui.tsx để file kia chỉ export component (Fast Refresh). */
 
 const BTN =
-  'flex h-13 w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45'
+  'flex h-13 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-semibold transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45'
 
 export const btn = {
   // Bóng đổ nhẹ thôi. Bản cũ toả rộng 28px làm nút trông như đang phát sáng,
@@ -13,5 +13,9 @@ export const btn = {
   danger: `${BTN} border border-accent bg-transparent text-accent`,
 }
 
-export const input =
-  'h-12 w-full rounded-2xl border border-border bg-surface px-4 text-[15px] text-text outline-none transition placeholder:text-muted/50 focus:border-accent focus:ring-4 focus:ring-accent/15 disabled:opacity-60'
+/** Viền / padding ô nhập — không gắn cỡ chữ (AmountInput tự set cỡ lớn). */
+export const inputChrome =
+  'h-12 w-full rounded-xl border border-border bg-surface px-4 text-text outline-none transition placeholder:text-muted/50 focus:border-accent focus:ring-4 focus:ring-accent/15 disabled:opacity-60'
+
+/** Ô nhập thường: 16px — đủ để Safari iOS không phóng trang khi focus. */
+export const input = `${inputChrome} text-[16px]`

@@ -33,12 +33,12 @@ export function SetupScreen() {
     // xuống RPC và người dùng nhận về một lỗi Postgres ngay lần đầu mở app.
     if (!startDate) {
       setStatus('error')
-      setErrorMessage('Chọn ngày bắt đầu yêu đã nhé.')
+      setErrorMessage('Chọn ngày bắt đầu yêu.')
       return
     }
     if (!myNickname.trim()) {
       setStatus('error')
-      setErrorMessage('Điền biệt danh của bạn đã nhé.')
+      setErrorMessage('Điền biệt danh của bạn.')
       return
     }
 
@@ -68,11 +68,11 @@ export function SetupScreen() {
       <TopBar to="/setup" />
       <form onSubmit={onSubmit} className="contents">
         <Stage>
-          <Title>Kể tụi mình nghe</Title>
-          <Sub>Mấy thông tin này dùng khắp app, sửa lại lúc nào cũng được.</Sub>
+          <Title>Thông tin của hai người</Title>
+          <Sub>Sửa lại sau trong Cài đặt được.</Sub>
 
           <div className="mt-7 space-y-4">
-            <Field label="Ngày bắt đầu yêu" hint="Ngày này được tính là ngày thứ 1.">
+            <Field label="Ngày bắt đầu yêu">
               <DateField
                 max={todayYmd()}
                 value={startDate}
@@ -87,7 +87,7 @@ export function SetupScreen() {
                 maxLength={24}
                 value={myNickname}
                 onChange={(e) => setMyNickname(e.target.value)}
-                placeholder="Nhập tên đi"
+                placeholder="Biệt danh"
                 className={input}
               />
             </Field>
@@ -98,7 +98,7 @@ export function SetupScreen() {
                 maxLength={24}
                 value={partnerNickname}
                 onChange={(e) => setPartnerNickname(e.target.value)}
-                placeholder="Nhập tên đi"
+                placeholder="Biệt danh"
                 className={input}
               />
             </Field>

@@ -153,7 +153,7 @@ export function JoinScreen() {
               spellCheck={false}
               placeholder="A7K2M9"
               aria-label="Mã mời"
-              className="mt-8 h-16 w-full rounded-2xl border border-border bg-surface text-center text-[26px] font-bold tracking-[0.3em] text-text uppercase outline-none transition placeholder:text-muted/40 focus:border-accent focus:ring-4 focus:ring-accent/15"
+              className="mt-8 h-16 w-full rounded-xl border border-border bg-surface text-center text-[26px] font-bold tracking-[0.3em] text-text uppercase outline-none transition placeholder:text-muted/40 focus:border-accent focus:ring-4 focus:ring-accent/15"
             />
             <Spacer />
             <button
@@ -234,7 +234,7 @@ export function JoinScreen() {
       <form onSubmit={redeem} className="contents">
         <Stage>
           <Title>Gọi bạn là gì?</Title>
-          <Sub>Ngày bắt đầu yêu đã có sẵn — không cần nhập lại.</Sub>
+          <Sub>Ngày bắt đầu yêu đã có sẵn.</Sub>
           <div className="mt-7">
             <Field label="Biệt danh của bạn">
               <input
@@ -242,7 +242,7 @@ export function JoinScreen() {
                 maxLength={24}
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                placeholder="Nhập tên đi"
+                placeholder="Biệt danh"
                 className={input}
               />
             </Field>

@@ -15,6 +15,7 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn } from '../../lib/ui-classes'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 type Export = {
   id: string
@@ -106,7 +107,7 @@ export function ExportPdfScreen() {
     })
     setStarting(false)
     if (fnErr) {
-      setErrorMessage('Không bắt đầu được. Thử lại sau một chút nhé.')
+      setErrorMessage('Không bắt đầu được. Thử lại sau một chút.')
       return
     }
     await queryClient.invalidateQueries({ queryKey: ['pdf_exports'] })
@@ -118,7 +119,7 @@ export function ExportPdfScreen() {
       .from('couple-exports')
       .createSignedUrl(job.storage_path, 60 * 60)
     if (error || !data) {
-      setErrorMessage('Link đã hết hạn. Xuất lại một bản mới nhé.')
+      setErrorMessage('Link đã hết hạn. Xuất lại một bản mới.')
       return
     }
     window.open(data.signedUrl, '_blank')
@@ -129,60 +130,45 @@ export function ExportPdfScreen() {
       <TopBar to="/albums" />
       <Stage>
         <Title>Xuất sách ảnh</Title>
-        <Sub>
-          Sinh ở máy chủ nên bạn đóng app cũng được — xong sẽ có thông báo.
+          <Sub>
+          Xuất trên máy chủ. Link tải hết hạn sau 24 giờ.
         </Sub>
 
         <div className="mt-6 space-y-4">
           <Field label="Khổ giấy">
-            <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
-              {PAGE_SIZES.map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPageSize(value)}
-                  className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
-                    pageSize === value ? 'bg-accent text-on-accent' : 'text-muted'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              options={PAGE_SIZES.map(([value, label]) => ({ value, label }))}
+              value={pageSize}
+              onChange={setPageSize}
+            />
           </Field>
 
           <Field label="Mật độ ảnh">
-            <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
-              {DENSITIES.map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPerPage(value)}
-                  className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
-                    perPage === value ? 'bg-accent text-on-accent' : 'text-muted'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              options={DENSITIES.map(([value, label]) => ({
+                value: String(value) as '1' | '2' | '4',
+                label,
+              }))}
+              value={String(perPage) as '1' | '2' | '4'}
+              onChange={(next) => setPerPage(Number(next) as 1 | 2 | 4)}
+            />
           </Field>
 
           <Field label="Phạm vi">
-            <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
-              {[null, thisYear, thisYear - 1].map((y) => (
-                <button
-                  key={String(y)}
-                  type="button"
-                  onClick={() => setYear(y)}
-                  className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
-                    year === y ? 'bg-accent text-on-accent' : 'text-muted'
-                  }`}
-                >
-                  {y === null ? 'Tất cả' : y}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              options={[
+                { value: 'all', label: 'Tất cả' },
+                { value: String(thisYear), label: String(thisYear) },
+                {
+                  value: String(thisYear - 1),
+                  label: String(thisYear - 1),
+                },
+              ]}
+              value={year === null ? 'all' : String(year)}
+              onChange={(next) =>
+                setYear(next === 'all' ? null : Number(next))
+              }
+            />
           </Field>
         </div>
 
@@ -201,7 +187,7 @@ export function ExportPdfScreen() {
           {busy ? 'Đang sinh sách...' : starting ? 'Đang gửi...' : 'Xuất PDF'}
         </button>
         <p className="mt-2 text-center text-[12px] leading-relaxed text-muted">
-          Link tải có hạn 24 giờ. Hết hạn thì xuất lại, không mất gì.
+          Link tải hết hạn sau 24 giờ.
         </p>
       </Stage>
     </Screen>
@@ -211,15 +197,15 @@ export function ExportPdfScreen() {
 function JobRow({ job, onDownload }: { job: Export; onDownload: () => void }) {
   if (job.status === 'failed') {
     return (
-      <p className="mt-5 rounded-2xl border border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
-        Lần xuất gần nhất hỏng: {job.error ?? 'không rõ lý do'}. Thử lại nhé.
+      <p className="mt-5 rounded-xl border border-border bg-surface p-4 text-[13.5px] leading-relaxed text-muted">
+        Lần xuất gần nhất hỏng: {job.error ?? 'không rõ lý do'}. Thử lại.
       </p>
     )
   }
 
   if (job.status !== 'done') {
     return (
-      <p className="mt-5 rounded-2xl border border-border bg-soft p-4 text-center text-[13.5px] text-accent">
+      <p className="mt-5 rounded-xl border border-border bg-soft p-4 text-center text-[13.5px] text-accent">
         {job.progress ?? 'Đang bắt đầu'} — cứ đóng app, xong sẽ có thông báo.
       </p>
     )
@@ -228,7 +214,7 @@ function JobRow({ job, onDownload }: { job: Export; onDownload: () => void }) {
   const expired = job.expires_at ? new Date(job.expires_at) < new Date() : false
 
   return (
-    <div className="mt-5 rounded-2xl border border-border bg-surface p-4">
+    <div className="mt-5 rounded-xl border border-border bg-surface p-4">
       <b className="block text-[15px] font-semibold text-text">
         Sách {job.page_count} trang đã xong
       </b>

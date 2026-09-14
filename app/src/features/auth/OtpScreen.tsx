@@ -66,7 +66,7 @@ export function OtpScreen() {
       setErrorMessage(
         error.message.toLowerCase().includes('expired')
           ? 'Mã đã hết hạn. Hãy gửi lại mã mới.'
-          : 'Mã không đúng. Kiểm tra lại nhé.',
+          : 'Mã không đúng. Vui lòng kiểm tra lại.',
       )
       return
     }

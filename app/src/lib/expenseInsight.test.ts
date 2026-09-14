@@ -32,7 +32,7 @@ describe('expenseInsight', () => {
       outingCount: 12,
       previous: { outingCount: 8, totalMinor: 100 },
     })
-    expect(more).toBe('Tháng này tụi mình ghi 12 khoản — nhiều hơn tháng trước 4')
+    expect(more).toBe('Tháng này ghi 12 khoản — nhiều hơn tháng trước 4')
 
     const less = expenseInsight({
       ...base,

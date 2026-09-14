@@ -6,7 +6,7 @@ import { useSession } from '../../hooks/useSession'
 import { daysTogether, nextMilestone } from '../../lib/dateCount'
 import { shareInvite } from '../../lib/inviteShare'
 import { supabase } from '../../lib/supabase'
-import { Loading } from '../../components/ui'
+import { Loading, Group, Row } from '../../components/ui'
 import { useRecentPosts } from '../../hooks/usePosts'
 import { useAgenda } from '../../hooks/useAgenda'
 import { countdownLabel } from '../../lib/recurrence'
@@ -34,7 +34,7 @@ import {
 
 export function HomeScreen() {
   const { user } = useSession()
-  const { couple, refetch, isLoading, isFetching } = useCouple()
+  const { couple, refetch, isLoading } = useCouple()
   const { profile } = useMyProfile()
   const myTheme = profile?.color_theme ?? couple?.theme
   const posts = useRecentPosts(6)
@@ -153,7 +153,7 @@ export function HomeScreen() {
         ) : null}
 
         {waiting ? (
-          <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-soft px-4 py-3">
+          <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-soft px-4 py-3">
             <p className="text-[13.5px] text-muted">
               Đang chờ{' '}
               <span className="font-semibold text-text">{rightName}</span> tham
@@ -173,7 +173,7 @@ export function HomeScreen() {
         {season.visible ? (
           <Link
             to="/wrapped"
-            className="mb-3 flex items-center gap-3 rounded-2xl border border-accent/30 bg-soft p-4"
+            className="mb-3 flex items-center gap-3 rounded-xl border border-accent/30 bg-soft p-4"
           >
             <IconSparkle size={22} className="shrink-0 text-accent" />
             <span className="min-w-0 flex-1">
@@ -182,8 +182,8 @@ export function HomeScreen() {
               </b>
               <span className="block text-[12.5px] text-muted">
                 {season.final
-                  ? 'Số liệu đã chốt — xem và chia sẻ'
-                  : 'Tạm tính tới hôm nay, chốt vào 31/12'}
+                  ? `Xem tổng kết ${season.year}`
+                  : 'Tạm tính · chốt 31/12'}
               </span>
             </span>
             <IconChevronRight size={17} className="shrink-0 text-muted" />
@@ -195,7 +195,7 @@ export function HomeScreen() {
             hệt nhau xếp thành lưới làm màn hình vụn ra, mà viền thì vẽ thêm
             tám đường kẻ chẳng phân biệt được gì — chúng nó vốn là một nhóm,
             nên vẽ một khung cho cả nhóm. */}
-        <nav className="grid grid-cols-4 gap-y-1 overflow-hidden rounded-2xl border border-border bg-surface py-2">
+        <nav className="grid grid-cols-4 gap-y-1 overflow-hidden rounded-xl border border-border bg-surface py-2">
           {[
             { to: '/question', Icon: IconQuestion, label: 'Câu hỏi' },
             { to: '/mood', Icon: IconMood, label: 'Tâm trạng' },
@@ -219,7 +219,7 @@ export function HomeScreen() {
 
         <Link
           to="/eat"
-          className="mt-3 flex w-full items-center gap-3.5 rounded-2xl border border-border bg-surface p-3.5 text-left"
+          className="mt-3 flex w-full items-center gap-3.5 rounded-xl border border-border bg-surface p-3.5 text-left"
         >
           <IconBowl size={22} className="shrink-0 text-accent" />
           <span className="min-w-0">
@@ -227,7 +227,7 @@ export function HomeScreen() {
               Tối nay ăn gì?
             </b>
             <small className="block text-[12.5px] text-muted">
-              Quay một cái cho khỏi cãi nhau
+              Chọn quán / món tối nay
             </small>
           </span>
           <IconChevronRight size={17} className="ml-auto shrink-0 text-muted" />
@@ -246,10 +246,10 @@ export function HomeScreen() {
             {/* Cùng một danh sách thì vẽ một khung, ngăn nhau bằng đường kẻ.
                 Mỗi mục một thẻ viền riêng làm chúng nó trông như những thứ
                 chẳng liên quan gì tới nhau. */}
-            <ul className="mt-2.5 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+            <Group className="mt-2.5">
               {agenda.slice(0, 2).map((item) => (
-                <li key={item.id}>
-                  <Link to="/plan" className="flex items-center gap-3 p-3.5">
+                <Row key={item.id}>
+                  <Link to="/plan" className="flex items-center gap-3">
                     {item.emoji ? (
                       <span aria-hidden className="text-xl">
                         {item.emoji}
@@ -264,16 +264,16 @@ export function HomeScreen() {
                       {countdownLabel(item.days_away)}
                     </span>
                   </Link>
-                </li>
+                </Row>
               ))}
-            </ul>
+            </Group>
           </section>
         ) : null}
 
         {summary && summary.outing_count > 0 ? (
           <Link
             to="/expenses"
-            className="mt-6 flex items-center gap-4 rounded-2xl border border-border bg-surface p-4"
+            className="mt-6 flex items-center gap-4 rounded-xl border border-border bg-surface p-4"
           >
             <span className="min-w-0 flex-1">
               <span className="block text-[13px] font-medium text-muted">
@@ -296,7 +296,7 @@ export function HomeScreen() {
         {activeGoal ? (
           <Link
             to={`/plan/goals/${activeGoal.id}`}
-            className="mt-3 block rounded-2xl border border-border bg-surface p-4"
+            className="mt-3 block rounded-xl border border-border bg-surface p-4"
           >
             <span className="block text-[13px] font-medium text-muted">
               Mục tiêu
@@ -340,8 +340,8 @@ export function HomeScreen() {
           {posts.length === 0 ? (
             <p className="py-8 text-center text-[13.5px] leading-relaxed text-muted">
               {waiting
-                ? `Khi ${rightName} vào, tụi mình mở khoá dòng thời gian và mọi thứ còn lại.`
-                : 'Chưa có kỉ niệm nào. Bấm nút + để thêm tấm đầu tiên.'}
+                ? `Đang chờ ${rightName} tham gia.`
+                : 'Chưa có kỉ niệm.'}
             </p>
           ) : (
             <div className="mt-2.5 grid grid-cols-4 gap-1.5">
@@ -365,17 +365,6 @@ export function HomeScreen() {
             </div>
           )}
         </section>
-
-        <div className="mt-7 flex justify-center">
-          <button
-            type="button"
-            onClick={() => void refetch()}
-            disabled={isFetching}
-            className="rounded-full border border-border px-4 py-2 text-xs font-medium text-muted transition active:scale-95 disabled:opacity-50"
-          >
-            {isFetching ? 'Đang tải lại...' : 'Tải lại'}
-          </button>
-        </div>
       </div>
   </div>
   )

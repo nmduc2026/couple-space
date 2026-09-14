@@ -258,7 +258,7 @@ export function PostDetailScreen() {
   const current = media[Math.min(index, media.length - 1)]
 
   return (
-    <main className="flex min-h-app flex-col bg-bg pb-safe">
+    <Screen>
       <TopBar to="/timeline" />
 
       {current ? (
@@ -306,7 +306,7 @@ export function PostDetailScreen() {
               value={edit.caption}
               onChange={(e) => setEdit({ ...edit, caption: e.target.value })}
               rows={3}
-              placeholder="Viết gì đó..."
+              placeholder="Viết chú thích..."
               className={`${input} h-auto py-3 leading-relaxed`}
             />
             <input
@@ -419,13 +419,13 @@ export function PostDetailScreen() {
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Viết gì đó..."
+          placeholder="Viết bình luận..."
           className={`${input} flex-1`}
         />
         <button
           type="submit"
           disabled={!draft.trim() || sending}
-          className="h-12 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
+          className="h-12 shrink-0 rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent disabled:opacity-40"
         >
           Gửi
         </button>
@@ -469,6 +469,6 @@ export function PostDetailScreen() {
           </button>
         </ConfirmSheet>
       ) : null}
-    </main>
+    </Screen>
   )
 }

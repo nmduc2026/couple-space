@@ -19,7 +19,7 @@
    |---|---|
    | **Không gian của chúng ta** | Ảnh bìa · biệt danh hai người · ngày bắt đầu yêu · theme màu |
    | **Thông báo** | Bật/tắt riêng từng loại |
-   | **Tài khoản** | Email · Đăng xuất |
+   | **Tài khoản** | Email · **Đặt / đổi mật khẩu** · Đăng xuất |
    | **Vùng nguy hiểm** | Huỷ ghép đôi |
 
 3. "Vùng nguy hiểm" đặt **cuối cùng**, có khoảng cách rõ với phần trên, chữ màu cảnh báo.
@@ -124,3 +124,12 @@ Xuất dữ liệu đầy đủ và xoá vĩnh viễn để Phase 6.
 - Đừng "hồi sinh" space cũ khi ghép lại — ghép lại tạo space mới. Trạng thái nửa vời gây rối
   hơn là giúp.
 - Xử lý phần này đàng hoàng là điều khiến app đáng tin. Đừng để nó thành một cái nút đỏ vô cảm.
+
+---
+
+## P1-38 · Đặt / đổi mật khẩu (phần UI Cài đặt)
+
+Đặc tả: [p1-auth.md](../../../docs/features/p1-auth.md). Hướng dẫn đầy đủ: [c-auth.md](c-auth.md) P1-38.
+
+Thêm hàng trong nhóm **Tài khoản**, mở form/sheet nhập mật khẩu mới + nhập lại.
+Không nhét vào onboarding — chỉ khi người dùng chủ động vào Cài đặt.

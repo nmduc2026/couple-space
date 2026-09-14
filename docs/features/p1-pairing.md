@@ -28,7 +28,7 @@ không bao giờ vào, và tuần sau cả hai cùng quên.
 ### Người thứ nhất
 
 ```
-Welcome → Nhập email → Nhập mã OTP 6 số → Đăng nhập xong
+Welcome → Đăng nhập ([p1-auth.md](p1-auth.md): OTP lần đầu) → Đăng nhập xong
   ▼
 "Bạn đã có mã mời chưa?"
   ├── Chưa → Tạo không gian mới
@@ -49,7 +49,7 @@ phải gõ lại gì.
 ### Người thứ hai
 
 ```
-Mở deep link (hoặc tự cài app) → Nhập email → OTP → Đăng nhập xong
+Mở deep link (hoặc tự cài app) → Đăng nhập ([p1-auth.md](p1-auth.md)) → Đăng nhập xong
   ▼
 Màn hình xác nhận lời mời
   ├─ Hiện avatar + biệt danh người mời + ngày bắt đầu yêu
@@ -76,14 +76,14 @@ Người thứ hai **không** nhập lại ngày bắt đầu yêu. Bớt một 
 
 ## 5. Ngoài phạm vi
 
-- Đăng nhập bằng Google / Apple — **chỉ email OTP** ở Phase 1. Ít việc hơn, và
-  không phụ thuộc cấu hình store.
+- Chi tiết đăng nhập (OTP, mật khẩu, quên mật khẩu) — xem [p1-auth.md](p1-auth.md).
+  Google / Apple không làm ở Phase 1.
 - Space nhiều hơn 2 người.
 - Chuyển space, gộp space.
 
 ## 6. Phụ thuộc
 
-- Auth (email OTP) — Supabase Auth, có sẵn.
+- [Đăng nhập](p1-auth.md) — phải đăng nhập xong mới ghép đôi.
 - [Hồ sơ đôi](p1-couple-profile.md) — màn hình thiết lập nằm trong luồng này.
 - [Thông báo](p1-notifications.md) — push "người ấy đã tham gia".
 - Deep link: trên PWA là URL thường; **đây là một lợi thế của PWA** — không cần cấu hình

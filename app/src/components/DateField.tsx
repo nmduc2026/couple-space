@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { todayYmd } from '../lib/dateCount'
 import { btn } from '../lib/ui-classes'
 import { formatDateLong } from '../lib/formatDate'
+import { BottomSheet } from './BottomSheet'
 
 /*
  * Ô chọn ngày của riêng app, thay cho `<input type="date">`.
@@ -120,127 +121,116 @@ function CalendarSheet({
     (min !== undefined && day < min) || (max !== undefined && day > max)
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Chọn ngày"
-      onClick={onClose}
-    >
-      <div
-        className="w-full rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Tháng trước"
-            onClick={() => shiftMonth(-1)}
-            className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted"
-          >
-            ‹
-          </button>
-          <b className="flex-1 text-center text-[16px] font-semibold text-text">
-            Tháng {view.month}, {view.year}
-          </b>
-          <button
-            type="button"
-            aria-label="Tháng sau"
-            onClick={() => shiftMonth(1)}
-            className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted"
-          >
-            ›
-          </button>
-        </div>
-
-        {/* Chọn nhanh năm: bấm từng tháng để lùi 12 năm là không dùng nổi khi
-            ngày bắt đầu yêu cách đây vài năm */}
-        <div className="mt-3 flex items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => shiftMonth(-12)}
-            className="rounded-full border border-border px-3 py-1 text-[12.5px] text-muted"
-          >
-            − 1 năm
-          </button>
-          <button
-            type="button"
-            onClick={() => shiftMonth(12)}
-            className="rounded-full border border-border px-3 py-1 text-[12.5px] text-muted"
-          >
-            + 1 năm
-          </button>
-        </div>
-
-        <div className="mt-4 grid grid-cols-7 gap-1 text-center">
-          {WEEKDAYS.map((w) => (
-            <span
-              key={w}
-              className="py-1 text-[11px] font-bold tracking-wider text-muted uppercase"
-            >
-              {w}
-            </span>
-          ))}
-
-          {Array.from({ length: lead }).map((_, i) => (
-            <span key={`lead-${i}`} aria-hidden className="h-10" />
-          ))}
-
-          {Array.from({ length: total }).map((_, i) => {
-            const day = ymd(view.year, view.month, i + 1)
-            const selected = day === value
-            const isToday = day === today
-            const disabled = outOfRange(day)
-
-            return (
-              <button
-                key={day}
-                type="button"
-                disabled={disabled}
-                onClick={() => onPick(day)}
-                aria-current={isToday ? 'date' : undefined}
-                className={`grid h-10 place-items-center rounded-xl text-[14px] transition ${
-                  selected
-                    ? 'bg-accent font-bold text-on-accent'
-                    : isToday
-                      ? 'bg-soft font-semibold text-accent'
-                      : 'text-text'
-                } ${disabled ? 'pointer-events-none opacity-25' : ''}`}
-              >
-                {i + 1}
-              </button>
-            )
-          })}
-
-          {Array.from({ length: trailing }).map((_, i) => (
-            <span key={`trail-${i}`} aria-hidden className="h-10" />
-          ))}
-        </div>
-
-        <div className="mt-4 space-y-2">
-          {!outOfRange(today) ? (
-            <button
-              type="button"
-              onClick={() => onPick(today)}
-              className={btn.outline}
-            >
-              Hôm nay
-            </button>
-          ) : null}
-          {clearable && value ? (
-            <button
-              type="button"
-              onClick={() => onPick('')}
-              className={btn.ghost}
-            >
-              Xoá ngày
-            </button>
-          ) : null}
-          <button type="button" onClick={onClose} className={btn.ghost}>
-            Đóng
-          </button>
-        </div>
+    <BottomSheet onClose={onClose} ariaLabel="Chọn ngày">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="Tháng trước"
+          onClick={() => shiftMonth(-1)}
+          className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted"
+        >
+          ‹
+        </button>
+        <b className="flex-1 text-center text-[16px] font-semibold text-text">
+          Tháng {view.month}, {view.year}
+        </b>
+        <button
+          type="button"
+          aria-label="Tháng sau"
+          onClick={() => shiftMonth(1)}
+          className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted"
+        >
+          ›
+        </button>
       </div>
-    </div>
+
+      {/* Chọn nhanh năm: bấm từng tháng để lùi 12 năm là không dùng nổi khi
+          ngày bắt đầu yêu cách đây vài năm */}
+      <div className="mt-3 flex items-center justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => shiftMonth(-12)}
+          className="rounded-full border border-border px-3 py-1 text-[12.5px] text-muted"
+        >
+          − 1 năm
+        </button>
+        <button
+          type="button"
+          onClick={() => shiftMonth(12)}
+          className="rounded-full border border-border px-3 py-1 text-[12.5px] text-muted"
+        >
+          + 1 năm
+        </button>
+      </div>
+
+      <div className="mt-4 grid grid-cols-7 gap-1 text-center">
+        {WEEKDAYS.map((w) => (
+          <span
+            key={w}
+            className="py-1 text-[11px] font-bold tracking-wider text-muted uppercase"
+          >
+            {w}
+          </span>
+        ))}
+
+        {Array.from({ length: lead }).map((_, i) => (
+          <span key={`lead-${i}`} aria-hidden className="h-10" />
+        ))}
+
+        {Array.from({ length: total }).map((_, i) => {
+          const day = ymd(view.year, view.month, i + 1)
+          const selected = day === value
+          const isToday = day === today
+          const disabled = outOfRange(day)
+
+          return (
+            <button
+              key={day}
+              type="button"
+              disabled={disabled}
+              onClick={() => onPick(day)}
+              aria-current={isToday ? 'date' : undefined}
+              className={`grid h-10 place-items-center rounded-xl text-[14px] transition ${
+                selected
+                  ? 'bg-accent font-bold text-on-accent'
+                  : isToday
+                    ? 'bg-soft font-semibold text-accent'
+                    : 'text-text'
+              } ${disabled ? 'pointer-events-none opacity-25' : ''}`}
+            >
+              {i + 1}
+            </button>
+          )
+        })}
+
+        {Array.from({ length: trailing }).map((_, i) => (
+          <span key={`trail-${i}`} aria-hidden className="h-10" />
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {!outOfRange(today) ? (
+          <button
+            type="button"
+            onClick={() => onPick(today)}
+            className={btn.outline}
+          >
+            Hôm nay
+          </button>
+        ) : null}
+        {clearable && value ? (
+          <button
+            type="button"
+            onClick={() => onPick('')}
+            className={btn.ghost}
+          >
+            Xoá ngày
+          </button>
+        ) : null}
+        <button type="button" onClick={onClose} className={btn.ghost}>
+          Đóng
+        </button>
+      </div>
+    </BottomSheet>
   )
 }

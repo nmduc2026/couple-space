@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState } from '../../components/EmptyState'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { useAgenda } from '../../hooks/useAgenda'
@@ -122,7 +123,7 @@ export function LettersScreen() {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Tiêu đề lá thư"
+          placeholder="Tiêu đề"
           maxLength={80}
           className={`${input} mt-4`}
         />
@@ -130,7 +131,7 @@ export function LettersScreen() {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={10}
-          placeholder="Gửi tụi mình của tương lai..."
+          placeholder="Nội dung thư"
           className={`${input} mt-3 h-auto py-3 leading-[1.75]`}
         />
 
@@ -140,7 +141,7 @@ export function LettersScreen() {
         <DateField
           value={openOn}
           min={today}
-          placeholder="Chọn ngày mở khoá"
+          placeholder="Ngày mở"
           onChange={setOpenOn}
           className={`${input} mt-2 flex items-center`}
         />
@@ -165,10 +166,10 @@ export function LettersScreen() {
           disabled={!title.trim() || !openOn || saving}
           className={`${btn.primary} mt-6`}
         >
-          {saving ? 'Đang khoá...' : 'Khoá lại tới ngày đó'}
+          {saving ? 'Đang khoá...' : 'Khoá đến ngày mở'}
         </button>
         <p className="mt-2.5 text-center text-[12.5px] leading-relaxed text-muted">
-          Sau ngày mở thì không sửa được nữa — đó là cả ý nghĩa của nó.
+          Sau ngày mở không sửa được.
         </p>
       </form>
     )
@@ -192,18 +193,15 @@ export function LettersScreen() {
 
       <div className="flex-1 px-4 py-4">
         {letters.length === 0 ? (
-          <div className="flex flex-col items-center px-6 py-16 text-center">
-            <p className="text-5xl" aria-hidden>
-              💌
-            </p>
-            <p className="mt-5 text-[17px] font-semibold text-text">
-              Viết cho tụi mình của tương lai
-            </p>
-            <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-              Một lá thư, hẹn ngày mở. Tới ngày đó nó tự mở ra — không ai đọc
-              trộm được trước.
-            </p>
-          </div>
+          <EmptyState
+            emoji="💌"
+            title="Chưa có thư."
+            action={{
+              type: 'button',
+              label: 'Viết thư',
+              onClick: () => setWriting(true),
+            }}
+          />
         ) : null}
 
         {upcoming.length > 0 ? (
@@ -215,7 +213,7 @@ export function LettersScreen() {
               {upcoming.map((l) => (
                 <li
                   key={l.id}
-                  className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-3.5"
+                  className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-surface p-3.5"
                 >
                   <span aria-hidden className="text-xl">
                     🔒
@@ -248,7 +246,7 @@ export function LettersScreen() {
                   <button
                     type="button"
                     onClick={() => setReading(l)}
-                    className="flex w-full items-center gap-3 rounded-2xl border border-border bg-surface p-3.5 text-left"
+                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface p-3.5 text-left"
                   >
                     <span aria-hidden className="text-xl">
                       💌

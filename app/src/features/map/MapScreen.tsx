@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import { usePosts } from '../../hooks/usePosts'
 import { useCouple } from '../../hooks/useCouple'
 import {
@@ -18,6 +19,7 @@ import {
   provinceByCode,
   type Zone,
 } from '../../lib/provinces'
+import { BottomSheet } from '../../components/BottomSheet'
 import { btn, input } from '../../lib/ui-classes'
 
 const ZONES: Array<{ key: Zone; label: string }> = [
@@ -66,12 +68,20 @@ export function MapScreen() {
 
       <div className="flex-1 px-4 py-4">
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
         ) : visitedCount === 0 ? (
-          <EmptyState hasPosts={posts.length > 0} />
+          <EmptyState
+            emoji="🗺️"
+            title="Chưa có địa điểm trên bản đồ."
+            action={{
+              type: 'link',
+              to: posts.length > 0 ? '/timeline' : '/compose',
+              label: posts.length > 0 ? 'Mở kỉ niệm' : 'Thêm kỉ niệm',
+            }}
+          />
         ) : (
           <>
-            <section className="rounded-2xl border border-border bg-surface p-4">
+            <section className="rounded-xl border border-border bg-surface p-4">
               <p className="text-[30px] leading-tight font-extrabold text-text">
                 {visitedCount}
                 <span className="text-[17px] font-semibold text-muted">
@@ -109,19 +119,17 @@ export function MapScreen() {
               <button
                 type="button"
                 onClick={() => setAsking(unresolved[0])}
-                className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-accent/30 bg-soft p-3.5 text-left"
+                className="mt-3 flex w-full items-center gap-3 rounded-xl border border-accent/30 bg-soft p-3.5 text-left"
               >
                 <span aria-hidden className="text-xl">
                   📍
                 </span>
                 <span className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-text">
-                  Chưa nhận ra <b className="font-semibold">
-                    {unresolved[0].placeName}
-                  </b>
+                  Chọn tỉnh cho “{unresolved[0].placeName}”
                   {unresolved.length > 1
                     ? ` và ${unresolved.length - 1} nơi nữa`
                     : ''}
-                  . Chỉ giúp một lần, lần sau tự nhận.
+                  .
                 </span>
                 <span aria-hidden className="shrink-0 text-muted">
                   ›
@@ -158,11 +166,6 @@ export function MapScreen() {
                 </div>
               </section>
             ))}
-
-            <p className="mt-6 text-center text-[12px] leading-relaxed text-muted">
-              Đây chưa phải bản đồ vẽ thật — mới là lưới theo vùng. Bản SVG 63
-              tỉnh sẽ thay vào đúng chỗ này.
-            </p>
           </>
         )}
       </div>
@@ -227,93 +230,86 @@ function AskProvince({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Chọn tỉnh thành"
-      onClick={onDone}
+    <BottomSheet
+      onClose={onDone}
+      ariaLabel="Chọn tỉnh thành"
+      panelClassName="flex max-h-sheet flex-col"
     >
-      <div
-        className="flex max-h-sheet w-full flex-col rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* `flex-none` cho phần đầu: không có nó thì flex bóp dẹt cả ô tìm
-            kiếm lẫn tiêu đề để nhường chỗ cho danh sách dài bên dưới. */}
-        <div className="flex-none">
-          <p className="text-[17px] font-semibold text-text">
-            “{place.placeName}” ở đâu?
-          </p>
-          <p className="mt-1 text-[13px] text-muted">
-            {place.count > 1 ? `${place.count} kỉ niệm · ` : ''}Trả lời một lần,
-            lần sau app tự nhận.
-          </p>
+      {/* `flex-none` cho phần đầu: không có nó thì flex bóp dẹt cả ô tìm
+          kiếm lẫn tiêu đề để nhường chỗ cho danh sách dài bên dưới. */}
+      <div className="flex-none">
+        <p className="text-[17px] font-semibold text-text">
+          “{place.placeName}” ở đâu?
+        </p>
+        <p className="mt-1 text-[13px] text-muted">
+          {place.count > 1 ? `${place.count} kỉ niệm · ` : ''}Trả lời một lần,
+          lần sau app tự nhận.
+        </p>
 
-          <div className="relative mt-4">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
-            >
-              🔍
-            </span>
-            <input
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              placeholder="Gõ tên tỉnh..."
-              autoFocus
-              className={`${input} pl-10`}
-            />
-          </div>
-        </div>
-
-        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border bg-surface">
-          {matches.length === 0 ? (
-            <p className="px-4 py-10 text-center text-sm leading-relaxed text-muted">
-              Không có tỉnh nào tên như vậy.
-              <br />
-              Ở nước ngoài thì chọn nút bên dưới.
-            </p>
-          ) : (
-            zones.map(([zone, label]) => {
-              const inZone = matches.filter((p) => p.zone === zone)
-              if (inZone.length === 0) return null
-              return (
-                <div key={zone}>
-                  <p className="sticky top-0 z-10 bg-surface px-4 pt-3 pb-1.5 text-[13px] font-medium text-muted">
-                    {label}
-                  </p>
-                  {inZone.map((p) => (
-                    <button
-                      key={p.code}
-                      type="button"
-                      disabled={saving}
-                      onClick={() => void save(p.code)}
-                      className="w-full px-4 py-3 text-left text-[15px] text-text transition active:bg-soft disabled:opacity-50"
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              )
-            })
-          )}
-        </div>
-
-        <div className="mt-3 flex-none space-y-2">
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => void save(null)}
-            className={btn.outline}
+        <div className="relative mt-4">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
           >
-            🌏 Ở nước ngoài
-          </button>
-          <button type="button" onClick={onDone} className={btn.ghost}>
-            Để sau
-          </button>
+            🔍
+          </span>
+          <input
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder="Tên tỉnh"
+            autoFocus
+            className={`${input} pl-10`}
+          />
         </div>
       </div>
-    </div>
+
+      <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-surface">
+        {matches.length === 0 ? (
+          <p className="px-4 py-10 text-center text-sm leading-relaxed text-muted">
+            Không có tỉnh nào tên như vậy.
+            <br />
+            Ở nước ngoài thì chọn nút bên dưới.
+          </p>
+        ) : (
+          zones.map(([zone, label]) => {
+            const inZone = matches.filter((p) => p.zone === zone)
+            if (inZone.length === 0) return null
+            return (
+              <div key={zone}>
+                <p className="sticky top-0 z-10 bg-surface px-4 pt-3 pb-1.5 text-[13px] font-medium text-muted">
+                  {label}
+                </p>
+                {inZone.map((p) => (
+                  <button
+                    key={p.code}
+                    type="button"
+                    disabled={saving}
+                    onClick={() => void save(p.code)}
+                    className="w-full px-4 py-3 text-left text-[15px] text-text transition active:bg-soft disabled:opacity-50"
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      <div className="mt-3 flex-none space-y-2">
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => void save(null)}
+          className={btn.outline}
+        >
+          🌏 Ở nước ngoài
+        </button>
+        <button type="button" onClick={onDone} className={btn.ghost}>
+          Để sau
+        </button>
+      </div>
+    </BottomSheet>
   )
 }
 
@@ -339,115 +335,84 @@ function ProvinceDrill({
   const named = wards.filter((w) => w.ward !== null).length
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40"
-      role="dialog"
-      aria-modal="true"
-      aria-label={name}
-      onClick={onClose}
+    <BottomSheet
+      onClose={onClose}
+      ariaLabel={name}
+      panelClassName="flex max-h-sheet flex-col"
     >
-      <div
-        className="flex max-h-sheet w-full flex-col rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex-none">
-          <p className="text-[17px] font-semibold text-text">{name}</p>
-          <p className="mt-1 text-[13px] text-muted">
-            {named > 0 ? `${named} phường/xã · ` : ''}
-            {total} kỉ niệm
-          </p>
-        </div>
-
-        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border bg-surface">
-          {wards.map((w) => {
-            const key = w.ward ?? ''
-            const isOpen = openWard === key
-            return (
-              <div key={key} className="border-b border-border last:border-b-0">
-                <button
-                  type="button"
-                  onClick={() => setOpenWard(isOpen ? null : key)}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left"
-                >
-                  <span aria-hidden>{w.ward ? '🏘️' : '📍'}</span>
-                  <span className="min-w-0 flex-1">
-                    <b className="block truncate text-[15px] font-medium text-text">
-                      {w.ward ?? 'Chưa rõ phường/xã'}
-                    </b>
-                    {w.ward ? null : (
-                      <small className="block text-[11.5px] text-muted">
-                        Bài gõ địa điểm bằng tay
-                      </small>
-                    )}
-                  </span>
-                  <span className="shrink-0 text-[12.5px] text-muted">
-                    {w.count}
-                  </span>
-                  <span aria-hidden className="shrink-0 text-muted">
-                    {isOpen ? '▾' : '▸'}
-                  </span>
-                </button>
-
-                {isOpen ? (
-                  <ul className="bg-bg/60 px-2 pb-2">
-                    {w.places.map((p) => (
-                      <li key={p.placeName}>
-                        <Link
-                          to={`/timeline?place=${encodeURIComponent(p.placeName)}`}
-                          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] text-text"
-                        >
-                          <span aria-hidden className="text-[12px]">
-                            📍
-                          </span>
-                          <span className="min-w-0 flex-1 truncate">
-                            {p.placeName}
-                          </span>
-                          <span className="shrink-0 text-[12px] text-muted">
-                            {p.count} lần
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="mt-3 flex-none space-y-2">
-          <Link to={`/timeline?province=${code}`} className={btn.outline}>
-            Xem tất cả kỉ niệm ở {name}
-          </Link>
-          <button type="button" onClick={onClose} className={btn.ghost}>
-            Đóng
-          </button>
-        </div>
+      <div className="flex-none">
+        <p className="text-[17px] font-semibold text-text">{name}</p>
+        <p className="mt-1 text-[13px] text-muted">
+          {named > 0 ? `${named} phường/xã · ` : ''}
+          {total} kỉ niệm
+        </p>
       </div>
-    </div>
-  )
-}
 
-function EmptyState({ hasPosts }: { hasPosts: boolean }) {
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <p className="text-5xl" aria-hidden>
-        🗺️
-      </p>
-      <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có dấu chân nào
-      </p>
-      <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-        {hasPosts
-          ? 'Kỉ niệm đã có rồi nhưng chưa gắn địa điểm. Mở một bài và thêm nơi chốn vào là bản đồ sáng lên ngay.'
-          : 'Đăng một kỉ niệm có gắn địa điểm, chỗ đó sẽ hiện lên đây.'}
-      </p>
-      <Link
-        to={hasPosts ? '/timeline' : '/compose'}
-        className={`${btn.primary} mt-7 max-w-[18rem]`}
-      >
-        {hasPosts ? 'Mở kỉ niệm gần nhất' : 'Thêm kỉ niệm'}
-      </Link>
-    </div>
+      <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-surface">
+        {wards.map((w) => {
+          const key = w.ward ?? ''
+          const isOpen = openWard === key
+          return (
+            <div key={key} className="border-b border-border last:border-b-0">
+              <button
+                type="button"
+                onClick={() => setOpenWard(isOpen ? null : key)}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left"
+              >
+                <span aria-hidden>{w.ward ? '🏘️' : '📍'}</span>
+                <span className="min-w-0 flex-1">
+                  <b className="block truncate text-[15px] font-medium text-text">
+                    {w.ward ?? 'Chưa rõ phường/xã'}
+                  </b>
+                  {w.ward ? null : (
+                    <small className="block text-[11.5px] text-muted">
+                      Bài gõ địa điểm bằng tay
+                    </small>
+                  )}
+                </span>
+                <span className="shrink-0 text-[12.5px] text-muted">
+                  {w.count}
+                </span>
+                <span aria-hidden className="shrink-0 text-muted">
+                  {isOpen ? '▾' : '▸'}
+                </span>
+              </button>
+
+              {isOpen ? (
+                <ul className="bg-bg/60 px-2 pb-2">
+                  {w.places.map((p) => (
+                    <li key={p.placeName}>
+                      <Link
+                        to={`/timeline?place=${encodeURIComponent(p.placeName)}`}
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] text-text"
+                      >
+                        <span aria-hidden className="text-[12px]">
+                          📍
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {p.placeName}
+                        </span>
+                        <span className="shrink-0 text-[12px] text-muted">
+                          {p.count} lần
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-3 flex-none space-y-2">
+        <Link to={`/timeline?province=${code}`} className={btn.outline}>
+          Xem tất cả kỉ niệm ở {name}
+        </Link>
+        <button type="button" onClick={onClose} className={btn.ghost}>
+          Đóng
+        </button>
+      </div>
+    </BottomSheet>
   )
 }

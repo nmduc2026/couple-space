@@ -19,6 +19,7 @@ import {
 import { btn, input } from '../../lib/ui-classes'
 import { suggestedEmoji } from '../../lib/eventSuggestion'
 import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 const RECURRENCES = [
   ['none', 'Một lần'],
@@ -81,12 +82,12 @@ export function EventFormScreen() {
     // gì xảy ra, không báo gì cả. Im lặng là kiểu hỏng khó tìm nhất.
     if (!couple || !user) {
       setStatus('error')
-      setErrorMessage('Chưa tải xong không gian. Thử lại sau một giây nhé.')
+      setErrorMessage('Chưa tải xong không gian. Thử lại sau một giây.')
       return
     }
     if (!value.title.trim()) {
       setStatus('error')
-      setErrorMessage('Đặt tên cho dịp này đã nhé.')
+      setErrorMessage('Đặt tên cho dịp này.')
       return
     }
 
@@ -145,7 +146,7 @@ export function EventFormScreen() {
                   const guess = emojiTouched ? null : suggestedEmoji(title)
                   patch(guess ? { title, emoji: guess } : { title })
                 }}
-                placeholder="Sinh nhật Diên"
+                placeholder="Tên sự kiện"
                 maxLength={80}
                 className={input}
               />
@@ -183,22 +184,14 @@ export function EventFormScreen() {
             </Field>
 
             <Field label="Lặp lại">
-              <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1">
-                {RECURRENCES.map(([key, label]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => patch({ recurrence: key })}
-                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                      value.recurrence === key
-                        ? 'bg-accent text-on-accent'
-                        : 'text-muted'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                options={RECURRENCES.map(([value, label]) => ({
+                  value,
+                  label,
+                }))}
+                value={value.recurrence}
+                onChange={(next) => patch({ recurrence: next })}
+              />
             </Field>
 
             <Field

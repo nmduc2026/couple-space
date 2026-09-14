@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import {
@@ -12,22 +12,28 @@ import {
   Title,
   TopBar,
 } from '../../components/ui'
+import { PasswordField } from '../../components/PasswordField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { btn, input } from '../../lib/ui-classes'
 
 type Mode = 'otp' | 'password'
 
-/** Đăng nhập mật khẩu chỉ là lối tắt lúc dev (user tạo tay trên Supabase).
- *  Bản build thật chỉ có OTP — đúng đặc tả P1-12. */
-const DEV_PASSWORD_LOGIN = import.meta.env.DEV
+type FieldErrors = {
+  email?: string
+  password?: string
+}
 
+/** Hai cách đăng nhập luôn hiện (OTP mặc định + mật khẩu nếu đã đặt).
+ *  Đặc tả: docs/features/p1-auth.md · task P1-37. */
 export function EmailScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [mode, setMode] = useState<Mode>(DEV_PASSWORD_LOGIN ? 'password' : 'otp')
+  const [mode, setMode] = useState<Mode>('otp')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [formError, setFormError] = useState('')
 
   async function goHomeAfterLogin() {
     sessionStorage.removeItem('pendingInviteCode')
@@ -38,23 +44,27 @@ export function EmailScreen() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     const trimmed = email.trim()
+    const next: FieldErrors = {}
 
-    if (!trimmed) {
+    if (!trimmed) next.email = 'Nhập email.'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      next.email = 'Email chưa đúng định dạng.'
+    }
+
+    if (mode === 'password' && !password) next.password = 'Nhập mật khẩu.'
+
+    if (next.email || next.password) {
+      setFieldErrors(next)
+      setFormError('')
       setStatus('error')
-      setErrorMessage('Nhập email trước nhé.')
       return
     }
 
     setStatus('loading')
-    setErrorMessage('')
+    setFieldErrors({})
+    setFormError('')
 
     if (mode === 'password') {
-      if (!password) {
-        setStatus('error')
-        setErrorMessage('Nhập mật khẩu đã đặt lúc tạo user trên Supabase.')
-        return
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
         email: trimmed,
         password,
@@ -62,9 +72,7 @@ export function EmailScreen() {
 
       if (error) {
         setStatus('error')
-        setErrorMessage(
-          'Đăng nhập thất bại. Kiểm tra email/mật khẩu, hoặc dùng tab OTP.',
-        )
+        setFormError('Email hoặc mật khẩu chưa đúng.')
         return
       }
 
@@ -79,7 +87,7 @@ export function EmailScreen() {
 
     if (error) {
       setStatus('error')
-      setErrorMessage(
+      setFormError(
         error.message.includes('rate') || error.status === 429
           ? 'Gửi quá nhiều lần. Đợi vài phút rồi thử lại.'
           : 'Không gửi được mã. Kiểm tra email và thử lại.',
@@ -95,78 +103,97 @@ export function EmailScreen() {
   return (
     <Screen>
       <TopBar to="/welcome" />
-      <form onSubmit={handleSubmit} className="contents">
+      <form onSubmit={handleSubmit} noValidate className="contents">
         <Stage>
           <Title>Email của bạn</Title>
           <Sub>
-            Tụi mình gửi một mã 6 số để xác nhận. Không cần mật khẩu, không cần
-            nhớ gì thêm.
+            {mode === 'password'
+              ? 'Nhập mật khẩu để tiếp tục.'
+              : 'Hoặc đăng nhập bằng mã OTP.'}
           </Sub>
 
-          {DEV_PASSWORD_LOGIN ? (
-            <div className="mt-6 flex gap-1 rounded-2xl border border-border bg-surface p-1">
-              {(
-                [
-                  ['password', 'Mật khẩu'],
-                  ['otp', 'Mã OTP'],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => {
-                    setMode(value)
-                    setStatus('idle')
-                  }}
-                  className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                    mode === value
-                      ? 'bg-accent text-on-accent'
-                      : 'text-muted hover:text-text'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <SegmentedControl
+            options={[
+              { value: 'otp', label: 'Mã OTP' },
+              { value: 'password', label: 'Mật khẩu' },
+            ]}
+            value={mode}
+            onChange={(next) => {
+              setMode(next)
+              setStatus('idle')
+              setFieldErrors({})
+              setFormError('')
+            }}
+            className="mt-6"
+          />
 
           <div className="mt-6 space-y-4">
-            <Field label="Email">
-              <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                inputMode="email"
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-                  if (status === 'error') setStatus('idle')
-                }}
-                disabled={busy}
-                placeholder="ten@email.com"
-                className={input}
-              />
-            </Field>
-
-            {mode === 'password' ? (
-              <Field label="Mật khẩu">
+            <div>
+              <Field label="Email">
                 <input
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  value={email}
                   onChange={(e) => {
-                    setPassword(e.target.value)
-                    if (status === 'error') setStatus('idle')
+                    setEmail(e.target.value)
+                    if (fieldErrors.email) {
+                      setFieldErrors((prev) => ({ ...prev, email: undefined }))
+                    }
+                    if (formError) {
+                      setFormError('')
+                      setStatus('idle')
+                    }
                   }}
                   disabled={busy}
+                  placeholder="email@example.com"
+                  aria-invalid={!!fieldErrors.email}
                   className={input}
                 />
               </Field>
+              {fieldErrors.email ? (
+                <ErrorText>{fieldErrors.email}</ErrorText>
+              ) : null}
+            </div>
+
+            {mode === 'password' ? (
+              <div>
+                <PasswordField
+                  label="Mật khẩu"
+                  value={password}
+                  onChange={(next) => {
+                    setPassword(next)
+                    if (fieldErrors.password) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        password: undefined,
+                      }))
+                    }
+                    if (formError) {
+                      setFormError('')
+                      setStatus('idle')
+                    }
+                  }}
+                  autoComplete="current-password"
+                  disabled={busy}
+                  placeholder="******"
+                />
+                {fieldErrors.password ? (
+                  <ErrorText>{fieldErrors.password}</ErrorText>
+                ) : null}
+                <Link
+                  to="/login/forgot"
+                  state={{ email: email.trim() }}
+                  className="mt-2.5 block text-right text-[13px] font-medium text-accent"
+                >
+                  Quên mật khẩu?
+                </Link>
+              </div>
             ) : null}
           </div>
 
-          {status === 'error' ? <ErrorText>{errorMessage}</ErrorText> : null}
+          {formError ? <ErrorText>{formError}</ErrorText> : null}
 
           <Spacer />
 

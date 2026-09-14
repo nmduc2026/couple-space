@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { useCouple } from '../../hooks/useCouple'
 import { useMyProfile } from '../../hooks/useMyProfile'
 import { useSession } from '../../hooks/useSession'
@@ -12,12 +13,15 @@ import { useUiStore, type Theme } from '../../lib/store'
 import {
   Group,
   Row,
+  Screen,
   SectionLabel,
+  Stage,
   Switch,
+  Title,
   TopBar,
 } from '../../components/ui'
-import { btn } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { COUPLE_THEMES } from '../../lib/coupleTheme'
 import { compressImage } from '../../lib/image'
 import { MEDIA_BUCKET } from '../../hooks/usePosts'
@@ -38,12 +42,12 @@ const THEMES: Array<[Theme, string]> = [
   ['dark', 'Tối'],
 ]
 
-/** Ô nhập nằm bên phải một hàng cài đặt — không viền, canh phải. */
+/** Ô nhập trong hàng cài đặt — không viền, canh phải. 16px chống Safari zoom. */
 const rowInput =
-  'flex min-w-0 flex-1 items-center bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
+  'flex min-w-0 flex-1 items-center bg-transparent text-right text-[16px] text-text outline-none focus:text-accent'
 
-/** Ô giờ thì không giãn: hai ô đứng cạnh nhau trong cùng một hàng. */
-const rowTimeInput =
+/** DateField / TimeField là <button>, không bị Safari zoom — giữ cùng cỡ nhãn. */
+const rowValue =
   'bg-transparent text-right text-[15px] text-text outline-none focus:text-accent'
 
 export function SettingsScreen() {
@@ -58,7 +62,6 @@ export function SettingsScreen() {
   // Nhờ vậy không cần useEffect đồng bộ state theo dữ liệu server.
   const [draftStartDate, setDraftStartDate] = useState<string | null>(null)
   const [draftNickname, setDraftNickname] = useState<string | null>(null)
-  const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
   const { profile } = useMyProfile()
@@ -79,13 +82,6 @@ export function SettingsScreen() {
     },
   })
 
-  // Toast tự tắt để không đọng lại giữa các thao tác
-  useEffect(() => {
-    if (!message) return
-    const id = window.setTimeout(() => setMessage(''), 2600)
-    return () => window.clearTimeout(id)
-  }, [message])
-
   const savedStartDate = couple?.start_date ?? ''
   const savedNickname =
     couple?.members.find((m) => m.user_id === user?.id)?.nickname ?? ''
@@ -101,32 +97,45 @@ export function SettingsScreen() {
 
     // Đặc tả mục 3: biệt danh rỗng thì chặn. Không ai bị gọi bằng khoảng trắng.
     if (!myNickname.trim()) {
-      setMessage('Biệt danh không được để trống.')
+      toast.error('Biệt danh không được để trống.')
       return
     }
 
     const startDateChanged = startDate !== savedStartDate
     setSaving(true)
-    setMessage('')
 
-    const { error: coupleErr } = await supabase
+    const { data: coupleRow, error: coupleErr } = await supabase
       .from('couples')
       .update({ start_date: startDate })
       .eq('id', couple.id)
+      .select('id')
+      .maybeSingle()
     if (coupleErr) {
       setSaving(false)
-      setMessage(coupleErr.message)
+      toast.error(coupleErr.message)
+      return
+    }
+    if (!coupleRow) {
+      setSaving(false)
+      toast.error('Không lưu được ngày bắt đầu yêu.')
       return
     }
 
-    const { error: memberErr } = await supabase
+    const { data: memberRow, error: memberErr } = await supabase
       .from('couple_members')
       .update({ nickname: myNickname.trim() })
       .eq('couple_id', couple.id)
       .eq('user_id', user.id)
+      .select('id')
+      .maybeSingle()
     if (memberErr) {
       setSaving(false)
-      setMessage(memberErr.message)
+      toast.error(memberErr.message)
+      return
+    }
+    if (!memberRow) {
+      setSaving(false)
+      toast.error('Không lưu được biệt danh.')
       return
     }
 
@@ -148,7 +157,7 @@ export function SettingsScreen() {
     setDraftStartDate(null)
     setDraftNickname(null)
     setSaving(false)
-    setMessage('Đã lưu.')
+    toast.success('Đã lưu.')
   }
 
   /** Ghi kèm múi giờ máy mỗi lần lưu — server cần nó để gửi nhắc đúng
@@ -161,7 +170,7 @@ export function SettingsScreen() {
       ...patch,
     })
     if (error) {
-      setMessage(error.message)
+      toast.error(error.message)
       return
     }
     await prefsQuery.refetch()
@@ -172,7 +181,6 @@ export function SettingsScreen() {
   async function pickCover(file: File | undefined) {
     if (!file || !couple) return
     setUploadingCover(true)
-    setMessage('')
     try {
       const { blob, ext } = await compressImage(file)
       const path = `${couple.id}/cover/${crypto.randomUUID()}.${ext}`
@@ -191,9 +199,9 @@ export function SettingsScreen() {
 
       await queryClient.invalidateQueries({ queryKey: ['couple'] })
       await refetch()
-      setMessage('Đã đổi ảnh bìa.')
+      toast.success('Đã đổi ảnh bìa.')
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Không tải được ảnh.')
+      toast.error(err instanceof Error ? err.message : 'Không tải được ảnh.')
     } finally {
       setUploadingCover(false)
     }
@@ -207,7 +215,7 @@ export function SettingsScreen() {
       .eq('id', couple.id)
     await queryClient.invalidateQueries({ queryKey: ['couple'] })
     await refetch()
-    setMessage('Đã bỏ ảnh bìa.')
+    toast.success('Đã bỏ ảnh bìa.')
   }
 
   /** Màu nhấn là lựa chọn của RIÊNG người này — lưu ở `profiles`, không phải
@@ -219,7 +227,7 @@ export function SettingsScreen() {
       .update({ color_theme: key })
       .eq('id', user.id)
     if (error) {
-      setMessage(error.message)
+      toast.error(error.message)
       return
     }
     await queryClient.invalidateQueries({ queryKey: ['my_profile'] })
@@ -228,9 +236,9 @@ export function SettingsScreen() {
   async function onEnablePush() {
     try {
       await enablePush()
-      setMessage('Đã bật thông báo trên máy này.')
+      toast.success('Đã bật thông báo trên máy này.')
     } catch (err) {
-      setMessage(
+      toast.error(
         err instanceof Error ? err.message : 'Không bật được thông báo.',
       )
     }
@@ -243,14 +251,23 @@ export function SettingsScreen() {
   }
 
   return (
-    <main className="min-h-app bg-bg pb-safe">
+    <Screen>
       <TopBar to="/" />
-      <div className="mx-auto w-full max-w-[calc(28rem/var(--ui-scale))] px-4 pb-16">
-        <h1 className="px-1 pt-1 pb-5 text-[23px] font-bold tracking-[-0.02em] text-text">
-          Cài đặt
-        </h1>
-
+      <Stage pad="px-4" className="pb-16">
         <form onSubmit={saveProfile}>
+          <div className="flex items-center justify-between gap-3 px-1 pt-1 pb-5">
+            <Title>Cài đặt</Title>
+            {dirty ? (
+              <button
+                type="submit"
+                disabled={saving}
+                className="shrink-0 text-[15px] font-semibold text-accent disabled:opacity-50"
+              >
+                {saving ? 'Đang lưu...' : 'Lưu'}
+              </button>
+            ) : null}
+          </div>
+
           <SectionLabel>Không gian của chúng ta</SectionLabel>
           <Group>
             <Row className="flex items-center justify-between gap-3">
@@ -259,7 +276,7 @@ export function SettingsScreen() {
                 max={todayYmd()}
                 value={startDate}
                 onChange={setDraftStartDate}
-                className={`${rowInput} justify-end`}
+                className={`${rowValue} justify-end`}
               />
             </Row>
             <Row className="flex items-center justify-between gap-3">
@@ -316,40 +333,17 @@ export function SettingsScreen() {
               />
             </Row>
           </Group>
-
-          {dirty ? (
-            <button
-              type="submit"
-              disabled={saving}
-              className={`${btn.primary} mt-3`}
-            >
-              {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </button>
-          ) : null}
         </form>
 
         <div className="mt-7">
           <SectionLabel>Giao diện</SectionLabel>
-          <div className="mt-2 flex gap-1 rounded-2xl border border-border bg-surface p-1">
-            {THEMES.map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setTheme(value)}
-                className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                  theme === value
-                    ? 'bg-accent text-on-accent'
-                    : 'text-muted hover:text-text'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={THEMES.map(([value, label]) => ({ value, label }))}
+            value={theme}
+            onChange={setTheme}
+            className="mt-2"
+          />
 
-          <p className="mt-4 px-1 text-[12.5px] text-muted">
-            Màu nhấn của riêng bạn. Người kia chọn màu khác cũng được.
-          </p>
           <div className="mt-2 flex gap-2">
             {COUPLE_THEMES.map((t) => {
               const active = (myTheme ?? 'rose') === t.key
@@ -379,21 +373,31 @@ export function SettingsScreen() {
         <div className="mt-7">
           <SectionLabel>Thông báo</SectionLabel>
           <Group>
-            {NOTIFY_TOGGLES.map(([key, label, fallback]) => (
-              <Row
-                key={key}
-                className="flex items-center justify-between gap-3"
-              >
-                <span className="text-[15px] text-text">{label}</span>
-                <Switch
-                  label={label}
-                  checked={
-                    (prefsQuery.data?.[key] as boolean | undefined) ?? fallback
-                  }
-                  onChange={(next) => void savePrefs({ [key]: next })}
-                />
-              </Row>
-            ))}
+            {NOTIFY_TOGGLES.map(([key, label, fallback]) => {
+              // isPending = chưa có kết quả fetch lần nào. Không dùng skeleton
+              // màu xám (trông như đang tắt) rồi thay bằng switch đỏ — nhìn
+              // như tự chuyển false → true.
+              const ready = !prefsQuery.isPending
+              const checked =
+                (prefsQuery.data?.[key] as boolean | undefined) ?? fallback
+              return (
+                <Row
+                  key={key}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="text-[15px] text-text">{label}</span>
+                  {ready ? (
+                    <Switch
+                      label={label}
+                      checked={checked}
+                      onChange={(next) => void savePrefs({ [key]: next })}
+                    />
+                  ) : (
+                    <span aria-hidden className="h-7 w-12 shrink-0" />
+                  )}
+                </Row>
+              )
+            })}
 
             <Row className="flex items-center justify-between gap-3">
               <span className="shrink-0 text-[15px] text-text">
@@ -406,7 +410,7 @@ export function SettingsScreen() {
                   onChange={(next) =>
                     void savePrefs({ quiet_hours_from: next || null })
                   }
-                  className={rowTimeInput}
+                  className={rowValue}
                 />
                 <span className="text-muted">–</span>
                 <TimeField
@@ -415,7 +419,7 @@ export function SettingsScreen() {
                   onChange={(next) =>
                     void savePrefs({ quiet_hours_to: next || null })
                   }
-                  className={rowTimeInput}
+                  className={rowValue}
                 />
               </span>
             </Row>
@@ -430,15 +434,13 @@ export function SettingsScreen() {
               </button>
               {!isStandalonePwa() ? (
                 <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-                  Trên iPhone phải mở từ icon đã cài: Safari → Chia sẻ → Thêm vào
-                  Màn hình chính.
+                  Cần cài ra Màn hình chính (Safari → Chia sẻ).
                 </p>
               ) : null}
             </Row>
           </Group>
           <p className="mt-2 px-1 text-[12.5px] leading-relaxed text-muted">
-            Nhắc gửi lúc 9 giờ sáng theo giờ máy bạn. Rơi vào giờ yên lặng thì
-            hoãn tới lúc hết, không bỏ.
+            Ngoài giờ yên lặng; trong giờ thì hoãn.
           </p>
         </div>
 
@@ -448,6 +450,28 @@ export function SettingsScreen() {
             <Row className="flex items-center justify-between gap-3">
               <span className="text-[15px] text-text">Email</span>
               <span className="truncate text-sm text-muted">{user?.email}</span>
+            </Row>
+            <Row>
+              <Link
+                to="/settings/password"
+                className="flex w-full items-center justify-between gap-3 text-[15px] text-text"
+              >
+                <span>Đặt / đổi mật khẩu</span>
+                <span className="text-muted" aria-hidden>
+                  ›
+                </span>
+              </Link>
+            </Row>
+            <Row>
+              <Link
+                to="/settings/unpair"
+                className="flex w-full items-center justify-between gap-3 text-[15px] font-medium text-accent"
+              >
+                <span>Huỷ ghép đôi</span>
+                <span className="text-muted" aria-hidden>
+                  ›
+                </span>
+              </Link>
             </Row>
             <Row>
               <button
@@ -460,25 +484,7 @@ export function SettingsScreen() {
             </Row>
           </Group>
         </div>
-
-        <div className="mt-10">
-          <SectionLabel tone="danger">Vùng nguy hiểm</SectionLabel>
-          <Link to="/settings/unpair" className={`${btn.danger} mt-2`}>
-            Huỷ ghép đôi
-          </Link>
-        </div>
-      </div>
-
-      {message ? (
-        <p
-          role="status"
-          className="pb-safe fixed inset-x-0 bottom-0 mx-auto max-w-[calc(28rem/var(--ui-scale))] px-4"
-        >
-          <span className="block rounded-2xl bg-text px-4 py-3 text-center text-sm text-bg shadow-lg">
-            {message}
-          </span>
-        </p>
-      ) : null}
-    </main>
+      </Stage>
+    </Screen>
   )
 }
