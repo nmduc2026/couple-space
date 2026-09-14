@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import { useCouple } from '../../hooks/useCouple'
 import { shiftMonth, useExpenses } from '../../hooks/useExpenses'
 import { expenseInsight } from '../../lib/expenseInsight'
@@ -11,7 +12,6 @@ import {
   EXPENSE_CATEGORIES,
 } from '../../lib/money'
 import { todayYmd } from '../../lib/dateCount'
-import { btn } from '../../lib/ui-classes'
 
 export function ExpensesScreen() {
   const [month, setMonth] = useState(() => `${todayYmd().slice(0, 7)}-01`)
@@ -83,9 +83,13 @@ export function ExpensesScreen() {
 
       <div className="flex-1 px-4 pb-8">
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
         ) : expenses.length === 0 ? (
-          <EmptyState />
+          <EmptyState
+            emoji="🧾"
+            title="Chưa có chi tiêu."
+            action={{ type: 'link', to: '/expenses/new', label: 'Thêm' }}
+          />
         ) : (
           <>
             <section className="rounded-xl border border-border bg-surface p-4">
@@ -156,22 +160,6 @@ export function ExpensesScreen() {
         )}
       </div>
     </>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <p className="text-5xl" aria-hidden>
-        🧾
-      </p>
-      <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có chi tiêu.
-      </p>
-      <Link to="/expenses/new" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Thêm
-      </Link>
-    </div>
   )
 }
 

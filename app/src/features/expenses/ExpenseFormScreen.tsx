@@ -12,6 +12,7 @@ import {
   formatAmountInput,
   parseAmountInput,
 } from '../../lib/money'
+import { AmountInput } from '../../components/AmountInput'
 import { PREVIEW } from '../../dev/preview'
 import {
   ErrorText,
@@ -24,6 +25,7 @@ import {
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 export function ExpenseFormScreen() {
   const { id } = useParams()
@@ -158,22 +160,12 @@ export function ExpenseFormScreen() {
 
           <div className="mt-6">
             <Field label="Số tiền">
-              <div className="relative">
-                <input
-                  // inputMode numeric: iPhone mở bàn phím số, không phải bàn phím chữ
-                  inputMode="numeric"
-                  value={value.amount}
-                  onChange={(e) =>
-                    patch({ amount: formatAmountInput(e.target.value) })
-                  }
-                  placeholder="0"
-                  autoFocus
-                  className={`${input} h-16 pr-12 text-right text-[28px] font-bold tabular-nums`}
-                />
-                <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-lg text-muted">
-                  đ
-                </span>
-              </div>
+              <AmountInput
+                variant="lg"
+                value={value.amount}
+                onChange={(amount) => patch({ amount })}
+                autoFocus
+              />
             </Field>
           </div>
 
@@ -221,22 +213,14 @@ export function ExpenseFormScreen() {
             </Field>
 
             <Field label="Người trả">
-              <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-                {(couple?.members ?? []).map((m) => (
-                  <button
-                    key={m.user_id}
-                    type="button"
-                    onClick={() => patch({ paidBy: m.user_id })}
-                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                      payer === m.user_id
-                        ? 'bg-accent text-on-accent'
-                        : 'text-muted'
-                    }`}
-                  >
-                    {m.nickname ?? 'Người ấy'}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                options={(couple?.members ?? []).map((m) => ({
+                  value: m.user_id,
+                  label: m.nickname ?? 'Người ấy',
+                }))}
+                value={payer}
+                onChange={(next) => patch({ paidBy: next })}
+              />
             </Field>
           </div>
 

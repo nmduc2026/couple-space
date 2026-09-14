@@ -97,3 +97,4 @@ P1-34 → P1-36 (deploy máy thật)
 | 2026-09-13 | Rà copy UI vibe AI → production: `hai đứa`→`hai người`, xoá mọi copy nợ nần; áp override #1–17,27–28,34,39; #51 giữ nguyên | Copy app xong; chưa đụng prototype | Review copy trên máy / tiếp task phase |
 | 2026-09-13 | Placeholder input theo bảng review; sửa bug Cài đặt: thiếu RLS UPDATE `couple_members` (biệt danh không lưu), đẩy toast lên trên TabBar | Policy đã push remote | Thử lại đổi biệt danh + ngày trên máy |
 | 2026-09-13 | Thêm `sonner` + `AppToaster`; thay toast tự viết ở Settings / SetPassword | Xong | Thử toast trên Cài đặt |
+| 2026-09-13 | Shared UI A+B: PasswordField, EmptyState/InlineLoading, SegmentedControl, QuickAddRow, BottomSheet (+Confirm/Date/Time/Map/Nudge), AmountInput; Settings/PostDetail → Screen(+Stage); Home/Wrapped/GoalDetail → Group+Row | `tsc` sạch; chờ review UI trên máy | Review từng màn / Phase C chỉ khi còn đau |

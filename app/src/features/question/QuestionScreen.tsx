@@ -1,6 +1,8 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState } from '../../components/EmptyState'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { QUESTIONS, questionIndexFor } from '../../lib/questions'
@@ -72,26 +74,18 @@ export function QuestionScreen() {
       <TopHeader title="Câu hỏi mỗi ngày" back="/" />
 
       <div className="px-4 pt-3">
-        <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-          {(
-            [
-              ['today', 'Hôm nay'],
-              ['missed', missed.length ? `Bỏ lỡ (${missed.length})` : 'Bỏ lỡ'],
-              ['book', 'Sách'],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setTab(value)}
-              className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                tab === value ? 'bg-accent text-on-accent' : 'text-muted'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[
+            { value: 'today', label: 'Hôm nay' },
+            {
+              value: 'missed',
+              label: missed.length ? `Bỏ lỡ (${missed.length})` : 'Bỏ lỡ',
+            },
+            { value: 'book', label: 'Sách' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
       </div>
 
       <div className="flex-1 px-4 py-4">
@@ -284,16 +278,7 @@ function MissedList({
   const [open, setOpen] = useState<string | null>(days[0] ?? null)
 
   if (days.length === 0) {
-    return (
-      <div className="flex flex-col items-center px-6 py-16 text-center">
-        <p className="text-5xl" aria-hidden>
-          ✅
-        </p>
-        <p className="mt-5 text-[17px] font-semibold text-text">
-          Không có câu bỏ lỡ.
-        </p>
-      </div>
-    )
+    return <EmptyState emoji="✅" title="Không có câu bỏ lỡ." />
   }
 
   return (
@@ -375,15 +360,11 @@ function Book({ history }: { history: Answer[] }) {
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center px-6 py-16 text-center">
-        <p className="text-5xl" aria-hidden>
-          📖
-        </p>
-        <p className="mt-5 text-[17px] font-semibold text-text">Các câu đã trả lời</p>
-        <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-muted">
-          Các câu đã trả lời sẽ nằm ở đây.
-        </p>
-      </div>
+      <EmptyState
+        emoji="📖"
+        title="Các câu đã trả lời"
+        subtitle="Các câu đã trả lời sẽ nằm ở đây."
+      />
     )
   }
 

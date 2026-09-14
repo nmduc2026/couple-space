@@ -12,8 +12,9 @@ import {
   Title,
   TopBar,
 } from '../../components/ui'
+import { PasswordField } from '../../components/PasswordField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { btn, input } from '../../lib/ui-classes'
-import { IconEye, IconEyeOff } from '../../components/icons'
 
 type Mode = 'otp' | 'password'
 
@@ -25,7 +26,6 @@ export function EmailScreen() {
   const [mode, setMode] = useState<Mode>('otp')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -102,31 +102,18 @@ export function EmailScreen() {
               : 'Hoặc đăng nhập bằng mã OTP.'}
           </Sub>
 
-          <div className="mt-6 flex gap-1 rounded-xl border border-border bg-surface p-1">
-            {(
-              [
-                ['otp', 'Mã OTP'],
-                ['password', 'Mật khẩu'],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => {
-                  setMode(value)
-                  setStatus('idle')
-                  if (value === 'otp') setShowPassword(false)
-                }}
-                className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                  mode === value
-                    ? 'bg-accent text-on-accent'
-                    : 'text-muted hover:text-text'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={[
+              { value: 'otp', label: 'Mã OTP' },
+              { value: 'password', label: 'Mật khẩu' },
+            ]}
+            value={mode}
+            onChange={(next) => {
+              setMode(next)
+              setStatus('idle')
+            }}
+            className="mt-6"
+          />
 
           <div className="mt-6 space-y-4">
             <Field label="Email">
@@ -149,37 +136,17 @@ export function EmailScreen() {
 
             {mode === 'password' ? (
               <div>
-                <Field label="Mật khẩu">
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value)
-                        if (status === 'error') setStatus('idle')
-                      }}
-                      disabled={busy}
-                      className={`${input} pr-12`}
-                      placeholder="******"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      disabled={busy}
-                      aria-label={
-                        showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'
-                      }
-                      className="absolute top-1/2 right-2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl text-muted transition hover:text-text active:scale-95 disabled:opacity-50"
-                    >
-                      {showPassword ? (
-                        <IconEyeOff size={20} />
-                      ) : (
-                        <IconEye size={20} />
-                      )}
-                    </button>
-                  </div>
-                </Field>
+                <PasswordField
+                  label="Mật khẩu"
+                  value={password}
+                  onChange={(next) => {
+                    setPassword(next)
+                    if (status === 'error') setStatus('idle')
+                  }}
+                  autoComplete="current-password"
+                  disabled={busy}
+                  placeholder="******"
+                />
                 <Link
                   to="/login/forgot"
                   state={{ email: email.trim() }}

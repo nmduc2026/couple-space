@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { btn } from '../lib/ui-classes'
+import { BottomSheet } from './BottomSheet'
 
 /*
  * Ô chọn giờ của riêng app, thay cho `<input type="time">`.
@@ -99,73 +100,62 @@ function TimeSheet({
     }`
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40"
-      role="dialog"
-      aria-modal="true"
-      aria-label={label}
-      onClick={onClose}
-    >
-      <div
-        className="w-full rounded-t-3xl border-t border-border bg-bg p-5 pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="text-[17px] font-semibold text-text">{label}</p>
-        <p className="mt-1 text-[26px] font-extrabold tabular-nums text-accent">
-          {hour}:{minute}
-        </p>
+    <BottomSheet onClose={onClose} ariaLabel={label}>
+      <p className="text-[17px] font-semibold text-text">{label}</p>
+      <p className="mt-1 text-[26px] font-extrabold tabular-nums text-accent">
+        {hour}:{minute}
+      </p>
 
-        <div className="mt-4 flex gap-2">
-          <div ref={hourRef} className={column}>
-            {HOURS.map((h) => (
-              <button
-                key={h}
-                type="button"
-                data-active={h === hour}
-                onClick={() => setHour(h)}
-                className={cell(h === hour)}
-              >
-                {h}
-              </button>
-            ))}
-          </div>
-          <div ref={minuteRef} className={column}>
-            {MINUTES.map((m) => (
-              <button
-                key={m}
-                type="button"
-                data-active={m === minute}
-                onClick={() => setMinute(m)}
-                className={cell(m === minute)}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <button
-            type="button"
-            onClick={() => onPick(`${hour}:${minute}`)}
-            className={btn.primary}
-          >
-            Chọn {hour}:{minute}
-          </button>
-          {value ? (
+      <div className="mt-4 flex gap-2">
+        <div ref={hourRef} className={column}>
+          {HOURS.map((h) => (
             <button
+              key={h}
               type="button"
-              onClick={() => onPick('')}
-              className={btn.ghost}
+              data-active={h === hour}
+              onClick={() => setHour(h)}
+              className={cell(h === hour)}
             >
-              Bỏ đặt giờ
+              {h}
             </button>
-          ) : null}
-          <button type="button" onClick={onClose} className={btn.ghost}>
-            Đóng
-          </button>
+          ))}
+        </div>
+        <div ref={minuteRef} className={column}>
+          {MINUTES.map((m) => (
+            <button
+              key={m}
+              type="button"
+              data-active={m === minute}
+              onClick={() => setMinute(m)}
+              className={cell(m === minute)}
+            >
+              {m}
+            </button>
+          ))}
         </div>
       </div>
-    </div>
+
+      <div className="mt-4 space-y-2">
+        <button
+          type="button"
+          onClick={() => onPick(`${hour}:${minute}`)}
+          className={btn.primary}
+        >
+          Chọn {hour}:{minute}
+        </button>
+        {value ? (
+          <button
+            type="button"
+            onClick={() => onPick('')}
+            className={btn.ghost}
+          >
+            Bỏ đặt giờ
+          </button>
+        ) : null}
+        <button type="button" onClick={onClose} className={btn.ghost}>
+          Đóng
+        </button>
+      </div>
+    </BottomSheet>
   )
 }

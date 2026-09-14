@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState } from '../../components/EmptyState'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { useAgenda } from '../../hooks/useAgenda'
@@ -192,21 +193,15 @@ export function LettersScreen() {
 
       <div className="flex-1 px-4 py-4">
         {letters.length === 0 ? (
-          <div className="flex flex-col items-center px-6 py-16 text-center">
-            <p className="text-5xl" aria-hidden>
-              💌
-            </p>
-            <p className="mt-5 text-[17px] font-semibold text-text">
-              Chưa có thư.
-            </p>
-            <button
-              type="button"
-              onClick={() => setWriting(true)}
-              className={`${btn.primary} mt-7 max-w-[18rem]`}
-            >
-              Viết thư
-            </button>
-          </div>
+          <EmptyState
+            emoji="💌"
+            title="Chưa có thư."
+            action={{
+              type: 'button',
+              label: 'Viết thư',
+              onClick: () => setWriting(true),
+            }}
+          />
         ) : null}
 
         {upcoming.length > 0 ? (

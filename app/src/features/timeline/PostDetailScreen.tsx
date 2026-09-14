@@ -258,7 +258,7 @@ export function PostDetailScreen() {
   const current = media[Math.min(index, media.length - 1)]
 
   return (
-    <main className="flex min-h-app flex-col bg-bg pb-safe">
+    <Screen>
       <TopBar to="/timeline" />
 
       {current ? (
@@ -469,6 +469,6 @@ export function PostDetailScreen() {
           </button>
         </ConfirmSheet>
       ) : null}
-    </main>
+    </Screen>
   )
 }

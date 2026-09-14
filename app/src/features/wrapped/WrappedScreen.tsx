@@ -10,6 +10,7 @@ import { formatShortVnd } from '../../lib/money'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW, previewWrapped } from '../../dev/preview'
 import { btn } from '../../lib/ui-classes'
+import { Group, Row, Switch } from '../../components/ui'
 
 type Stats = Record<string, number | string | null>
 
@@ -140,42 +141,31 @@ export function WrappedScreen() {
             <h2 className="mt-6 text-[14px] font-semibold text-muted">
               Chọn thứ muốn khoe
             </h2>
-            <ul className="mt-2 overflow-hidden rounded-xl border border-border bg-surface divide-y divide-border">
+            <Group>
               {lines.map((l) => (
-                <li
+                <Row
                   key={l.key}
-                  className="flex items-center gap-3 px-4 py-3 text-[14px]"
+                  className="flex items-center gap-3 text-[14px]"
                 >
                   <span aria-hidden>{l.emoji}</span>
                   <span className="min-w-0 flex-1 truncate text-text">
                     {l.label}
                   </span>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={!off.has(l.key)}
-                    aria-label={l.label}
-                    onClick={() =>
+                  <Switch
+                    checked={!off.has(l.key)}
+                    label={l.label}
+                    onChange={(on) =>
                       setOff((prev) => {
                         const next = new Set(prev)
-                        if (next.has(l.key)) next.delete(l.key)
+                        if (on) next.delete(l.key)
                         else next.add(l.key)
                         return next
                       })
                     }
-                    className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-                      off.has(l.key) ? 'bg-border' : 'bg-accent'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 h-6 w-6 rounded-full bg-white transition-all ${
-                        off.has(l.key) ? 'left-0.5' : 'left-[1.375rem]'
-                      }`}
-                    />
-                  </button>
-                </li>
+                  />
+                </Row>
               ))}
-            </ul>
+            </Group>
 
             <button
               type="button"

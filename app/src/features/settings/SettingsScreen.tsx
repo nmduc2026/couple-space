@@ -13,11 +13,15 @@ import { useUiStore, type Theme } from '../../lib/store'
 import {
   Group,
   Row,
+  Screen,
   SectionLabel,
+  Stage,
   Switch,
+  Title,
   TopBar,
 } from '../../components/ui'
 import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 import { COUPLE_THEMES } from '../../lib/coupleTheme'
 import { compressImage } from '../../lib/image'
 import { MEDIA_BUCKET } from '../../hooks/usePosts'
@@ -248,14 +252,12 @@ export function SettingsScreen() {
   }
 
   return (
-    <main className="min-h-app bg-bg pb-safe">
+    <Screen>
       <TopBar to="/" />
-      <div className="mx-auto w-full max-w-[calc(28rem/var(--ui-scale))] px-4 pb-16">
+      <Stage pad="px-4" className="pb-16">
         <form onSubmit={saveProfile}>
           <div className="flex items-center justify-between gap-3 px-1 pt-1 pb-5">
-            <h1 className="text-[23px] font-bold tracking-[-0.02em] text-text">
-              Cài đặt
-            </h1>
+            <Title>Cài đặt</Title>
             {dirty ? (
               <button
                 type="submit"
@@ -336,22 +338,12 @@ export function SettingsScreen() {
 
         <div className="mt-7">
           <SectionLabel>Giao diện</SectionLabel>
-          <div className="mt-2 flex gap-1 rounded-xl border border-border bg-surface p-1">
-            {THEMES.map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setTheme(value)}
-                className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                  theme === value
-                    ? 'bg-accent text-on-accent'
-                    : 'text-muted hover:text-text'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={THEMES.map(([value, label]) => ({ value, label }))}
+            value={theme}
+            onChange={setTheme}
+            className="mt-2"
+          />
 
           <div className="mt-2 flex gap-2">
             {COUPLE_THEMES.map((t) => {
@@ -483,7 +475,7 @@ export function SettingsScreen() {
             </Row>
           </Group>
         </div>
-      </div>
-    </main>
+      </Stage>
+    </Screen>
   )
 }

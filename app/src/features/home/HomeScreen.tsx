@@ -6,7 +6,7 @@ import { useSession } from '../../hooks/useSession'
 import { daysTogether, nextMilestone } from '../../lib/dateCount'
 import { shareInvite } from '../../lib/inviteShare'
 import { supabase } from '../../lib/supabase'
-import { Loading } from '../../components/ui'
+import { Loading, Group, Row } from '../../components/ui'
 import { useRecentPosts } from '../../hooks/usePosts'
 import { useAgenda } from '../../hooks/useAgenda'
 import { countdownLabel } from '../../lib/recurrence'
@@ -246,10 +246,10 @@ export function HomeScreen() {
             {/* Cùng một danh sách thì vẽ một khung, ngăn nhau bằng đường kẻ.
                 Mỗi mục một thẻ viền riêng làm chúng nó trông như những thứ
                 chẳng liên quan gì tới nhau. */}
-            <ul className="mt-2.5 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+            <Group className="mt-2.5">
               {agenda.slice(0, 2).map((item) => (
-                <li key={item.id}>
-                  <Link to="/plan" className="flex items-center gap-3 p-3.5">
+                <Row key={item.id}>
+                  <Link to="/plan" className="flex items-center gap-3">
                     {item.emoji ? (
                       <span aria-hidden className="text-xl">
                         {item.emoji}
@@ -264,9 +264,9 @@ export function HomeScreen() {
                       {countdownLabel(item.days_away)}
                     </span>
                   </Link>
-                </li>
+                </Row>
               ))}
-            </ul>
+            </Group>
           </section>
         ) : null}
 

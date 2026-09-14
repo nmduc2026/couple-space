@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { usePosts, type Post } from '../../hooks/usePosts'
@@ -14,7 +15,6 @@ import {
 import { provinceByCode } from '../../lib/provinces'
 import { formatDay } from '../../lib/formatDate'
 import { PREVIEW } from '../../dev/preview'
-import { btn } from '../../lib/ui-classes'
 
 export function AlbumsScreen() {
   const navigate = useNavigate()
@@ -85,9 +85,17 @@ export function AlbumsScreen() {
 
       <div className="flex-1 px-4 py-4">
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
         ) : albums.length === 0 && fresh.length === 0 ? (
-          <EmptyState hasPosts={posts.length > 0} />
+          <EmptyState
+            emoji="🖼️"
+            title="Chưa có album."
+            action={{
+              type: 'link',
+              to: posts.length > 0 ? '/timeline' : '/compose',
+              label: posts.length > 0 ? 'Xem kỉ niệm' : 'Thêm kỉ niệm',
+            }}
+          />
         ) : (
           <>
             {albums.length > 0 ? (
@@ -167,24 +175,5 @@ function Cover({ post, small = false }: { post?: Post; small?: boolean }) {
     <span className={`${size} grid place-items-center bg-soft text-2xl`}>
       <span aria-hidden>🖼️</span>
     </span>
-  )
-}
-
-function EmptyState({ hasPosts }: { hasPosts: boolean }) {
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <p className="text-5xl" aria-hidden>
-        🖼️
-      </p>
-      <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có album.
-      </p>
-      <Link
-        to={hasPosts ? '/timeline' : '/compose'}
-        className={`${btn.primary} mt-7 max-w-[18rem]`}
-      >
-        {hasPosts ? 'Xem kỉ niệm' : 'Thêm kỉ niệm'}
-      </Link>
-    </div>
   )
 }

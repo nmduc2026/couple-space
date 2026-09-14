@@ -15,6 +15,7 @@ import {
   TopBar,
 } from '../../components/ui'
 import { btn } from '../../lib/ui-classes'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 type Export = {
   id: string
@@ -135,54 +136,39 @@ export function ExportPdfScreen() {
 
         <div className="mt-6 space-y-4">
           <Field label="Khổ giấy">
-            <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-              {PAGE_SIZES.map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPageSize(value)}
-                  className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
-                    pageSize === value ? 'bg-accent text-on-accent' : 'text-muted'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              options={PAGE_SIZES.map(([value, label]) => ({ value, label }))}
+              value={pageSize}
+              onChange={setPageSize}
+            />
           </Field>
 
           <Field label="Mật độ ảnh">
-            <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-              {DENSITIES.map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPerPage(value)}
-                  className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
-                    perPage === value ? 'bg-accent text-on-accent' : 'text-muted'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              options={DENSITIES.map(([value, label]) => ({
+                value: String(value) as '1' | '2' | '4',
+                label,
+              }))}
+              value={String(perPage) as '1' | '2' | '4'}
+              onChange={(next) => setPerPage(Number(next) as 1 | 2 | 4)}
+            />
           </Field>
 
           <Field label="Phạm vi">
-            <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-              {[null, thisYear, thisYear - 1].map((y) => (
-                <button
-                  key={String(y)}
-                  type="button"
-                  onClick={() => setYear(y)}
-                  className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
-                    year === y ? 'bg-accent text-on-accent' : 'text-muted'
-                  }`}
-                >
-                  {y === null ? 'Tất cả' : y}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              options={[
+                { value: 'all', label: 'Tất cả' },
+                { value: String(thisYear), label: String(thisYear) },
+                {
+                  value: String(thisYear - 1),
+                  label: String(thisYear - 1),
+                },
+              ]}
+              value={year === null ? 'all' : String(year)}
+              onChange={(next) =>
+                setYear(next === 'all' ? null : Number(next))
+              }
+            />
           </Field>
         </div>
 

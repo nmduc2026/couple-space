@@ -19,6 +19,7 @@ import {
 import { btn, input } from '../../lib/ui-classes'
 import { suggestedEmoji } from '../../lib/eventSuggestion'
 import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 const RECURRENCES = [
   ['none', 'Một lần'],
@@ -183,22 +184,14 @@ export function EventFormScreen() {
             </Field>
 
             <Field label="Lặp lại">
-              <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-                {RECURRENCES.map(([key, label]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => patch({ recurrence: key })}
-                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                      value.recurrence === key
-                        ? 'bg-accent text-on-accent'
-                        : 'text-muted'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                options={RECURRENCES.map(([value, label]) => ({
+                  value,
+                  label,
+                }))}
+                value={value.recurrence}
+                onChange={(next) => patch({ recurrence: next })}
+              />
             </Field>
 
             <Field

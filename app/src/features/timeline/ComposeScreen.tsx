@@ -7,9 +7,9 @@ import { MEDIA_BUCKET } from '../../hooks/usePosts'
 import { ACTIVITY_LABELS } from '../../lib/activities'
 import {
   categoryFromActivity,
-  formatAmountInput,
   parseAmountInput,
 } from '../../lib/money'
+import { AmountInput } from '../../components/AmountInput'
 import { todayYmd } from '../../lib/dateCount'
 import { compressImage, readExifDate } from '../../lib/image'
 import { notifyPartner } from '../../lib/notify'
@@ -27,6 +27,7 @@ import {
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 type Picked = {
   file: File
@@ -417,37 +418,22 @@ export function ComposeScreen() {
           {addExpense ? (
             <div className="mt-2 space-y-3 rounded-xl border border-accent/30 bg-soft p-3.5">
               <Field label="Số tiền">
-                <div className="relative">
-                  <input
-                    inputMode="numeric"
-                    value={amount}
-                    onChange={(e) => setAmount(formatAmountInput(e.target.value))}
-                    placeholder="0"
-                    className={`${input} h-14 pr-10 text-right text-[22px] font-bold tabular-nums`}
-                  />
-                  <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted">
-                    đ
-                  </span>
-                </div>
+                <AmountInput
+                  variant="md"
+                  value={amount}
+                  onChange={setAmount}
+                />
               </Field>
 
               <Field label="Người thanh toán">
-                <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-                  {(couple?.members ?? []).map((m) => (
-                    <button
-                      key={m.user_id}
-                      type="button"
-                      onClick={() => setPaidBy(m.user_id)}
-                      className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                        (paidBy || user?.id) === m.user_id
-                          ? 'bg-accent text-on-accent'
-                          : 'text-muted'
-                      }`}
-                    >
-                      {m.nickname ?? 'Người ấy'}
-                    </button>
-                  ))}
-                </div>
+                <SegmentedControl
+                  options={(couple?.members ?? []).map((m) => ({
+                    value: m.user_id,
+                    label: m.nickname ?? 'Người ấy',
+                  }))}
+                  value={paidBy || user?.id || ''}
+                  onChange={setPaidBy}
+                />
               </Field>
             </div>
           ) : null}

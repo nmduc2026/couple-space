@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import {
   groupByMonth,
   useInfinitePosts,
@@ -10,7 +11,6 @@ import {
 } from '../../hooks/usePosts'
 import { TimelineFilters, type TimeFilter } from './TimelineFilters'
 import { ACTIVITY_LABELS } from '../../lib/activities'
-import { btn } from '../../lib/ui-classes'
 import { formatDay } from '../../lib/formatDate'
 
 type View = 'cards' | 'grid'
@@ -128,12 +128,22 @@ export function TimelineScreen() {
 
       <div className="flex-1 px-4 pb-8">
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
         ) : posts.length === 0 ? (
           // `posts` giờ là kết quả ĐÃ LỌC nên luôn rỗng ở nhánh này; `years`
           // lấy từ toàn bộ bài nên mới phân biệt được "chưa có kỉ niệm nào"
           // với "lọc không ra gì".
-          <EmptyState hasPosts={years.length > 0} />
+          years.length > 0 ? (
+            <p className="py-20 text-center text-sm text-muted">
+              Không có kỉ niệm nào khớp bộ lọc.
+            </p>
+          ) : (
+            <EmptyState
+              emoji="📷"
+              title="Chưa có kỉ niệm"
+              action={{ type: 'link', to: '/compose', label: 'Thêm' }}
+            />
+          )
         ) : view === 'grid' ? (
           <GridView posts={posts} />
         ) : (
@@ -147,30 +157,6 @@ export function TimelineScreen() {
         ) : null}
       </div>
     </>
-  )
-}
-
-
-function EmptyState({ hasPosts }: { hasPosts: boolean }) {
-  if (hasPosts) {
-    return (
-      <p className="py-20 text-center text-sm text-muted">
-        Không có kỉ niệm nào khớp bộ lọc.
-      </p>
-    )
-  }
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <p className="text-5xl" aria-hidden>
-        📷
-      </p>
-      <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có kỉ niệm
-      </p>
-      <Link to="/compose" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Thêm
-      </Link>
-    </div>
   )
 }
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
+import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import { useAgenda, type AgendaItem } from '../../hooks/useAgenda'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
@@ -10,8 +11,8 @@ import { isBirthday, shouldSuggest, suggestedTask } from '../../lib/eventSuggest
 import { PREVIEW } from '../../dev/preview'
 import { countdownLabel } from '../../lib/recurrence'
 import { formatDay } from '../../lib/formatDate'
-import { btn } from '../../lib/ui-classes'
 import { GoalsScreen } from '../goals/GoalsScreen'
+import { SegmentedControl } from '../../components/SegmentedControl'
 
 export function PlanScreen() {
   const [params, setParams] = useSearchParams()
@@ -75,25 +76,14 @@ export function PlanScreen() {
       />
 
       <div className="px-4 pt-3">
-        <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
-          {(
-            [
-              ['events', 'Sự kiện'],
-              ['goals', 'Mục tiêu'],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setTab(value)}
-              className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-                tab === value ? 'bg-accent text-on-accent' : 'text-muted'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[
+            { value: 'events', label: 'Sự kiện' },
+            { value: 'goals', label: 'Mục tiêu' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
       </div>
 
       {tab === 'goals' ? <GoalsScreen /> : null}
@@ -140,9 +130,16 @@ export function PlanScreen() {
         ) : null}
 
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-muted">Đang tải...</p>
+          <InlineLoading />
+        ) : upcoming.length === 0 && past.length === 0 ? (
+          <EmptyState
+            emoji="📅"
+            title="Chưa có sự kiện nào"
+            subtitle="Thêm ngày kỉ niệm, sinh nhật hoặc kế hoạch sắp tới."
+            action={{ type: 'link', to: '/plan/new', label: 'Thêm sự kiện' }}
+          />
         ) : upcoming.length === 0 ? (
-          <EmptyState />
+          <p className="py-8 text-center text-sm text-muted">Không còn sự kiện sắp tới.</p>
         ) : (
           <ul className="flex flex-col gap-2.5">
             {upcoming.map((item) => (
@@ -172,22 +169,6 @@ export function PlanScreen() {
         ) : null}
       </div>
     </>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <p className="text-5xl" aria-hidden>
-        🎂
-      </p>
-      <p className="mt-5 text-[17px] font-semibold text-text">
-        Chưa có sự kiện.
-      </p>
-      <Link to="/plan/new" className={`${btn.primary} mt-7 max-w-[18rem]`}>
-        Thêm
-      </Link>
-    </div>
   )
 }
 
