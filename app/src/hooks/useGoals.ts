@@ -32,7 +32,7 @@ export function goalProgress(goal: Goal): { ratio: number; label: string } {
     const total = goal.goal_steps.length
     const done = goal.goal_steps.filter((s) => s.is_done).length
     if (total === 0) {
-      return { ratio: goal.status === 'done' ? 1 : 0, label: 'chưa có bước nào' }
+      return { ratio: goal.status === 'done' ? 1 : 0, label: 'Chưa có bước nào' }
     }
     return { ratio: done / total, label: `${done}/${total} bước` }
   }
