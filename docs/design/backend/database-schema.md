@@ -493,34 +493,43 @@ create table public.notification_prefs (
 -- tổng chi theo tháng, theo danh mục, và số buổi hẹn.
 
 
--- Các mốc kỉ niệm sắp tới (tính ra, không lưu trong bảng)
+-- Các mốc kỉ niệm sắp tới (tính ra, không lưu trong bảng).
+-- Chỉ trong năm lịch hiện tại: hôm nay → 31/12.
 create or replace function public.upcoming_milestones(p_couple_id uuid, p_limit int default 5)
 returns table (label text, milestone_date date, days_away int)
 language sql stable security definer set search_path = public as $$
   with c as (
     select start_date from public.couples where id = p_couple_id
   ),
+  bounds as (
+    select make_date(extract(year from current_date)::int, 12, 31)::date as year_end
+  ),
   day_marks as (
-    select 'Ngày thứ ' || n as label, (c.start_date + n)::date as d
+    -- ngày bắt đầu yêu là ngày thứ 1 → mốc thứ n rơi vào start_date + (n-1)
+    select 'Ngày thứ ' || n as label, (c.start_date + (n - 1))::date as d
     from c, unnest(array[100,200,300,365,500,600,700,730,800,900,1000,
                          1095,1460,1825,2000,2555,3000,3650]) as n
   ),
   year_marks as (
-    select 'Kỉ niệm ' || y || ' năm' as label,
+    select case when y = 1 then 'Kỉ niệm 1 năm' else 'Kỉ niệm ' || y || ' năm' end as label,
            (c.start_date + (y || ' years')::interval)::date as d
-    from c, generate_series(1, 30) as y
+    from c, generate_series(1, 50) as y
   ),
   month_marks as (
     select 'Tròn ' || mo || ' tháng' as label,
            (c.start_date + (mo || ' months')::interval)::date as d
-    from c, generate_series(1, 11) as mo
+    from c, generate_series(1, 120) as mo
   )
-  select label, d, (d - current_date)::int
-  from (select * from day_marks union all
-        select * from year_marks union all
-        select * from month_marks) all_marks
-  where d >= current_date
-  order by d
+  select m.label, m.d, (m.d - current_date)::int
+  from (
+    select * from day_marks union all
+    select * from year_marks union all
+    select * from month_marks
+  ) m
+  cross join bounds b
+  where m.d >= current_date
+    and m.d <= b.year_end
+  order by m.d
   limit p_limit;
 $$;
 

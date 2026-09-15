@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
+import { toast } from 'sonner'
 import { useCouple } from '../../hooks/useCouple'
 import { useMyProfile } from '../../hooks/useMyProfile'
 import { useSession } from '../../hooks/useSession'
@@ -58,17 +59,47 @@ export function HomeScreen() {
   }, [])
 
   useEffect(() => {
-    if (!couple || couple.members.length >= 2) return
-    void supabase
-      .from('invites')
-      .select('code')
-      .eq('couple_id', couple.id)
-      .is('used_at', null)
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => setInviteCode(data?.code ?? null))
+    if (!couple || couple.members.length >= 2) {
+      setInviteCode(null)
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      const { data, error } = await supabase
+        .from('invites')
+        .select('code')
+        .eq('couple_id', couple.id)
+        .is('used_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (cancelled) return
+      if (error) {
+        console.error('invite fetch', error)
+        setInviteCode(null)
+        return
+      }
+      if (data?.code) {
+        setInviteCode(data.code)
+        return
+      }
+      // Space mới mà không còn mã còn hạn → sinh lại.
+      const { data: code, error: regenErr } = await supabase.rpc(
+        'regenerate_invite',
+        { p_couple_id: couple.id },
+      )
+      if (cancelled) return
+      if (regenErr) {
+        console.error('regenerate_invite', regenErr)
+        setInviteCode(null)
+        return
+      }
+      setInviteCode((code as string | null) ?? null)
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [couple])
 
   useEffect(() => {
@@ -161,11 +192,30 @@ export function HomeScreen() {
             </p>
             <button
               type="button"
-              disabled={!inviteCode}
               className="shrink-0 text-[13.5px] font-semibold text-accent disabled:opacity-50"
-              onClick={() => inviteCode && void shareInvite(inviteCode)}
+              disabled={!inviteCode}
+              onClick={() => {
+                if (!inviteCode) {
+                  toast.error('Chưa có mã mời. Thử tải lại trang.')
+                  return
+                }
+                void shareInvite(inviteCode)
+                  .then((how) => {
+                    toast.success(
+                      how === 'shared'
+                        ? 'Đã mở chia sẻ link mời.'
+                        : 'Đã copy link mời.',
+                    )
+                  })
+                  .catch((err) => {
+                    if (err instanceof DOMException && err.name === 'AbortError') {
+                      return
+                    }
+                    toast.error('Không copy được. Thử lại.')
+                  })
+              }}
             >
-              Mời lại
+              Copy mã
             </button>
           </div>
         ) : null}

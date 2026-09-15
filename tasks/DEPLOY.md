@@ -142,16 +142,17 @@ Nếu nó hỏi **database password** thì dán mật khẩu đã lưu ở bư�
 
 ## 4. Tạo khoá cho thông báo đẩy
 
-Thông báo đẩy cần một cặp khoá riêng. Chép nguyên khối này rồi dán:
+Thông báo đẩy cần một cặp khoá riêng. Trong thư mục `app`, chạy:
 
-```bash
-node -e "const c=require('crypto');const {publicKey,privateKey}=c.generateKeyPairSync('ec',{namedCurve:'prime256v1'});const pub=publicKey.export({type:'spki',format:'der'}).subarray(-65);console.log('VAPID_PUBLIC_KEY='+Buffer.from(pub).toString('base64url'));console.log('VAPID_PRIVATE_KEY='+privateKey.export({format:'jwk'}).d);console.log('CRON_SECRET='+c.randomBytes(32).toString('base64url'));" > .vapid.env
+```powershell
+node scripts/gen-vapid.cjs
 ```
 
-Lệnh này tạo file `.vapid.env` gồm 3 dòng. Xem thử:
+Lệnh này tự tạo file `.vapid.env` gồm 3 dòng (ghi UTF-8, chạy được trên
+PowerShell). Xem thử:
 
-```bash
-cat .vapid.env
+```powershell
+Get-Content .vapid.env
 ```
 
 Đại khái:
@@ -164,7 +165,7 @@ CRON_SECRET=G-YmmOT7p8zj...
 
 Gửi ba khoá này lên Supabase:
 
-```bash
+```powershell
 npx supabase secrets set --env-file .vapid.env
 ```
 
@@ -175,6 +176,9 @@ npx supabase secrets set --env-file .vapid.env
 >
 > Nhưng **chưa xoá file `.vapid.env` vội** — bước 7 và bước 8 còn cần. Xoá ở
 > [bước 12](#12-kiểm-tra-lần-cuối).
+>
+> **Đừng** dùng `node ... > .vapid.env` trên PowerShell — dấu `>` ghi file
+> UTF-16, rồi lệnh `secrets set` sẽ báo *"No arguments found"*.
 
 ---
 
@@ -485,6 +489,7 @@ thấy.
 | App mở lên trắng trơn | Thiếu hoặc sai biến môi trường trên Vercel. Kiểm tra lại 3 dòng ở bước 10.3, sửa xong nhớ **Redeploy**. |
 | Không nhận được email mã đăng nhập | Xem hộp thư rác. Gói miễn phí Supabase giới hạn vài email mỗi giờ — chờ một lát rồi thử lại. |
 | Quên mật khẩu: bấm link email bị đá về Home / không đổi được MK | Thiếu Redirect URL. Dashboard → Authentication → URL Configuration → thêm `https://<app>.vercel.app/login/reset` (và localhost lúc dev). |
+| `No arguments found. Use --env-file...` khi `secrets set` | File `.vapid.env` bị PowerShell ghi UTF-16 (thường vì dùng `>`). Chạy lại `node scripts/gen-vapid.cjs` rồi `npx supabase secrets set --env-file .vapid.env`. |
 | Không có thông báo đẩy | Ba khả năng, theo thứ tự hay gặp: (1) đang mở trong tab Safari chứ không phải từ icon màn hình chính; (2) `VITE_VAPID_PUBLIC_KEY` sai hoặc thiếu; (3) chưa bấm Cho phép khi iPhone hỏi. |
 | Nhắc dịp đặc biệt không tới, dù thông báo khác vẫn tới | Quên bước 7. Chạy lại bước 7 rồi kiểm bằng lệnh ở [Phụ lục A](#phụ-lục-a--cho-người-có-code). |
 | Sách ảnh PDF chạy mãi không xong | Xem lại bước 5: lệnh deploy `export-pdf` có tải lên đủ 2 file `.ttf` và 2 file `.wasm` không. Thiếu thì chạy lại lệnh đó. |

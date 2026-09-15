@@ -32,7 +32,8 @@
    **`key` phải ổn định** — nó là thứ dùng trong `reminder_sends` và `reminder_mutes`.
    Đổi cách đặt key sau này sẽ làm mọi bản ghi tắt nhắc mất tác dụng.
 
-4. Chỉ trả về mốc **trong tương lai**, và giới hạn số lượng.
+4. Chỉ trả về mốc **từ hôm nay đến hết năm lịch hiện tại** (31/12), rồi giới hạn
+   số lượng. Không hiện "Kỉ niệm 9 năm" khi còn cả chục năm nữa.
 
 **Xong khi:** gọi hàm với một ngày bắt đầu yêu thật, ra danh sách mốc hợp lý, không trùng,
 sắp đúng thứ tự.
