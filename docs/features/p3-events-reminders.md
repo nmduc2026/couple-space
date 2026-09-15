@@ -31,6 +31,10 @@ Lý do sự kiện hệ thống không xoá được: nó **không phải một 
 ngày bắt đầu yêu. Xoá nó rồi thì lần sau mở app nó lại xuất hiện — trạng thái đó gây rối
 hơn là giúp. Thay vào đó, cho **tắt nhắc**.
 
+**Tầm nhìn danh sách:** mốc hệ thống chỉ hiện từ **hôm nay đến 31/12 năm nay**. Sang năm
+mới thì các mốc của năm đó mới xuất hiện. Sự kiện người dùng tạo không bị cắt theo quy tắc
+này (vẫn theo lần tới của chu kỳ lặp).
+
 ## 3. Luật nghiệp vụ
 
 ### Lặp lại

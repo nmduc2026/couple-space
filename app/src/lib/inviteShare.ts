@@ -1,14 +1,25 @@
 export function buildInviteShare(code: string, origin = window.location.origin) {
   const link = `${origin}/join?code=${code}`
-  const text = `Tham gia Couple Space bằng mã ${code}: ${link}`
-  return { link, text }
+  return { link, text: link }
 }
 
-export async function shareInvite(code: string) {
-  const { link, text } = buildInviteShare(code)
-  if (navigator.share) {
-    await navigator.share({ title: 'Couple Space', text, url: link })
-    return
+export type ShareInviteResult = 'shared' | 'copied'
+
+/** Chia sẻ / copy chỉ link mời (không kèm câu chữ). */
+export async function shareInvite(code: string): Promise<ShareInviteResult> {
+  const { link } = buildInviteShare(code)
+
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({ title: 'Couple Space', url: link })
+      return 'shared'
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw err
+      }
+    }
   }
-  await navigator.clipboard.writeText(text)
+
+  await navigator.clipboard.writeText(link)
+  return 'copied'
 }

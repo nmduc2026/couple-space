@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import { useAgenda, type AgendaItem } from '../../hooks/useAgenda'
 import { useCouple } from '../../hooks/useCouple'
+import { useGoals } from '../../hooks/useGoals'
 import { useSession } from '../../hooks/useSession'
 import { supabase } from '../../lib/supabase'
 import { isBirthday, shouldSuggest, suggestedTask } from '../../lib/eventSuggestion'
@@ -14,16 +15,38 @@ import { formatDay } from '../../lib/formatDate'
 import { GoalsScreen } from '../goals/GoalsScreen'
 import { SegmentedControl } from '../../components/SegmentedControl'
 
+function dismissedKey(coupleId: string) {
+  return `plan-suggest-dismissed:${coupleId}`
+}
+
+function readDismissed(coupleId: string | undefined): string[] {
+  if (!coupleId) return []
+  try {
+    const raw = sessionStorage.getItem(dismissedKey(coupleId))
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : []
+  } catch {
+    return []
+  }
+}
+
 export function PlanScreen() {
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') === 'goals' ? 'goals' : 'events'
   const { agenda, isLoading } = useAgenda(30)
+  const { goals } = useGoals()
   const [showPast, setShowPast] = useState(false)
   const queryClient = useQueryClient()
   const { couple } = useCouple()
   const { user } = useSession()
   const [dismissed, setDismissed] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
+  const creatingRef = useRef(false)
+
+  useEffect(() => {
+    setDismissed(readDismissed(couple?.id))
+  }, [couple?.id])
 
   function setTab(next: 'events' | 'goals') {
     const p = new URLSearchParams(params)
@@ -32,29 +55,70 @@ export function PlanScreen() {
     setParams(p, { replace: true })
   }
 
+  function dismiss(id: string) {
+    setDismissed((list) => {
+      if (list.includes(id)) return list
+      const next = [...list, id]
+      if (couple?.id) {
+        sessionStorage.setItem(dismissedKey(couple.id), JSON.stringify(next))
+      }
+      return next
+    })
+  }
+
+  function undismiss(id: string) {
+    setDismissed((list) => {
+      const next = list.filter((x) => x !== id)
+      if (couple?.id) {
+        sessionStorage.setItem(dismissedKey(couple.id), JSON.stringify(next))
+      }
+      return next
+    })
+  }
+
   const upcoming = agenda.filter((a) => a.days_away >= 0)
   const past = agenda.filter((a) => a.days_away < 0)
 
+  function alreadyHasGoal(item: AgendaItem, taskTitle: string) {
+    return goals.some(
+      (g) =>
+        g.status === 'active' &&
+        g.title === taskTitle &&
+        g.due_date === item.occurs_on,
+    )
+  }
+
   // Chỉ gợi ý cho dịp gần nhất — nhiều dải gợi ý cùng lúc là làm phiền
-  const suggestFor = upcoming.find(
-    (a) => shouldSuggest(a.days_away) && !dismissed.includes(a.id) && suggestedTask(a.title),
-  )
+  const suggestFor = upcoming.find((a) => {
+    if (!shouldSuggest(a.days_away) || dismissed.includes(a.id)) return false
+    const task = suggestedTask(a.title)
+    return !!task && !alreadyHasGoal(a, task)
+  })
   const suggestion = suggestFor ? suggestedTask(suggestFor.title) : null
 
   /** Tạo thẳng một mục tiêu checklist, hạn đúng ngày diễn ra dịp. */
   async function createTask() {
     if (!suggestFor || !suggestion || !couple || !user || PREVIEW) return
+    if (creatingRef.current) return
+    creatingRef.current = true
     setCreating(true)
+    const eventId = suggestFor.id
+    const dueDate = suggestFor.occurs_on
+    // Ẩn banner ngay — tránh bấm nhiều lần tạo duplicate trước khi await xong.
+    dismiss(eventId)
     const { error } = await supabase.from('goals').insert({
       couple_id: couple.id,
       title: suggestion,
       kind: 'checklist',
-      due_date: suggestFor.occurs_on,
+      due_date: dueDate,
       created_by: user.id,
     })
+    creatingRef.current = false
     setCreating(false)
-    if (error) return
-    setDismissed((list) => [...list, suggestFor.id])
+    if (error) {
+      undismiss(eventId)
+      return
+    }
     await queryClient.invalidateQueries({ queryKey: ['goals'] })
     setTab('goals')
   }
@@ -101,27 +165,27 @@ export function PlanScreen() {
                 : `${suggestFor.days_away} ngày`}{' '}
               · <b className="font-semibold">{suggestFor.title}</b>
             </p>
-            <div className="mt-2.5 flex gap-2">
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => void createTask()}
                 disabled={creating}
-                className="rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-semibold text-on-accent disabled:opacity-50"
+                className="shrink-0 whitespace-nowrap rounded-full bg-accent px-3 py-1.5 text-[12.5px] font-semibold text-on-accent disabled:opacity-50"
               >
-                Tạo việc cần làm
+                Tạo kế hoạch
               </button>
               {isBirthday(suggestFor.title) ? (
                 <Link
                   to="/wishlist"
-                  className="rounded-full border border-border px-3.5 py-1.5 text-[13px] font-semibold text-accent"
+                  className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px] font-semibold text-accent"
                 >
-                  🎁 Xem wishlist
+                  🎁 Wishlist
                 </Link>
               ) : null}
               <button
                 type="button"
-                onClick={() => setDismissed((l) => [...l, suggestFor.id])}
-                className="rounded-full px-3 py-1.5 text-[13px] font-medium text-muted"
+                onClick={() => dismiss(suggestFor.id)}
+                className="shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12.5px] font-medium text-muted"
               >
                 Bỏ qua
               </button>
