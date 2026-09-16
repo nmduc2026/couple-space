@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { todayYmd } from '../lib/dateCount'
 import { btn } from '../lib/ui-classes'
 import { formatDateLong } from '../lib/formatDate'
@@ -52,12 +52,24 @@ export function DateField({
   clearable?: boolean
 }) {
   const [open, setOpen] = useState(false)
+  // Mobile: sau khi chọn ngày, cùng một lượt chạm hay "rơi" xuống nút mở
+  // → sheet đóng rồi mở lại ngay. Chặn mở trong ~400ms.
+  const blockOpenUntil = useRef(0)
+
+  function closeAfterPick(next: string) {
+    onChange(next)
+    blockOpenUntil.current = Date.now() + 400
+    setOpen(false)
+  }
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          if (Date.now() < blockOpenUntil.current) return
+          setOpen(true)
+        }}
         className={className}
         aria-haspopup="dialog"
       >
@@ -70,10 +82,7 @@ export function DateField({
           min={min}
           max={max}
           clearable={clearable}
-          onPick={(next) => {
-            onChange(next)
-            setOpen(false)
-          }}
+          onPick={closeAfterPick}
           onClose={() => setOpen(false)}
         />
       ) : null}
