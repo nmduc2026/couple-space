@@ -44,7 +44,8 @@ export type ExpenseJob = {
   category: string
   note: string | null
   spentOn: string
-  paidBy: string
+  /** null = Quỹ chung */
+  paidBy: string | null
   createdBy: string
 }
 

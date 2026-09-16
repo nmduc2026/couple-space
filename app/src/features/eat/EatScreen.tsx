@@ -57,6 +57,7 @@ export function EatScreen() {
       name: label,
       map_url: isMap ? url : null,
       source_url: isMap ? null : url,
+      status: tab,
       added_by: user.id,
     })
     setSaving(false)
@@ -157,7 +158,7 @@ export function EatScreen() {
                   }
                   className="shrink-0 text-[13px] font-semibold text-accent"
                 >
-                  {tab === 'want' ? 'Đã đi' : 'Muốn lại'}
+                  {tab === 'want' ? 'Đánh dấu đi' : 'Muốn thử lại'}
                 </button>
               </li>
             ))}

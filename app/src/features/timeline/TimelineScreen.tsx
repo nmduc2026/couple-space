@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { TopHeader } from '../../components/AppShell'
 import { EmptyState, InlineLoading } from '../../components/EmptyState'
+import { PhotoCarousel } from '../../components/PhotoCarousel'
 import {
   groupByMonth,
   useInfinitePosts,
@@ -180,54 +181,54 @@ function CardView({ posts }: { posts: Post[] }) {
 }
 
 function PostCard({ post }: { post: Post }) {
-  const cover = post.media[0]
+  const navigate = useNavigate()
   const activity = post.activity ? ACTIVITY_LABELS[post.activity] : undefined
 
   return (
-    <Link
-      to={`/timeline/${post.id}`}
-      className="block overflow-hidden rounded-xl border border-border bg-surface transition active:scale-[0.995]"
-    >
-      {cover ? (
-        <div className="relative aspect-[4/3] bg-soft">
-          <img
-            src={cover.url}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-cover"
-          />
-          {post.media.length > 1 ? (
-            <span className="absolute right-2.5 bottom-2.5 rounded-full bg-black/55 px-2.5 py-0.5 text-[11.5px] text-white">
-              1/{post.media.length}
-            </span>
-          ) : null}
-        </div>
+    <article className="overflow-hidden rounded-xl border border-border bg-surface">
+      {post.media.length > 0 ? (
+        <PhotoCarousel
+          items={post.media}
+          className="aspect-[4/3] w-full"
+          autoPlayMs={5000}
+          showArrows={post.media.length > 1}
+          showDots={post.media.length > 1}
+          showCounter={post.media.length > 1}
+          blockLinkOnGesture
+          lazy
+          onOpen={() => navigate(`/timeline/${post.id}`)}
+        />
       ) : null}
 
-      <div className="px-3.5 py-3">
-        {post.caption ? (
-          <p className="mb-1.5 text-[14.5px] leading-relaxed text-text">
-            {post.caption}
-          </p>
-        ) : null}
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-          <span>{formatDay(post.happened_on)}</span>
-          {post.place_name ? <span>📍 {post.place_name}</span> : null}
-          {activity ? (
-            <span>
-              {activity.emoji} {activity.label}
-            </span>
+      <Link
+        to={`/timeline/${post.id}`}
+        className="block transition active:scale-[0.995]"
+      >
+        <div className="px-3.5 py-3">
+          {post.caption ? (
+            <p className="mb-1.5 text-[14.5px] leading-relaxed text-text">
+              {post.caption}
+            </p>
           ) : null}
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+            <span>{formatDay(post.happened_on)}</span>
+            {post.place_name ? <span>📍 {post.place_name}</span> : null}
+            {activity ? (
+              <span>
+                {activity.emoji} {activity.label}
+              </span>
+            ) : null}
+          </div>
         </div>
-      </div>
 
-      <div className="flex gap-4 border-t border-border px-3.5 py-2 text-[13px] text-muted">
-        <span className={post.liked_by_me ? 'text-accent' : undefined}>
-          {post.liked_by_me ? '❤️' : '🤍'} {post.reaction_count}
-        </span>
-        <span>💬 {post.comment_count}</span>
-      </div>
-    </Link>
+        <div className="flex gap-4 border-t border-border px-3.5 py-2 text-[13px] text-muted">
+          <span className={post.liked_by_me ? 'text-accent' : undefined}>
+            {post.liked_by_me ? '❤️' : '🤍'} {post.reaction_count}
+          </span>
+          <span>💬 {post.comment_count}</span>
+        </div>
+      </Link>
+    </article>
   )
 }
 

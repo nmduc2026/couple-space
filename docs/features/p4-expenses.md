@@ -28,8 +28,8 @@ Splitwise, MoMo, chuyển khoản — và những app đó làm tốt hơn.
 [Timeline](p2-timeline.md) và [Ăn gì](p2-eat-tonight.md): form dài thì sau hai tuần
 không ai ghi nữa, và tính năng chết.
 
-**Cái vẫn giữ:** cột **ai trả**. Nhưng nó chỉ để **thống kê và nhìn lại**, không bao giờ
-dùng để tính ai phải trả lại ai.
+**Cái vẫn giữ:** cột **ai trả** (một trong hai, hoặc **Quỹ chung**). Nhưng nó chỉ để
+**thống kê và nhìn lại**, không bao giờ dùng để tính ai phải trả lại ai.
 
 ## 2. Vì sao vẫn cần tính năng này
 

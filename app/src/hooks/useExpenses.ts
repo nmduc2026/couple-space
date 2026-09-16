@@ -9,7 +9,7 @@ export type Expense = {
   category: string | null
   note: string | null
   spent_on: string
-  paid_by: string
+  paid_by: string | null
   post_id: string | null
 }
 
