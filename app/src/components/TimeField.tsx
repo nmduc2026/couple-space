@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { btn } from '../lib/ui-classes'
-import { BottomSheet } from './BottomSheet'
+import { Modal } from './Modal'
 
 /*
  * Ô chọn giờ của riêng app, thay cho `<input type="time">`.
@@ -100,7 +100,7 @@ function TimeSheet({
     }`
 
   return (
-    <BottomSheet onClose={onClose} ariaLabel={label}>
+    <Modal onClose={onClose} ariaLabel={label}>
       <p className="text-[17px] font-semibold text-text">{label}</p>
       <p className="mt-1 text-[26px] font-extrabold tabular-nums text-accent">
         {hour}:{minute}
@@ -156,6 +156,6 @@ function TimeSheet({
           Đóng
         </button>
       </div>
-    </BottomSheet>
+    </Modal>
   )
 }

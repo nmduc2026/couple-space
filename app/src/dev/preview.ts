@@ -212,7 +212,7 @@ export function previewEatItems() {
     id: string,
     name: string,
     address: string,
-    status: 'want' | 'tried',
+    status: 'want' | 'picked' | 'tried',
     tags: string[],
   ) => ({
     id,
@@ -233,7 +233,7 @@ export function previewEatItems() {
     mk('e1', 'Lẩu bò Ba Toa', '12 Nguyễn Huệ', 'want', ['lẩu', 'gần nhà']),
     mk('e2', 'Bún chả Hương Liên', '24 Lê Văn Hưu', 'want', ['rẻ']),
     mk('e3', 'Pizza 4P’s', 'Lê Thánh Tôn', 'want', ['sang']),
-    mk('e4', 'Cơm tấm Ba Ghiền', '84 Đặng Văn Ngữ', 'tried', ['cơm']),
+    mk('e4', 'Cơm tấm Ba Ghiền', '84 Đặng Văn Ngữ', 'picked', ['cơm']),
     mk('e5', 'Phở Thìn', '13 Lò Đúc', 'tried', ['sáng']),
   ]
 }

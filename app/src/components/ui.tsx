@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { btn } from '../lib/ui-classes'
 import { Link } from 'react-router'
-import { BottomSheet } from './BottomSheet'
+import { Modal } from './Modal'
 import { IconArrowLeft } from './icons'
 
 /* Ngôn ngữ thiết kế lấy từ docs/design/frontend/ui/prototype.html.
@@ -217,28 +217,29 @@ export function Loading({ text = 'Đang tải...' }: { text?: string }) {
   )
 }
 
-/** Hộp hỏi lại trượt từ đáy, dùng khi `window.confirm` không đủ —
- *  nó chỉ có hai nút và nút mặc định luôn là "đồng ý", nên không diễn tả
- *  được lựa chọn an toàn mặc định. Ở đây nút đầu tiên mới là mặc định. */
+/**
+ * Hộp xác nhận dùng chung (popup giữa màn).
+ * Hai nút một hàng: Xác nhận | Hủy.
+ */
 export function ConfirmSheet({
   title,
   body,
-  confirmLabel,
-  cancelLabel = 'Thôi',
+  confirmLabel = 'Xác nhận',
+  cancelLabel = 'Hủy',
   onConfirm,
   onCancel,
   children,
 }: {
   title: string
   body?: ReactNode
-  confirmLabel: string
+  confirmLabel?: string
   cancelLabel?: string
   onConfirm: () => void
   onCancel: () => void
   children?: ReactNode
 }) {
   return (
-    <BottomSheet onClose={onCancel} ariaLabel={title}>
+    <Modal onClose={onCancel} ariaLabel={title}>
       <p className="text-[17px] font-semibold text-text">{title}</p>
       {body ? (
         <div className="mt-2 text-[13.5px] leading-relaxed text-muted">
@@ -246,14 +247,25 @@ export function ConfirmSheet({
         </div>
       ) : null}
       {children}
-      <div className="mt-5 space-y-2">
-        <button type="button" onClick={onConfirm} className={btn.primary}>
+      <div className="mt-4 flex gap-2">
+        <button
+          type="button"
+          onClick={onConfirm}
+          className="flex h-10 flex-1 items-center justify-center rounded-xl bg-accent text-[14px] font-semibold text-on-accent transition active:scale-[0.98]"
+        >
           {confirmLabel}
         </button>
-        <button type="button" onClick={onCancel} className={btn.ghost}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex h-10 flex-1 items-center justify-center rounded-xl border border-border bg-surface text-[14px] font-semibold text-text transition active:scale-[0.98]"
+        >
           {cancelLabel}
         </button>
       </div>
-    </BottomSheet>
+    </Modal>
   )
 }
+
+/** Alias rõ nghĩa — cùng `ConfirmSheet`. */
+export const ConfirmDialog = ConfirmSheet

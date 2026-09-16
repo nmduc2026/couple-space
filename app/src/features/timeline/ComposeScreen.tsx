@@ -281,7 +281,9 @@ export function ComposeScreen() {
       if (expErr) {
         setStatus('error')
         setErrorMessage(
-          `Kỉ niệm đã đăng, nhưng chưa ghi được khoản chi: ${expErr.message}`,
+          /paid_by/i.test(expErr.message) && /null|not-null|not null/i.test(expErr.message)
+            ? 'Kỉ niệm đã đăng. Quỹ chung chưa bật trên database — chạy migration expense_shared_payer trên Supabase rồi sửa khoản chi.'
+            : `Kỉ niệm đã đăng, nhưng chưa ghi được khoản chi: ${expErr.message}`,
         )
         return
       }

@@ -15,10 +15,9 @@ import {
  * Cả ba LUÔN hiện. Trước đây lọc theo nơi chốn chỉ xuất hiện khi đi từ màn Dấu
  * chân sang, nên vào thẳng Kỉ niệm thì không có cách nào lọc theo nơi.
  *
- * Dạng dropdown thả ngay dưới nút, không phải tấm trượt từ đáy màn hình. Tấm
- * trượt hợp với việc dài hơi (chọn ngày, chọn giờ, đọc rồi quyết); còn lọc là
- * việc bấm nhanh rồi nhìn kết quả ngay — đẩy nó xuống đáy màn hình làm mất
- * chính cái danh sách mà người ta đang muốn xem đổi thế nào.
+ * Dạng dropdown thả ngay dưới nút, không phải popup giữa màn hình.
+ * Popup hợp với việc dài hơi (chọn ngày, chọn giờ, đọc rồi quyết); còn lọc là
+ * việc bấm nhanh rồi nhìn kết quả ngay — đừng che mất danh sách đang xem.
  */
 
 export type TimeFilter = { kind: 'all' } | { kind: 'year'; year: string }

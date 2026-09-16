@@ -19,7 +19,9 @@ export function SegmentedControl<T extends string>({
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
-          className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
+          className={`flex-1 rounded-xl py-2 font-semibold transition ${
+            options.length >= 3 ? 'px-1 text-[12px]' : 'text-sm'
+          } ${
             value === option.value
               ? 'bg-accent text-on-accent'
               : 'text-muted hover:text-text'

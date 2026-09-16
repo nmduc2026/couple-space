@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
@@ -6,6 +6,27 @@ import { supabase } from '../../lib/supabase'
 import { PREVIEW } from '../../dev/preview'
 import { usePendingRatings } from '../../hooks/useEatItems'
 import { VERDICTS, type Verdict } from '../../lib/eatVerdicts'
+
+function skipKey(userId: string) {
+  return `cs:eat-rating-skip:${userId}`
+}
+
+function readSkipped(userId: string): string[] {
+  try {
+    const raw = localStorage.getItem(skipKey(userId))
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed)
+      ? parsed.filter((x): x is string => typeof x === 'string')
+      : []
+  } catch {
+    return []
+  }
+}
+
+function writeSkipped(userId: string, ids: string[]) {
+  localStorage.setItem(skipKey(userId), JSON.stringify(ids))
+}
 
 /** Dải hỏi đánh giá sau khi ăn: một chạm, bỏ qua được, không nài. */
 export function RatingPrompt() {
@@ -16,9 +37,26 @@ export function RatingPrompt() {
   const [skipped, setSkipped] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
+  useEffect(() => {
+    if (!user?.id) {
+      setSkipped([])
+      return
+    }
+    setSkipped(readSkipped(user.id))
+  }, [user?.id])
+
   // Mỗi lần chỉ hỏi MỘT quán — hỏi dồn ba cái là thành bài kiểm tra
   const ask = pending.find((p) => !skipped.includes(p.visit_id))
   if (!ask) return null
+
+  function dismiss() {
+    if (!user?.id) return
+    const next = skipped.includes(ask.visit_id)
+      ? skipped
+      : [...skipped, ask.visit_id]
+    setSkipped(next)
+    writeSkipped(user.id, next)
+  }
 
   async function rate(verdict: Verdict) {
     if (!ask || !couple || !user || PREVIEW) return
@@ -44,7 +82,7 @@ export function RatingPrompt() {
         <button
           type="button"
           aria-label="Bỏ qua"
-          onClick={() => setSkipped((l) => [...l, ask.visit_id])}
+          onClick={dismiss}
           className="-mt-1 shrink-0 px-1 text-[13px] text-muted"
         >
           ✕

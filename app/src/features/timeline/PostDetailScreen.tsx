@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
@@ -8,19 +8,59 @@ import { ACTIVITY_LABELS } from '../../lib/activities'
 import { supabase } from '../../lib/supabase'
 import { notifyPartner } from '../../lib/notify'
 import { PREVIEW, previewComments } from '../../dev/preview'
-import { ConfirmSheet, Loading, Screen, TopBar } from '../../components/ui'
+import {
+  ConfirmSheet,
+  Field,
+  Loading,
+  Screen,
+  Spacer,
+  Stage,
+  Title,
+} from '../../components/ui'
 import { PhotoCarousel } from '../../components/PhotoCarousel'
-import { btn, input } from '../../lib/ui-classes'
+import { AmountInput } from '../../components/AmountInput'
+import { DateField } from '../../components/DateField'
+import { SegmentedControl } from '../../components/SegmentedControl'
+import { IconArrowLeft } from '../../components/icons'
+import { btn, input, inputChrome } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
 import { formatCommentTime, formatDay } from '../../lib/formatDate'
-import { formatVnd } from '../../lib/money'
-import { DateField } from '../../components/DateField'
+import {
+  categoryFromActivity,
+  formatAmountInput,
+  formatVnd,
+  parseAmountInput,
+} from '../../lib/money'
+
+function expenseSaveError(message: string) {
+  if (/paid_by/i.test(message) && /null|not-null|not null/i.test(message)) {
+    return 'Quỹ chung chưa bật trên database. Chạy migration expense_shared_payer trên Supabase rồi thử lại.'
+  }
+  return message
+}
 
 type Comment = {
   id: string
   author_id: string
   body: string
   created_at: string
+}
+
+type LinkedExpense = {
+  id: string
+  amount_minor: number
+  paid_by: string | null
+}
+
+type EditDraft = {
+  caption: string
+  place: string
+  day: string
+  activity: string | null
+  addExpense: boolean
+  amount: string
+  paidBy: string
+  expenseId: string | null
 }
 
 export function PostDetailScreen() {
@@ -33,12 +73,12 @@ export function PostDetailScreen() {
 
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [edit, setEdit] = useState({ caption: '', place: '', day: '' })
+  const [edit, setEdit] = useState<EditDraft | null>(null)
   const [savingEdit, setSavingEdit] = useState(false)
-  const [pendingDelete, setPendingDelete] = useState<
-    Array<{ id: string; amount_minor: number }> | null
-  >(null)
+  const [editError, setEditError] = useState('')
+  const [pendingDelete, setPendingDelete] = useState(false)
   // Thả tim phản hồi lạc quan: `override` là ý muốn của người dùng,
   // null nghĩa là chưa bấm gì nên cứ tin dữ liệu server.
   const [override, setOverride] = useState<boolean | null>(null)
@@ -66,7 +106,25 @@ export function PostDetailScreen() {
     },
   })
 
+  const expenseQuery = useQuery({
+    queryKey: ['post_expense', id],
+    enabled: !!id && !PREVIEW,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('id, amount_minor, paid_by')
+        .eq('post_id', id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return (data as LinkedExpense | null) ?? null
+    },
+  })
+
   const comments = PREVIEW ? previewComments() : (commentsQuery.data ?? [])
+  const linkedExpense = expenseQuery.data ?? null
 
   // Bình luận của người kia hiện ngay, không phải tải lại
   useEffect(() => {
@@ -93,7 +151,7 @@ export function PostDetailScreen() {
   if (!post) {
     return (
       <Screen>
-        <TopBar to="/timeline" />
+        <DetailChrome to="/timeline" />
         <p className="px-5 py-20 text-center text-sm text-muted">
           Không tìm thấy kỉ niệm này.
         </p>
@@ -135,10 +193,6 @@ export function PostDetailScreen() {
         .eq('user_id', user.id)
     }
 
-    // Số tim và `liked_by_me` nằm trong truy vấn ['posts'], không phải ở đây.
-    // Không làm mới nó thì Timeline vẫn hiện số cũ, VÀ lần thả tim sau đọc
-    // phải `liked_by_me` cũ nên lại INSERT — đụng khoá duy nhất rồi tự huỷ,
-    // thành ra "thả tim lần hai không được".
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
     await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
   }
@@ -158,7 +212,6 @@ export function PostDetailScreen() {
     if (error) return
     setDraft('')
     await queryClient.invalidateQueries({ queryKey: ['comments', post.id] })
-    // `comment_count` nằm trong ['posts'] (danh sách) lẫn ['post', id] (bài này)
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
     await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
     void notifyPartner(couple, user.id, {
@@ -168,64 +221,138 @@ export function PostDetailScreen() {
     })
   }
 
-  /** Sửa phần chữ của bài. Ảnh thì không sửa được ở đây — đổi ảnh là một
-   *  bài khác, và giữ nguyên tim với bình luận cũ thì sai. */
-  function startEdit() {
-    if (!post) return
+  /** Form cập nhật giống thêm mới — ảnh giữ nguyên (đổi ảnh = bài khác). */
+  async function startEdit() {
+    if (!post || !user) return
+    setMenuOpen(false)
+    setEditError('')
+
+    let exp = linkedExpense
+    if (!PREVIEW) {
+      const { data } = await supabase
+        .from('expenses')
+        .select('id, amount_minor, paid_by')
+        .eq('post_id', post.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      exp = (data as LinkedExpense | null) ?? null
+    }
+
     setEdit({
       caption: post.caption ?? '',
       place: post.place_name ?? '',
       day: post.happened_on,
+      activity: post.activity,
+      addExpense: !!exp,
+      amount: exp ? formatAmountInput(String(exp.amount_minor)) : '',
+      paidBy: exp
+        ? exp.paid_by == null
+          ? 'shared'
+          : exp.paid_by
+        : user.id,
+      expenseId: exp?.id ?? null,
     })
     setEditing(true)
   }
 
-  async function saveEdit() {
-    if (!post || PREVIEW) return
+  function cancelEdit() {
+    setEditing(false)
+    setEdit(null)
+    setEditError('')
+  }
+
+  async function saveEdit(event: FormEvent) {
+    event.preventDefault()
+    if (!post || !user || !edit || PREVIEW) return
     setSavingEdit(true)
+    setEditError('')
+
     const { error } = await supabase
       .from('posts')
       .update({
         caption: edit.caption.trim() || null,
         place_name: edit.place.trim() || null,
         happened_on: edit.day,
-        // Đổi địa điểm thì tỉnh cũ không còn đúng — để bản đồ suy lại
+        activity: edit.activity,
         province_code: null,
       })
       .eq('id', post.id)
-    setSavingEdit(false)
-    if (error) return
-    setEditing(false)
-    await queryClient.invalidateQueries({ queryKey: ['posts'] })
-    await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
-  }
 
-  /** Bài này có khoản chi gắn kèm không — hỏi trước khi xoá thì mới biết
-   *  có phải hỏi tiếp về khoản chi hay không. */
-  async function linkedExpenses() {
-    if (!id || PREVIEW) return []
-    const { data } = await supabase
-      .from('expenses')
-      .select('id, amount_minor')
-      .eq('post_id', id)
-      .is('deleted_at', null)
-    return data ?? []
-  }
-
-  async function askRemovePost() {
-    if (!post || PREVIEW) return
-    const linked = await linkedExpenses()
-    if (linked.length === 0) {
-      if (!window.confirm('Xoá kỉ niệm này?')) return
-      await doRemovePost(false)
+    if (error) {
+      setSavingEdit(false)
+      setEditError(error.message)
       return
     }
-    setPendingDelete(linked)
+
+    const minor = parseAmountInput(edit.amount)
+    const paidByDb = edit.paidBy === 'shared' ? null : edit.paidBy || user.id
+
+    if (edit.addExpense && minor > 0) {
+      if (edit.expenseId) {
+        const { error: expErr } = await supabase
+          .from('expenses')
+          .update({
+            amount_minor: minor,
+            paid_by: paidByDb,
+            spent_on: edit.day,
+            note: edit.place.trim() || edit.caption.trim().slice(0, 40) || null,
+            category: categoryFromActivity(edit.activity),
+          })
+          .eq('id', edit.expenseId)
+        if (expErr) {
+          setSavingEdit(false)
+          setEditError(
+            `Đã lưu bài, nhưng chưa sửa được khoản chi: ${expenseSaveError(expErr.message)}`,
+          )
+          return
+        }
+      } else {
+        const { error: expErr } = await supabase.from('expenses').insert({
+          couple_id: post.couple_id,
+          post_id: post.id,
+          amount_minor: minor,
+          category: categoryFromActivity(edit.activity),
+          note: edit.place.trim() || edit.caption.trim().slice(0, 40) || null,
+          spent_on: edit.day,
+          paid_by: paidByDb,
+          created_by: user.id,
+        })
+        if (expErr) {
+          setSavingEdit(false)
+          setEditError(
+            `Đã lưu bài, nhưng chưa ghi được khoản chi: ${expenseSaveError(expErr.message)}`,
+          )
+          return
+        }
+      }
+    } else if (edit.expenseId && (!edit.addExpense || minor <= 0)) {
+      // Tắt chi tiêu / xoá số tiền → soft-delete khoản gắn bài
+      await supabase
+        .from('expenses')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', edit.expenseId)
+    }
+
+    setSavingEdit(false)
+    setEditing(false)
+    setEdit(null)
+    await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
+    await queryClient.invalidateQueries({ queryKey: ['post_expense', post.id] })
+    await queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    await queryClient.invalidateQueries({ queryKey: ['expense_summary'] })
   }
 
-  /** Khoản chi là dữ liệu thống kê độc lập với bài — xoá bài không được
-   *  âm thầm làm hụt tổng chi của tháng. Vì vậy mặc định là GIỮ. */
-  async function doRemovePost(alsoRemoveExpenses: boolean) {
+  function askRemovePost() {
+    if (!post || PREVIEW) return
+    setMenuOpen(false)
+    setPendingDelete(true)
+  }
+
+  /** Xoá bài, luôn giữ khoản chi (chỉ cắt liên kết). */
+  async function doRemovePost() {
     if (!post) return
     const stamp = new Date().toISOString()
     await supabase
@@ -233,20 +360,11 @@ export function PostDetailScreen() {
       .update({ deleted_at: stamp })
       .eq('id', post.id)
 
-    if (alsoRemoveExpenses) {
-      await supabase
-        .from('expenses')
-        .update({ deleted_at: stamp })
-        .eq('post_id', post.id)
-        .is('deleted_at', null)
-    } else {
-      // Giữ khoản chi nhưng cắt liên kết, nếu không nó trỏ tới bài đã xoá
-      await supabase
-        .from('expenses')
-        .update({ post_id: null })
-        .eq('post_id', post.id)
-        .is('deleted_at', null)
-    }
+    await supabase
+      .from('expenses')
+      .update({ post_id: null })
+      .eq('post_id', post.id)
+      .is('deleted_at', null)
 
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
     await queryClient.invalidateQueries({ queryKey: ['expenses'] })
@@ -256,9 +374,177 @@ export function PostDetailScreen() {
 
   const media = post.media
 
+  if (editing && edit) {
+    return (
+      <Screen>
+        <DetailChrome onAction={cancelEdit} actionLabel="Hủy" />
+        <form onSubmit={(e) => void saveEdit(e)} className="contents">
+          <Stage>
+            <Title>Cập nhật kỉ niệm</Title>
+
+            {media.length > 0 ? (
+              <div className="mt-4 overflow-hidden rounded-xl">
+                <PhotoCarousel
+                  items={media}
+                  className="aspect-[4/3] w-full"
+                  autoPlayMs={0}
+                  showArrows={media.length > 1}
+                  showDots={media.length > 1}
+                  showCounter={false}
+                />
+              </div>
+            ) : null}
+            <p className="mt-2 text-[12.5px] text-muted">
+              Ảnh giữ nguyên — muốn đổi ảnh thì đăng bài mới.
+            </p>
+
+            <div className="mt-5 space-y-4">
+              <Field label="Caption">
+                <textarea
+                  value={edit.caption}
+                  onChange={(e) =>
+                    setEdit({ ...edit, caption: e.target.value })
+                  }
+                  rows={3}
+                  placeholder="Hôm nay..."
+                  disabled={savingEdit}
+                  className={`${input} h-auto py-3 leading-relaxed`}
+                />
+              </Field>
+
+              <Field label="Ngày kỉ niệm">
+                <DateField
+                  value={edit.day}
+                  max={todayYmd()}
+                  onChange={(next) => setEdit({ ...edit, day: next })}
+                  className={`${inputChrome} flex items-center text-[15px]`}
+                />
+              </Field>
+
+              <Field label="Địa điểm">
+                <input
+                  value={edit.place}
+                  onChange={(e) => setEdit({ ...edit, place: e.target.value })}
+                  placeholder="Địa điểm"
+                  disabled={savingEdit}
+                  className={input}
+                />
+              </Field>
+
+              <Field label="Hoạt động">
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(ACTIVITY_LABELS).map(([key, meta]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      disabled={savingEdit}
+                      onClick={() =>
+                        setEdit({
+                          ...edit,
+                          activity: edit.activity === key ? null : key,
+                        })
+                      }
+                      className={`rounded-full border px-3 py-1.5 text-[13px] transition disabled:opacity-40 ${
+                        edit.activity === key
+                          ? 'border-accent bg-accent font-semibold text-on-accent'
+                          : 'border-border text-muted'
+                      }`}
+                    >
+                      {meta.emoji} {meta.label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            </div>
+
+            <button
+              type="button"
+              disabled={savingEdit}
+              onClick={() =>
+                setEdit({ ...edit, addExpense: !edit.addExpense })
+              }
+              className={`mt-4 flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition disabled:opacity-40 ${
+                edit.addExpense
+                  ? 'border-accent bg-soft'
+                  : 'border-border bg-surface'
+              }`}
+            >
+              <span aria-hidden className="text-xl">
+                💰
+              </span>
+              <span className="min-w-0 flex-1">
+                <b className="block text-[15px] font-semibold text-text">
+                  {edit.expenseId ? 'Chi tiêu gắn bài' : 'Thêm chi tiêu'}
+                </b>
+              </span>
+              <span
+                aria-hidden
+                className={`grid h-6 w-6 place-items-center rounded-full border text-xs ${
+                  edit.addExpense
+                    ? 'border-accent bg-accent text-on-accent'
+                    : 'border-border'
+                }`}
+              >
+                {edit.addExpense ? '✓' : ''}
+              </span>
+            </button>
+
+            {edit.addExpense ? (
+              <div className="mt-2 space-y-3 rounded-xl border border-accent/30 bg-soft p-3.5">
+                <Field label="Số tiền">
+                  <AmountInput
+                    variant="md"
+                    value={edit.amount}
+                    onChange={(amount) => setEdit({ ...edit, amount })}
+                  />
+                </Field>
+                <Field label="Người thanh toán">
+                  <SegmentedControl
+                    options={[
+                      ...(couple?.members ?? []).map((m) => ({
+                        value: m.user_id,
+                        label: m.nickname ?? 'Người ấy',
+                      })),
+                      { value: 'shared', label: 'Quỹ chung' },
+                    ]}
+                    value={edit.paidBy || user?.id || ''}
+                    onChange={(paidBy) => setEdit({ ...edit, paidBy })}
+                  />
+                </Field>
+              </div>
+            ) : null}
+
+            {editError ? (
+              <p className="mt-3 text-[13px] leading-relaxed text-accent">
+                {editError}
+              </p>
+            ) : null}
+
+            <Spacer />
+
+            <button
+              type="submit"
+              disabled={savingEdit}
+              className={btn.primary}
+            >
+              {savingEdit ? 'Đang lưu...' : 'Lưu'}
+            </button>
+          </Stage>
+        </form>
+      </Screen>
+    )
+  }
+
   return (
     <Screen>
-      <TopBar to="/timeline" />
+      <DetailChrome
+        to="/timeline"
+        menuOpen={menuOpen}
+        onMenuToggle={mine ? () => setMenuOpen((v) => !v) : undefined}
+        onMenuClose={() => setMenuOpen(false)}
+        onEdit={() => void startEdit()}
+        onDelete={askRemovePost}
+      />
 
       {media.length > 0 ? (
         <PhotoCarousel
@@ -272,57 +558,19 @@ export function PostDetailScreen() {
       ) : null}
 
       <div className="px-4 pt-4">
-        {editing ? (
-          <div className="space-y-2.5">
-            <textarea
-              value={edit.caption}
-              onChange={(e) => setEdit({ ...edit, caption: e.target.value })}
-              rows={3}
-              placeholder="Viết chú thích..."
-              className={`${input} h-auto py-3 leading-relaxed`}
-            />
-            <input
-              value={edit.place}
-              onChange={(e) => setEdit({ ...edit, place: e.target.value })}
-              placeholder="Địa điểm"
-              className={input}
-            />
-            <DateField
-              value={edit.day}
-              max={todayYmd()}
-              onChange={(next) => setEdit({ ...edit, day: next })}
-              className={`${input} flex items-center`}
-            />
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={savingEdit}
-                onClick={() => void saveEdit()}
-                className={btn.primary}
-              >
-                {savingEdit ? 'Đang lưu...' : 'Lưu'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditing(false)}
-                className={btn.ghost}
-              >
-                Huỷ
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        {!editing && post.caption ? (
+        {post.caption ? (
           <p className="text-[15px] leading-relaxed text-text">{post.caption}</p>
         ) : null}
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted" hidden={editing}>
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
           <span>{formatDay(post.happened_on)}</span>
           {post.place_name ? <span>📍 {post.place_name}</span> : null}
           {activity ? (
             <span>
               {activity.emoji} {activity.label}
             </span>
+          ) : null}
+          {linkedExpense ? (
+            <span>💰 {formatVnd(linkedExpense.amount_minor)}</span>
           ) : null}
           <span>· {nameOf(post.author_id)} đăng</span>
         </div>
@@ -336,24 +584,6 @@ export function PostDetailScreen() {
             {liked ? '❤️' : '🤍'} {likeCount}
           </button>
           <span className="text-sm text-muted">💬 {comments.length}</span>
-          {mine ? (
-            <>
-              <button
-                type="button"
-                onClick={startEdit}
-                className="ml-auto text-sm text-muted"
-              >
-                Sửa
-              </button>
-              <button
-                type="button"
-                onClick={() => void askRemovePost()}
-                className="text-sm text-muted"
-              >
-                Xoá
-              </button>
-            </>
-          ) : null}
         </div>
 
         <div className="pb-4">
@@ -406,41 +636,126 @@ export function PostDetailScreen() {
       {pendingDelete ? (
         <ConfirmSheet
           title="Xoá kỉ niệm này?"
-          body={
-            <>
-              Bài này có{' '}
-              <b className="font-semibold text-text">
-                {pendingDelete.length} khoản chi
-              </b>{' '}
-              gắn kèm, tổng{' '}
-              <b className="font-semibold text-text">
-                {formatVnd(
-                  pendingDelete.reduce((sum, e) => sum + e.amount_minor, 0),
-                )}
-              </b>
-              . Giữ lại thì thống kê tháng vẫn đúng, chỉ mất ảnh.
-            </>
-          }
-          confirmLabel="Xoá bài, giữ khoản chi"
-          cancelLabel="Thôi, không xoá"
           onConfirm={() => {
-            setPendingDelete(null)
-            void doRemovePost(false)
+            setPendingDelete(false)
+            void doRemovePost()
           }}
-          onCancel={() => setPendingDelete(null)}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              setPendingDelete(null)
-              void doRemovePost(true)
-            }}
-            className="mt-4 w-full text-[13px] font-medium text-muted underline underline-offset-4"
-          >
-            Xoá cả khoản chi
-          </button>
-        </ConfirmSheet>
+          onCancel={() => setPendingDelete(false)}
+        />
       ) : null}
     </Screen>
+  )
+}
+
+/** Thanh trên: quay lại / Hủy + dropdown ⋯ (Cập nhật / Xoá). */
+function DetailChrome({
+  to,
+  onAction,
+  actionLabel = 'Hủy',
+  menuOpen = false,
+  onMenuToggle,
+  onMenuClose,
+  onEdit,
+  onDelete,
+}: {
+  to?: string
+  onAction?: () => void
+  actionLabel?: string
+  menuOpen?: boolean
+  onMenuToggle?: () => void
+  onMenuClose?: () => void
+  onEdit?: () => void
+  onDelete?: () => void
+}) {
+  const menuBox = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen || !onMenuClose) return
+    const onDown = (e: MouseEvent) => {
+      if (!menuBox.current?.contains(e.target as Node)) onMenuClose()
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onMenuClose()
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen, onMenuClose])
+
+  return (
+    <div className="top-safe relative z-20 flex items-center justify-between gap-3 px-4 pb-2">
+      {onAction ? (
+        <button
+          type="button"
+          onClick={onAction}
+          className="inline-flex items-center gap-2 text-[14px] font-medium text-muted transition active:scale-95 hover:text-text"
+        >
+          <span
+            aria-hidden
+            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-text"
+          >
+            <IconArrowLeft size={18} />
+          </span>
+          {actionLabel}
+        </button>
+      ) : (
+        <Link
+          to={to ?? '/timeline'}
+          className="inline-flex items-center gap-2 text-[14px] font-medium text-muted transition active:scale-95 hover:text-text"
+        >
+          <span
+            aria-hidden
+            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-text"
+          >
+            <IconArrowLeft size={18} />
+          </span>
+          Quay lại
+        </Link>
+      )}
+
+      {onMenuToggle ? (
+        <div ref={menuBox} className="relative">
+          <button
+            type="button"
+            aria-label="Tuỳ chọn"
+            aria-expanded={menuOpen}
+            onClick={onMenuToggle}
+            className={`grid h-9 w-9 place-items-center rounded-full border bg-surface text-[18px] leading-none text-text active:scale-95 ${
+              menuOpen ? 'border-accent' : 'border-border'
+            }`}
+          >
+            ⋯
+          </button>
+          {menuOpen ? (
+            <div
+              role="menu"
+              className="absolute top-full right-0 z-30 mt-1.5 min-w-[10.5rem] overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-xl"
+            >
+              <button
+                type="button"
+                role="menuitem"
+                onClick={onEdit}
+                className="flex w-full px-3.5 py-2.5 text-left text-[14px] font-medium text-text active:bg-soft"
+              >
+                Cập nhật
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={onDelete}
+                className="flex w-full px-3.5 py-2.5 text-left text-[14px] font-medium text-accent active:bg-soft"
+              >
+                Xoá
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <span className="h-9 w-9" aria-hidden />
+      )}
+    </div>
   )
 }
