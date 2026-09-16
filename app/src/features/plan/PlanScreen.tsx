@@ -143,7 +143,7 @@ export function PlanScreen() {
         <SegmentedControl
           options={[
             { value: 'events', label: 'Sự kiện' },
-            { value: 'goals', label: 'Mục tiêu' },
+            { value: 'goals', label: 'Kế hoạch' },
           ]}
           value={tab}
           onChange={setTab}

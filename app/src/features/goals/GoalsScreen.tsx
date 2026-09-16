@@ -77,7 +77,7 @@ export function GoalsScreen() {
         value={title}
         onChange={setTitle}
         onSubmit={quickAdd}
-        placeholder="Tên mục tiêu"
+        placeholder="Tên kế hoạch"
         disabled={saving}
         className="pt-3"
       />
@@ -85,7 +85,7 @@ export function GoalsScreen() {
       {isLoading ? (
         <InlineLoading />
       ) : ordered.length === 0 ? (
-        <EmptyState emoji="✨" title="Chưa có mục tiêu." compact />
+        <EmptyState emoji="✨" title="Chưa có kế hoạch." compact />
       ) : (
         <ul className="mt-4 flex flex-col gap-2.5">
           {ordered.map((goal) => (
