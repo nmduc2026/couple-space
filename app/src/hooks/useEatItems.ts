@@ -20,7 +20,7 @@ export type EatItem = {
   map_url: string | null
   source_url: string | null
   tags: string[]
-  status: 'want' | 'tried' | 'archived'
+  status: 'want' | 'picked' | 'tried' | 'archived'
 }
 
 export function useEatItems() {

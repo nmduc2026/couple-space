@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { todayYmd } from '../lib/dateCount'
 import { btn } from '../lib/ui-classes'
 import { formatDateLong } from '../lib/formatDate'
-import { BottomSheet } from './BottomSheet'
+import { Modal } from './Modal'
 
 /*
  * Ô chọn ngày của riêng app, thay cho `<input type="date">`.
@@ -130,7 +130,7 @@ function CalendarSheet({
     (min !== undefined && day < min) || (max !== undefined && day > max)
 
   return (
-    <BottomSheet onClose={onClose} ariaLabel="Chọn ngày">
+    <Modal onClose={onClose} ariaLabel="Chọn ngày">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -240,6 +240,6 @@ function CalendarSheet({
           Đóng
         </button>
       </div>
-    </BottomSheet>
+    </Modal>
   )
 }

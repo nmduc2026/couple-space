@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BottomSheet } from '../../components/BottomSheet'
+import { Modal } from '../../components/Modal'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
 import { supabase } from '../../lib/supabase'
@@ -86,15 +86,7 @@ export function NudgeSheet({
   }
 
   return (
-    <BottomSheet
-      onClose={onClose}
-      ariaLabel="Gửi một cái chạm"
-      zClass="z-40"
-    >
-      <span
-        aria-hidden
-        className="mx-auto mb-4 block h-1 w-10 rounded-full bg-border"
-      />
+    <Modal onClose={onClose} ariaLabel="Gửi một cái chạm" zClass="z-40">
       <h2 className="text-center text-[17px] font-bold text-text">
         Gửi một cái chạm
       </h2>
@@ -136,10 +128,10 @@ export function NudgeSheet({
       <button
         type="button"
         onClick={onClose}
-        className="mt-4 mb-2 w-full py-3 text-[14px] font-medium text-muted"
+        className="mt-4 w-full py-3 text-[14px] font-medium text-muted"
       >
-        Đóng
+        Hủy
       </button>
-    </BottomSheet>
+    </Modal>
   )
 }

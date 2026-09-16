@@ -1,13 +1,22 @@
-import { useQuery } from '@tanstack/react-query'
-import { useParams } from 'react-router'
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useEatItems, useEatStats } from '../../hooks/useEatItems'
 import { supabase } from '../../lib/supabase'
 import { formatVnd } from '../../lib/money'
 import { formatDay } from '../../lib/formatDate'
 import { PREVIEW } from '../../dev/preview'
-import { Loading, Screen, Stage, Title, TopBar } from '../../components/ui'
+import {
+  ConfirmSheet,
+  Loading,
+  Screen,
+  Stage,
+  Title,
+  TopBar,
+} from '../../components/ui'
 import { verdictOf } from '../../lib/eatVerdicts'
+import { btn, input } from '../../lib/ui-classes'
 
 type VisitRow = {
   id: string
@@ -20,12 +29,19 @@ type VisitRow = {
  *  thưởng của việc đã có Timeline và Chi tiêu từ trước. */
 export function EatDetailScreen() {
   const { id = '' } = useParams()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { couple } = useCouple()
   const { items, isLoading } = useEatItems()
   const stats = useEatStats()
 
   const item = items.find((i) => i.id === id)
   const stat = stats.get(id)
+
+  const [editing, setEditing] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState(false)
 
   const visitsQuery = useQuery({
     queryKey: ['eat_visits', id],
@@ -45,6 +61,35 @@ export function EatDetailScreen() {
 
   const nameOf = (userId: string) =>
     couple?.members.find((m) => m.user_id === userId)?.nickname ?? '?'
+
+  async function saveName() {
+    if (!item || PREVIEW) return
+    const next = nameDraft.trim()
+    if (!next || next === item.name) {
+      setEditing(false)
+      return
+    }
+    setSaving(true)
+    const { error } = await supabase
+      .from('eat_items')
+      .update({ name: next })
+      .eq('id', item.id)
+    setSaving(false)
+    if (error) return
+    setEditing(false)
+    await queryClient.invalidateQueries({ queryKey: ['eat_items'] })
+  }
+
+  async function removeItem() {
+    if (!item || PREVIEW) return
+    setPendingDelete(false)
+    await supabase
+      .from('eat_items')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', item.id)
+    await queryClient.invalidateQueries({ queryKey: ['eat_items'] })
+    navigate('/eat', { replace: true })
+  }
 
   if (isLoading) return <Loading />
 
@@ -68,7 +113,49 @@ export function EatDetailScreen() {
     <Screen>
       <TopBar to="/eat" />
       <Stage>
-        <Title>{item.name}</Title>
+        {editing ? (
+          <div className="space-y-2.5">
+            <input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              autoFocus
+              className={input}
+              placeholder="Tên quán"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={saving || !nameDraft.trim()}
+                onClick={() => void saveName()}
+                className={btn.primary}
+              >
+                {saving ? 'Đang lưu...' : 'Lưu'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className={btn.ghost}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start gap-3">
+            <Title>{item.name}</Title>
+            <button
+              type="button"
+              onClick={() => {
+                setNameDraft(item.name)
+                setEditing(true)
+              }}
+              className="mt-1 shrink-0 text-[13px] font-semibold text-accent"
+            >
+              Sửa
+            </button>
+          </div>
+        )}
+
         {item.address ? (
           <p className="mt-1 text-[14px] text-muted">{item.address}</p>
         ) : null}
@@ -162,7 +249,23 @@ export function EatDetailScreen() {
             ))}
           </ul>
         )}
+
+        <button
+          type="button"
+          onClick={() => setPendingDelete(true)}
+          className={`${btn.danger} mt-8`}
+        >
+          Xoá quán này
+        </button>
       </Stage>
+
+      {pendingDelete ? (
+        <ConfirmSheet
+          title="Xoá quán này?"
+          onConfirm={() => void removeItem()}
+          onCancel={() => setPendingDelete(false)}
+        />
+      ) : null}
     </Screen>
   )
 }

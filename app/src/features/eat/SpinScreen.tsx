@@ -32,10 +32,25 @@ const CONFETTI = ['#c2415b', '#e8a0ae', '#f0c27b', '#3f7d63', '#6b4e7d']
 function shuffle<T>(list: T[]): T[] {
   const out = [...list]
   for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(secureRandom() * (i + 1))
     ;[out[i], out[j]] = [out[j], out[i]]
   }
   return out
+}
+
+/** Math.random trên một số máy hay lệch — dùng crypto khi có. */
+function secureRandom() {
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const buf = new Uint32Array(1)
+    crypto.getRandomValues(buf)
+    return buf[0]! / 2 ** 32
+  }
+  return Math.random()
+}
+
+function pickIndex(length: number) {
+  if (length <= 0) return 0
+  return Math.floor(secureRandom() * length)
 }
 
 export function SpinScreen() {
@@ -55,6 +70,8 @@ export function SpinScreen() {
   const [boxes, setBoxes] = useState<Candidate[]>([])
   const [shuffling, setShuffling] = useState(false)
   const [opened, setOpened] = useState<number | null>(null)
+  /** Món đã hiện trong phiên này — lần quay sau bỏ qua cho đỡ bị trùng. */
+  const skipped = useRef<Set<string>>(new Set())
 
   const timers = useRef<number[]>([])
   useEffect(() => {
@@ -70,25 +87,47 @@ export function SpinScreen() {
   async function loadCandidates(): Promise<Candidate[]> {
     if (PREVIEW) {
       return (previewEatItems() as EatItem[])
-        .filter((i) => i.status !== 'archived')
+        .filter((i) => i.status === 'want')
         .map((i) => ({
           id: i.id,
           name: i.name,
           address: i.address,
           map_url: i.map_url,
-          never_tried: i.status === 'want',
+          never_tried: true,
         }))
     }
     if (!couple) return []
+    // Ưu tiên RPC (đã lọc want + random). Lỗi schema cũ → fallback client.
     const { data, error } = await supabase.rpc('spin_eat', {
       p_couple_id: couple.id,
     })
-    if (error) throw error
-    return (data ?? []) as Candidate[]
+    if (!error) {
+      return ((data ?? []) as Candidate[]).filter(
+        (i) => !skipped.current.has(i.id),
+      )
+    }
+    const { data: rows } = await supabase
+      .from('eat_items')
+      .select('id, name, address, map_url, status')
+      .eq('couple_id', couple.id)
+      .eq('status', 'want')
+      .is('deleted_at', null)
+    return shuffle(
+      ((rows ?? []) as EatItem[])
+        .filter((i) => !skipped.current.has(i.id))
+        .map((i) => ({
+          id: i.id,
+          name: i.name,
+          address: i.address,
+          map_url: i.map_url,
+          never_tried: true,
+        })),
+    )
   }
 
   /** Chọn kiểu quay → nạp danh sách luôn, để thấy có gì trước khi quay. */
   async function chooseMode(next: Mode) {
+    skipped.current = new Set()
     const list = await loadCandidates()
     setMode(next)
     if (list.length === 0) {
@@ -116,18 +155,40 @@ export function SpinScreen() {
     setOpened(null)
     setShuffling(false)
     setChosen([])
+    skipped.current = new Set()
+  }
+
+  function poolForSpin(): Candidate[] {
+    if (mode === 'box') {
+      return items.filter(
+        (i) => chosen.includes(i.id) && !skipped.current.has(i.id),
+      )
+    }
+    return items.filter((i) => !skipped.current.has(i.id))
   }
 
   function start() {
-    if (items.length === 0) return
+    // Quay lại lần nữa: bỏ món vừa hiện ra khỏi hồ lần sau
+    if (winner) skipped.current.add(winner.id)
+
+    const pool = poolForSpin()
+    if (pool.length === 0) {
+      setPhase('empty')
+      setWinner(null)
+      return
+    }
+
     setWinner(null)
     setOpened(null)
     setPhase('running')
 
-    const target = Math.floor(Math.random() * items.length)
-
     if (mode === 'reel') {
-      // Nhảy nhanh rồi chậm dần lại — cảm giác quay nằm ở nhịp
+      const targetInPool = pickIndex(pool.length)
+      const targetId = pool[targetInPool]!.id
+      // Đồng bộ cursor trên `items` đầy đủ để animation / mũi tên khớp
+      const target = items.findIndex((i) => i.id === targetId)
+      const landAt = target >= 0 ? target : 0
+
       let step = 0
       const tick = () => {
         step++
@@ -138,8 +199,8 @@ export function SpinScreen() {
             window.setTimeout(tick, 45 + progress * progress * 260),
           )
         } else {
-          setCursor(target)
-          setWinner(items[target])
+          setCursor(landAt)
+          setWinner(items[landAt] ?? pool[targetInPool]!)
           setPhase('done')
         }
       }
@@ -148,8 +209,7 @@ export function SpinScreen() {
     }
 
     // Hộp bí mật: chỉ những món NGƯỜI DÙNG đã chọn mới vào hộp
-    const picked = items.filter((i) => chosen.includes(i.id))
-    setBoxes(shuffle(picked).slice(0, MAX_BOXES))
+    setBoxes(shuffle(pool).slice(0, MAX_BOXES))
     setShuffling(true)
     timers.current.push(window.setTimeout(() => setShuffling(false), 900))
   }
@@ -161,24 +221,35 @@ export function SpinScreen() {
     timers.current.push(window.setTimeout(() => setPhase('done'), 380))
   }
 
-  /** Chốt: ghi một lượt ghé để lần quay sau tránh quán này. */
+  /** Chốt: đưa sang tab Đã chọn. Chưa ghi lượt ghé — chưa đi thật. */
   async function confirmVisit() {
-    if (!winner || !couple || PREVIEW) {
-      navigate('/eat')
+    const picked =
+      mode === 'reel' && items.length > 0
+        ? (items[cursor] ?? winner)
+        : winner
+    if (!picked || !couple || PREVIEW) {
+      navigate('/eat?tab=picked')
       return
     }
-    await supabase.from('eat_visits').insert({
-      couple_id: couple.id,
-      item_id: winner.id,
-    })
+    // Quay ra A rồi chọn B để chốt → A không còn trong Muốn thử lần sau
+    if (winner && winner.id !== picked.id) {
+      skipped.current.add(winner.id)
+    }
     await supabase
       .from('eat_items')
-      .update({ status: 'tried' })
-      .eq('id', winner.id)
+      .update({ status: 'picked' })
+      .eq('id', picked.id)
     await queryClient.invalidateQueries({ queryKey: ['eat_items'] })
-    await queryClient.invalidateQueries({ queryKey: ['pending_ratings'] })
-    // Vừa đi ăn xong là lúc dễ có ảnh nhất — hỏi ngay, nhưng không ép
     setAskCompose(true)
+  }
+
+  function stepReel(delta: number) {
+    if (items.length === 0) return
+    setCursor((c) => {
+      const next = (c + delta + items.length) % items.length
+      if (phase === 'done') setWinner(items[next] ?? null)
+      return next
+    })
   }
 
   const running = phase === 'running'
@@ -250,9 +321,7 @@ export function SpinScreen() {
             cursor={cursor}
             done={phase === 'done'}
             locked={running}
-            onStep={(delta) =>
-              setCursor((c) => (c + delta + items.length) % items.length)
-            }
+            onStep={stepReel}
           />
         ) : (
           <Boxes
@@ -336,16 +405,13 @@ export function SpinScreen() {
       {askCompose ? (
         <ConfirmSheet
           title="Đăng kỉ niệm?"
-          body="Có thể thêm ảnh và chú thích."
-          confirmLabel="Thêm"
-          cancelLabel="Để sau"
           onConfirm={() =>
             navigate(
               `/compose?activity=food&place=${encodeURIComponent(winner?.name ?? '')}`,
               { replace: true },
             )
           }
-          onCancel={() => navigate('/eat', { replace: true })}
+          onCancel={() => navigate('/eat?tab=picked', { replace: true })}
         />
       ) : null}
     </Screen>

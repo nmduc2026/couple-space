@@ -14,7 +14,7 @@ import { formatShortVnd } from '../../lib/money'
 import { RatingPrompt } from './RatingPrompt'
 import { btn } from '../../lib/ui-classes'
 
-type Tab = 'want' | 'tried'
+type Tab = 'want' | 'picked' | 'tried'
 
 export function EatScreen() {
   const [params, setParams] = useSearchParams()
@@ -24,7 +24,9 @@ export function EatScreen() {
   const { items, isLoading } = useEatItems()
   const stats = useEatStats()
 
-  const tab: Tab = params.get('tab') === 'tried' ? 'tried' : 'want'
+  const tabParam = params.get('tab')
+  const tab: Tab =
+    tabParam === 'tried' || tabParam === 'picked' ? tabParam : 'want'
   // Nhận link chia sẻ từ app khác (TikTok, Maps) qua share_target của PWA:
   // link đến thẳng trong URL nên dùng làm giá trị khởi tạo, không cần effect.
   const [name, setName] = useState(
@@ -36,8 +38,8 @@ export function EatScreen() {
 
   function setTab(next: Tab) {
     const p = new URLSearchParams(params)
-    if (next === 'tried') p.set('tab', 'tried')
-    else p.delete('tab')
+    if (next === 'want') p.delete('tab')
+    else p.set('tab', next)
     setParams(p, { replace: true })
   }
 
@@ -57,7 +59,7 @@ export function EatScreen() {
       name: label,
       map_url: isMap ? url : null,
       source_url: isMap ? null : url,
-      status: tab,
+      status: tab === 'tried' ? 'tried' : tab === 'picked' ? 'picked' : 'want',
       added_by: user.id,
     })
     setSaving(false)
@@ -69,8 +71,22 @@ export function EatScreen() {
   async function setStatus(item: EatItem, status: EatItem['status']) {
     if (PREVIEW) return
     await supabase.from('eat_items').update({ status }).eq('id', item.id)
+    // Đánh dấu đã đi thật → ghi một lượt ghé để hỏi đánh giá / thống kê
+    if (status === 'tried' && couple) {
+      await supabase.from('eat_visits').insert({
+        couple_id: couple.id,
+        item_id: item.id,
+      })
+      await queryClient.invalidateQueries({ queryKey: ['pending_ratings'] })
+      await queryClient.invalidateQueries({ queryKey: ['eat_item_stats'] })
+    }
     await queryClient.invalidateQueries({ queryKey: ['eat_items'] })
   }
+
+  const actionLabel =
+    tab === 'want' ? 'Đã chọn' : tab === 'picked' ? 'Đã đi' : 'Muốn thử lại'
+  const actionNext: EatItem['status'] =
+    tab === 'want' ? 'picked' : tab === 'picked' ? 'tried' : 'want'
 
   return (
     <>
@@ -99,6 +115,10 @@ export function EatScreen() {
               label: `Muốn thử (${items.filter((i) => i.status === 'want').length})`,
             },
             {
+              value: 'picked',
+              label: `Đã chọn (${items.filter((i) => i.status === 'picked').length})`,
+            },
+            {
               value: 'tried',
               label: `Đã đi (${items.filter((i) => i.status === 'tried').length})`,
             },
@@ -115,8 +135,10 @@ export function EatScreen() {
         ) : list.length === 0 ? (
           <p className="py-16 text-center text-sm leading-relaxed text-muted">
             {tab === 'want'
-              ? 'Chưa có quán nào.'
-              : 'Chưa đi quán nào.'}
+              ? 'Chưa có quán nào để quay.'
+              : tab === 'picked'
+                ? 'Chưa chốt quán nào từ vòng quay.'
+                : 'Chưa đi quán nào.'}
           </p>
         ) : (
           <ul className="flex flex-col gap-2.5">
@@ -153,12 +175,10 @@ export function EatScreen() {
                 </Link>
                 <button
                   type="button"
-                  onClick={() =>
-                    void setStatus(item, tab === 'want' ? 'tried' : 'want')
-                  }
+                  onClick={() => void setStatus(item, actionNext)}
                   className="shrink-0 text-[13px] font-semibold text-accent"
                 >
-                  {tab === 'want' ? 'Đánh dấu đi' : 'Muốn thử lại'}
+                  {actionLabel}
                 </button>
               </li>
             ))}

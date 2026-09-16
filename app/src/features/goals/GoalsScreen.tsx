@@ -131,14 +131,6 @@ export function GoalsScreen() {
       {pendingDelete ? (
         <ConfirmSheet
           title="Xoá mục tiêu này?"
-          body={
-            <>
-              <b className="font-semibold text-text">{pendingDelete.title}</b> sẽ
-              biến mất khỏi danh sách của cả hai người.
-            </>
-          }
-          confirmLabel="Xoá mục tiêu"
-          cancelLabel="Thôi"
           onConfirm={() => void confirmDelete()}
           onCancel={() => setPendingDelete(null)}
         />

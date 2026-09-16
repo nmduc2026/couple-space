@@ -19,7 +19,7 @@ import {
   provinceByCode,
   type Zone,
 } from '../../lib/provinces'
-import { BottomSheet } from '../../components/BottomSheet'
+import { Modal } from '../../components/Modal'
 import { btn, input } from '../../lib/ui-classes'
 
 const ZONES: Array<{ key: Zone; label: string }> = [
@@ -230,10 +230,10 @@ function AskProvince({
   }
 
   return (
-    <BottomSheet
+    <Modal
       onClose={onDone}
       ariaLabel="Chọn tỉnh thành"
-      panelClassName="flex max-h-sheet flex-col"
+      panelClassName="max-h-sheet"
     >
       {/* `flex-none` cho phần đầu: không có nó thì flex bóp dẹt cả ô tìm
           kiếm lẫn tiêu đề để nhường chỗ cho danh sách dài bên dưới. */}
@@ -306,10 +306,10 @@ function AskProvince({
           🌏 Ở nước ngoài
         </button>
         <button type="button" onClick={onDone} className={btn.ghost}>
-          Để sau
+          Hủy
         </button>
       </div>
-    </BottomSheet>
+    </Modal>
   )
 }
 
@@ -335,10 +335,10 @@ function ProvinceDrill({
   const named = wards.filter((w) => w.ward !== null).length
 
   return (
-    <BottomSheet
+    <Modal
       onClose={onClose}
       ariaLabel={name}
-      panelClassName="flex max-h-sheet flex-col"
+      panelClassName="max-h-sheet"
     >
       <div className="flex-none">
         <p className="text-[17px] font-semibold text-text">{name}</p>
@@ -410,9 +410,9 @@ function ProvinceDrill({
           Xem tất cả kỉ niệm ở {name}
         </Link>
         <button type="button" onClick={onClose} className={btn.ghost}>
-          Đóng
+          Hủy
         </button>
       </div>
-    </BottomSheet>
+    </Modal>
   )
 }

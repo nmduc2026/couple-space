@@ -116,8 +116,9 @@ create table public.eat_items (
   note        text,
 
   status      text not null default 'want'
-              check (status in ('want', 'tried', 'archived')),
-  -- want     = muốn thử, chưa đi
+              check (status in ('want', 'picked', 'tried', 'archived')),
+  -- want     = muốn thử — nguồn cho vòng quay
+  -- picked   = đã chốt từ vòng quay, chưa đi thật
   -- tried    = đã đi ít nhất một lần
   -- archived = không quan tâm nữa (quán đóng cửa, hết thèm)
 
