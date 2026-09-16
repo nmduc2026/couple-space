@@ -84,7 +84,7 @@ export function EatScreen() {
   }
 
   const actionLabel =
-    tab === 'want' ? 'Đã chọn' : tab === 'picked' ? 'Đã đi' : 'Muốn thử lại'
+    tab === 'want' ? 'Chọn' : tab === 'picked' ? 'Đã đi' : 'Muốn thử lại'
   const actionNext: EatItem['status'] =
     tab === 'want' ? 'picked' : tab === 'picked' ? 'tried' : 'want'
 
