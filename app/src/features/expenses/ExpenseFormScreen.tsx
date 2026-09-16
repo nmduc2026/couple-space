@@ -54,14 +54,20 @@ export function ExpenseFormScreen() {
     note: row?.note ?? params.get('note') ?? '',
     category: row?.category ?? params.get('category') ?? 'food',
     spentOn: row?.spent_on ?? params.get('date') ?? todayYmd(),
-    paidBy: row?.paid_by ?? user?.id ?? '',
+    paidBy:
+      row == null
+        ? (user?.id ?? '')
+        : row.paid_by == null
+          ? 'shared'
+          : row.paid_by,
   }
   const patch = (next: Partial<typeof value>) => setDraft({ ...value, ...next })
 
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
-  const payer = value.paidBy || user?.id || ''
+  const payerKey = value.paidBy || user?.id || ''
+  const paidByDb = payerKey === 'shared' ? null : payerKey
   const backTo = editing ? '/expenses' : postId ? `/timeline/${postId}` : '/expenses'
 
   /** Cất khoản chi vào hàng đợi rồi rời màn hình như đã lưu xong. */
@@ -74,7 +80,7 @@ export function ExpenseFormScreen() {
       category: value.category,
       note: value.note.trim() || null,
       spentOn: value.spentOn,
-      paidBy: payer,
+      paidBy: paidByDb,
       createdBy: user.id,
     })
     navigate(backTo, { replace: true })
@@ -106,7 +112,7 @@ export function ExpenseFormScreen() {
       category: value.category,
       note: value.note.trim() || null,
       spent_on: value.spentOn,
-      paid_by: payer,
+      paid_by: paidByDb,
       created_by: user.id,
     }
 
@@ -214,11 +220,14 @@ export function ExpenseFormScreen() {
 
             <Field label="Người trả">
               <SegmentedControl
-                options={(couple?.members ?? []).map((m) => ({
-                  value: m.user_id,
-                  label: m.nickname ?? 'Người ấy',
-                }))}
-                value={payer}
+                options={[
+                  ...(couple?.members ?? []).map((m) => ({
+                    value: m.user_id,
+                    label: m.nickname ?? 'Người ấy',
+                  })),
+                  { value: 'shared', label: 'Quỹ chung' },
+                ]}
+                value={payerKey}
                 onChange={(next) => patch({ paidBy: next })}
               />
             </Field>

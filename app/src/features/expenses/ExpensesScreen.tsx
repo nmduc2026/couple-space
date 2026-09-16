@@ -42,7 +42,11 @@ export function ExpensesScreen() {
   const [y, m] = month.split('-').map(Number)
   const isThisMonth = month.slice(0, 7) === todayYmd().slice(0, 7)
   const nameOf = (id: string) =>
-    couple?.members.find((mem) => mem.user_id === id)?.nickname ?? '?'
+    id === 'shared'
+      ? 'Quỹ chung'
+      : (couple?.members.find((mem) => mem.user_id === id)?.nickname ?? '?')
+  const payerLabel = (id: string | null) =>
+    id == null ? 'Quỹ chung' : nameOf(id)
 
   return (
     <>
@@ -144,7 +148,7 @@ export function ExpensesScreen() {
                         </b>
                         <span className="block text-[12.5px] text-muted">
                           {e.spent_on.slice(8)}/{e.spent_on.slice(5, 7)} ·{' '}
-                          {nameOf(e.paid_by)} trả
+                          {payerLabel(e.paid_by)} trả
                           {e.post_id ? ' · 📷' : ''}
                         </span>
                       </div>

@@ -97,6 +97,25 @@ export function GoalDetailScreen() {
     await refresh()
   }
 
+  /** Đổi chỗ hai bước liền kề rồi ghi lại sort_order 0..n. */
+  async function moveStep(stepId: string, dir: -1 | 1) {
+    if (!goal || PREVIEW) return
+    const steps = goal.goal_steps
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order)
+    const i = steps.findIndex((s) => s.id === stepId)
+    const j = i + dir
+    if (i < 0 || j < 0 || j >= steps.length) return
+    const next = [...steps]
+    ;[next[i], next[j]] = [next[j]!, next[i]!]
+    await Promise.all(
+      next.map((s, order) =>
+        supabase.from('goal_steps').update({ sort_order: order }).eq('id', s.id),
+      ),
+    )
+    await refresh()
+  }
+
   async function addContribution(event: FormEvent) {
     event.preventDefault()
     const minor = parseAmountInput(amount)
@@ -200,33 +219,55 @@ export function GoalDetailScreen() {
               {goal.goal_steps
                 .slice()
                 .sort((a, b) => a.sort_order - b.sort_order)
-                .map((step) => (
+                .map((step, index, steps) => (
                   <Row key={step.id}>
-                    <button
-                      type="button"
-                      onClick={() => void toggleStep(step.id, !step.is_done)}
-                      className="flex w-full items-center gap-3 text-left"
-                    >
-                      <span
-                        aria-hidden
-                        className={`grid h-6 w-6 flex-none place-items-center rounded-full border text-xs ${
-                          step.is_done
-                            ? 'border-accent bg-accent text-on-accent'
-                            : 'border-border'
-                        }`}
+                    <div className="flex w-full items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => void toggleStep(step.id, !step.is_done)}
+                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
                       >
-                        {step.is_done ? '✓' : ''}
-                      </span>
-                      <span
-                        className={`min-w-0 flex-1 text-[15px] ${
-                          step.is_done
-                            ? 'text-muted line-through'
-                            : 'text-text'
-                        }`}
-                      >
-                        {step.title}
-                      </span>
-                    </button>
+                        <span
+                          aria-hidden
+                          className={`grid h-6 w-6 flex-none place-items-center rounded-full border text-xs ${
+                            step.is_done
+                              ? 'border-accent bg-accent text-on-accent'
+                              : 'border-border'
+                          }`}
+                        >
+                          {step.is_done ? '✓' : ''}
+                        </span>
+                        <span
+                          className={`min-w-0 flex-1 text-[15px] ${
+                            step.is_done
+                              ? 'text-muted line-through'
+                              : 'text-text'
+                          }`}
+                        >
+                          {step.title}
+                        </span>
+                      </button>
+                      <div className="flex shrink-0 flex-col">
+                        <button
+                          type="button"
+                          aria-label="Đưa bước lên"
+                          disabled={index === 0}
+                          onClick={() => void moveStep(step.id, -1)}
+                          className="grid h-7 w-8 place-items-center rounded-md text-[13px] text-muted disabled:opacity-25"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Đưa bước xuống"
+                          disabled={index === steps.length - 1}
+                          onClick={() => void moveStep(step.id, 1)}
+                          className="grid h-7 w-8 place-items-center rounded-md text-[13px] text-muted disabled:opacity-25"
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </div>
                   </Row>
                 ))}
             </Group>

@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase'
 import { notifyPartner } from '../../lib/notify'
 import { PREVIEW, previewComments } from '../../dev/preview'
 import { ConfirmSheet, Loading, Screen, TopBar } from '../../components/ui'
+import { PhotoCarousel } from '../../components/PhotoCarousel'
 import { btn, input } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
 import { formatCommentTime, formatDay } from '../../lib/formatDate'
@@ -30,7 +31,6 @@ export function PostDetailScreen() {
   const { couple } = useCouple()
   const { post, isLoading } = usePost(id)
 
-  const [index, setIndex] = useState(0)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -255,48 +255,20 @@ export function PostDetailScreen() {
   }
 
   const media = post.media
-  const current = media[Math.min(index, media.length - 1)]
 
   return (
     <Screen>
       <TopBar to="/timeline" />
 
-      {current ? (
-        <div className="relative aspect-square w-full bg-soft">
-          <img
-            src={current.url}
-            alt=""
-            className="h-full w-full object-cover"
-          />
-          {media.length > 1 ? (
-            <>
-              <button
-                type="button"
-                aria-label="Ảnh trước"
-                onClick={() => setIndex((i) => Math.max(0, i - 1))}
-                className="absolute inset-y-0 left-0 w-1/4"
-              />
-              <button
-                type="button"
-                aria-label="Ảnh sau"
-                onClick={() =>
-                  setIndex((i) => Math.min(media.length - 1, i + 1))
-                }
-                className="absolute inset-y-0 right-0 w-1/4"
-              />
-              <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
-                {media.map((m, i) => (
-                  <span
-                    key={m.id}
-                    className={`h-1.5 rounded-full transition-all ${
-                      i === index ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
-                    }`}
-                  />
-                ))}
-              </div>
-            </>
-          ) : null}
-        </div>
+      {media.length > 0 ? (
+        <PhotoCarousel
+          items={media}
+          className="aspect-square w-full"
+          autoPlayMs={5000}
+          showArrows
+          showDots
+          showCounter
+        />
       ) : null}
 
       <div className="px-4 pt-4">

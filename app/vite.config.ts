@@ -14,6 +14,8 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'logo.svg', 'push-sw.js'],
       workbox: {
         importScripts: ['/push-sw.js'],
+        // SPA: mọi route đều về index.html; tránh 404 trắng khi mở deep link offline/cache.
+        navigateFallback: '/index.html',
       },
       manifest: {
         name: 'Couple Space',

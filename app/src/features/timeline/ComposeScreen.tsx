@@ -66,6 +66,8 @@ export function ComposeScreen() {
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [progress, setProgress] = useState('')
+  const [picking, setPicking] = useState(false)
+  const [pickHint, setPickHint] = useState('')
 
   useEffect(() => {
     return () => {
@@ -75,16 +77,38 @@ export function ComposeScreen() {
 
   async function pickFiles(files: FileList | null) {
     if (!files?.length) return
-    const picked = Array.from(files)
-      .slice(0, MAX_PHOTOS - photos.length)
-      .map((file) => ({ file, previewUrl: URL.createObjectURL(file) }))
-
-    // Ngày chụp lấy từ EXIF của ảnh đầu tiên — đỡ một lần gõ
-    if (photos.length === 0 && picked[0]) {
-      const exif = await readExifDate(picked[0].file)
-      if (exif) setHappenedOn(exif)
+    const incoming = Array.from(files)
+    const room = MAX_PHOTOS - photos.length
+    if (room <= 0) {
+      setPickHint(`Tối đa ${MAX_PHOTOS} ảnh mỗi bài.`)
+      return
     }
-    setPhotos((prev) => [...prev, ...picked])
+    if (incoming.length > room) {
+      setPickHint(
+        `Bạn chọn ${incoming.length} ảnh — chỉ lấy ${room} ảnh đầu (tối đa ${MAX_PHOTOS}/bài).`,
+      )
+    } else {
+      setPickHint('')
+    }
+
+    setPicking(true)
+    // Cho UI kịp hiện “Đang thêm ảnh…” trước khi decode preview.
+    await new Promise((r) => window.setTimeout(r, 0))
+    try {
+      const picked = incoming.slice(0, room).map((file) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      }))
+
+      if (photos.length === 0 && picked[0]) {
+        const exif = await readExifDate(picked[0].file)
+        if (exif) setHappenedOn(exif)
+      }
+      setPhotos((prev) => [...prev, ...picked])
+    } finally {
+      setPicking(false)
+      if (fileInput.current) fileInput.current.value = ''
+    }
   }
 
   /** Cất bài vào hàng đợi và rời màn hình như thể đã đăng xong —
@@ -251,7 +275,7 @@ export function ComposeScreen() {
         category: categoryFromActivity(activity),
         note: placeName.trim() || caption.trim().slice(0, 40) || null,
         spent_on: happenedOn,
-        paid_by: paidBy || user.id,
+        paid_by: paidBy === 'shared' ? null : paidBy || user.id,
         created_by: user.id,
       })
       if (expErr) {
@@ -269,6 +293,7 @@ export function ComposeScreen() {
   }
 
   const busy = status === 'saving'
+  const blocked = busy || picking
 
   return (
     <Screen>
@@ -291,10 +316,11 @@ export function ComposeScreen() {
                 <button
                   type="button"
                   aria-label={`Bỏ ảnh ${i + 1}`}
+                  disabled={blocked}
                   onClick={() =>
                     setPhotos((prev) => prev.filter((_, idx) => idx !== i))
                   }
-                  className="absolute top-1 right-1 grid h-6 w-6 place-items-center rounded-full bg-black/55 text-xs text-white"
+                  className="absolute top-1 right-1 grid h-6 w-6 place-items-center rounded-full bg-black/55 text-xs text-white disabled:opacity-40"
                 >
                   ✕
                 </button>
@@ -303,13 +329,21 @@ export function ComposeScreen() {
             {photos.length < MAX_PHOTOS ? (
               <button
                 type="button"
+                disabled={blocked}
                 onClick={() => fileInput.current?.click()}
-                className="grid aspect-square place-items-center rounded-xl border border-dashed border-border text-2xl text-muted"
+                className="grid aspect-square place-items-center rounded-xl border border-dashed border-border text-2xl text-muted disabled:opacity-40"
               >
                 +
               </button>
             ) : null}
           </div>
+          <p className="mt-2 text-[12.5px] text-muted">
+            {photos.length}/{MAX_PHOTOS} ảnh
+            {picking ? ' · Đang thêm ảnh…' : ''}
+          </p>
+          {pickHint ? (
+            <p className="mt-1 text-[12.5px] text-accent">{pickHint}</p>
+          ) : null}
           <input
             ref={fileInput}
             type="file"
@@ -325,6 +359,7 @@ export function ComposeScreen() {
                 onChange={(e) => setCaption(e.target.value)}
                 rows={3}
                 placeholder="Hôm nay..."
+                disabled={blocked}
                 className={`${input} h-auto py-3 leading-relaxed`}
               />
             </Field>
@@ -343,12 +378,13 @@ export function ComposeScreen() {
                 value={placeName}
                 onChange={(e) => setPlaceName(e.target.value)}
                 placeholder="Địa điểm"
+                disabled={blocked}
                 className={input}
               />
               <button
                 type="button"
                 onClick={() => void fillFromLocation()}
-                disabled={locating}
+                disabled={locating || blocked}
                 className="mt-2 flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-accent disabled:opacity-50"
               >
                 <span aria-hidden>📍</span>
@@ -374,8 +410,9 @@ export function ComposeScreen() {
                   <button
                     key={key}
                     type="button"
+                    disabled={blocked}
                     onClick={() => setActivity(activity === key ? null : key)}
-                    className={`rounded-full border px-3 py-1.5 text-[13px] transition ${
+                    className={`rounded-full border px-3 py-1.5 text-[13px] transition disabled:opacity-40 ${
                       activity === key
                         ? 'border-accent bg-accent font-semibold text-on-accent'
                         : 'border-border text-muted'
@@ -390,8 +427,9 @@ export function ComposeScreen() {
 
           <button
             type="button"
+            disabled={blocked}
             onClick={() => setAddExpense((v) => !v)}
-            className={`mt-4 flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition ${
+            className={`mt-4 flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition disabled:opacity-40 ${
               addExpense ? 'border-accent bg-soft' : 'border-border bg-surface'
             }`}
           >
@@ -427,10 +465,13 @@ export function ComposeScreen() {
 
               <Field label="Người thanh toán">
                 <SegmentedControl
-                  options={(couple?.members ?? []).map((m) => ({
-                    value: m.user_id,
-                    label: m.nickname ?? 'Người ấy',
-                  }))}
+                  options={[
+                    ...(couple?.members ?? []).map((m) => ({
+                      value: m.user_id,
+                      label: m.nickname ?? 'Người ấy',
+                    })),
+                    { value: 'shared', label: 'Quỹ chung' },
+                  ]}
                   value={paidBy || user?.id || ''}
                   onChange={setPaidBy}
                 />
@@ -439,17 +480,31 @@ export function ComposeScreen() {
           ) : null}
 
           {status === 'error' ? <ErrorText>{errorMessage}</ErrorText> : null}
-          {progress ? (
-            <p className="mt-3 text-sm text-muted">{progress}</p>
-          ) : null}
 
           <Spacer />
 
-          <button type="submit" disabled={busy} className={btn.primary}>
-            {busy ? 'Đang đăng...' : 'Đăng'}
+          <button type="submit" disabled={blocked} className={btn.primary}>
+            {busy ? progress || 'Đang đăng...' : 'Đăng'}
           </button>
         </Stage>
       </form>
+
+      {busy ? (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 px-8"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-surface px-5 py-6 text-center shadow-lg">
+            <p className="text-[15px] font-semibold text-text">
+              {progress || 'Đang đăng kỉ niệm…'}
+            </p>
+            <p className="mt-2 text-[13px] text-muted">
+              Đừng tắt app — đang xử lý và tải ảnh lên.
+            </p>
+          </div>
+        </div>
+      ) : null}
     </Screen>
   )
 }
