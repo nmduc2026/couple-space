@@ -200,17 +200,10 @@ export function HomeScreen() {
                   return
                 }
                 void shareInvite(inviteCode)
-                  .then((how) => {
-                    toast.success(
-                      how === 'shared'
-                        ? 'Đã mở chia sẻ link mời.'
-                        : 'Đã copy link mời.',
-                    )
+                  .then(() => {
+                    toast.success('Đã copy link mời.')
                   })
-                  .catch((err) => {
-                    if (err instanceof DOMException && err.name === 'AbortError') {
-                      return
-                    }
+                  .catch(() => {
                     toast.error('Không copy được. Thử lại.')
                   })
               }}

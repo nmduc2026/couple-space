@@ -107,20 +107,17 @@ export function WaitingScreen() {
           onClick={() => {
             if (!code) return
             void shareInvite(code)
-              .then((how) => {
-                toast.success(
-                  how === 'shared' ? 'Đã mở chia sẻ link mời.' : 'Đã copy link mời.',
-                )
+              .then(() => {
+                toast.success('Đã copy link mời.')
               })
-              .catch((err) => {
-                if (err instanceof DOMException && err.name === 'AbortError') return
+              .catch(() => {
                 toast.error('Không copy được. Thử lại.')
               })
           }}
           disabled={!code}
           className={btn.primary}
         >
-          Chia sẻ lời mời
+          Copy link mời
         </button>
         <Link to="/" className={`${btn.ghost} mt-1`}>
           Vào Trang chủ
