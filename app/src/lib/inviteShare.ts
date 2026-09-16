@@ -5,13 +5,10 @@ export function buildInviteShare(code: string, origin = window.location.origin) 
 
 export type ShareInviteResult = 'shared' | 'copied'
 
-/** Máy cảm ứng / PWA: Web Share. Desktop: chỉ copy — Share trên Windows mở sheet lạ. */
+/** Chỉ iPhone / Android dùng Web Share. Desktop (kể cả màn cảm ứng) chỉ copy. */
 function preferNativeShare() {
   if (typeof navigator.share !== 'function') return false
-  return (
-    window.matchMedia('(pointer: coarse)').matches ||
-    window.matchMedia('(display-mode: standalone)').matches
-  )
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 }
 
 /** Chia sẻ / copy chỉ link mời (không kèm câu chữ). */
