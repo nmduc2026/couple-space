@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { useCouple } from '../../hooks/useCouple'
 import { buildInviteShare, shareInvite } from '../../lib/inviteShare'
 import { supabase } from '../../lib/supabase'
@@ -103,7 +104,19 @@ export function WaitingScreen() {
 
         <button
           type="button"
-          onClick={() => code && void shareInvite(code)}
+          onClick={() => {
+            if (!code) return
+            void shareInvite(code)
+              .then((how) => {
+                toast.success(
+                  how === 'shared' ? 'Đã mở chia sẻ link mời.' : 'Đã copy link mời.',
+                )
+              })
+              .catch((err) => {
+                if (err instanceof DOMException && err.name === 'AbortError') return
+                toast.error('Không copy được. Thử lại.')
+              })
+          }}
           disabled={!code}
           className={btn.primary}
         >
