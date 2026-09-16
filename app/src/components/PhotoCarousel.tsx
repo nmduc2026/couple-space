@@ -8,7 +8,8 @@ import {
 export type PhotoCarouselItem = { id: string; url: string }
 
 type Props = {
-  items: PhotoCarouselItem[]
+  /** `url` có thể thiếu lúc signed URL chưa sẵn — sẽ bỏ qua ảnh đó. */
+  items: Array<{ id: string; url?: string }>
   /** Aspect / kích thước khung ngoài (vd. `aspect-square`, `aspect-[4/3]`). */
   className?: string
   /** 0 = tắt tự chạy. Mặc định 5 giây. */
@@ -28,7 +29,7 @@ type Props = {
  * trượt cùng chiều, không nhảy cóc.
  */
 export function PhotoCarousel({
-  items,
+  items: rawItems,
   className = 'aspect-square',
   autoPlayMs = 5000,
   showArrows = true,
@@ -38,6 +39,7 @@ export function PhotoCarousel({
   onOpen,
   lazy = false,
 }: Props) {
+  const items = rawItems.filter((i): i is PhotoCarouselItem => !!i.url)
   const n = items.length
   const itemKey = items.map((i) => i.id).join('|')
   // offset trên track có clone: 0 = clone cuối, 1..n = ảnh thật, n+1 = clone đầu
