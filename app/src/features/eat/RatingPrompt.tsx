@@ -48,22 +48,23 @@ export function RatingPrompt() {
   // Mỗi lần chỉ hỏi MỘT quán — hỏi dồn ba cái là thành bài kiểm tra
   const ask = pending.find((p) => !skipped.includes(p.visit_id))
   if (!ask) return null
+  const current = ask
 
   function dismiss() {
     if (!user?.id) return
-    const next = skipped.includes(ask.visit_id)
+    const next = skipped.includes(current.visit_id)
       ? skipped
-      : [...skipped, ask.visit_id]
+      : [...skipped, current.visit_id]
     setSkipped(next)
     writeSkipped(user.id, next)
   }
 
   async function rate(verdict: Verdict) {
-    if (!ask || !couple || !user || PREVIEW) return
+    if (!couple || !user || PREVIEW) return
     setSaving(true)
     const { error } = await supabase.from('eat_ratings').insert({
       couple_id: couple.id,
-      visit_id: ask.visit_id,
+      visit_id: current.visit_id,
       user_id: user.id,
       verdict,
     })
@@ -77,7 +78,7 @@ export function RatingPrompt() {
     <section className="mt-3 rounded-xl border border-accent/30 bg-soft p-3.5">
       <div className="flex items-start gap-2">
         <p className="flex-1 text-[14px] leading-relaxed text-text">
-          <b className="font-semibold">{ask.item_name}</b> ngon không?
+          <b className="font-semibold">{current.item_name}</b> ngon không?
         </p>
         <button
           type="button"
