@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { geoMercator } from 'd3-geo'
+import { geoBounds, geoMercator } from 'd3-geo'
 import {
   ComposableMap,
   Geographies,
@@ -65,6 +65,25 @@ function clampZoom(z: number) {
   return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(z.toFixed(2))))
 }
 
+/** Giữ tâm trong vùng địa lý — zoom càng nhỏ càng khó kéo ra khoảng trống. */
+function clampCenter(
+  coords: [number, number],
+  zoom: number,
+  bounds: [[number, number], [number, number]],
+  home: [number, number],
+): [number, number] {
+  if (zoom <= ZOOM_MIN + 0.05) return [home[0], home[1]]
+  const [[minX, minY], [maxX, maxY]] = bounds
+  // Cho phép lệch biên một chút khi zoom gần; thu hẹp khi zoom nhỏ
+  const pad = Math.max(0.02, 0.22 / zoom)
+  const lonPad = (maxX - minX) * pad
+  const latPad = (maxY - minY) * pad
+  return [
+    Math.min(maxX + lonPad, Math.max(minX - lonPad, coords[0])),
+    Math.min(maxY + latPad, Math.max(minY - latPad, coords[1])),
+  ]
+}
+
 export function FootprintChoropleth({
   geography,
   visitsByCode,
@@ -113,10 +132,15 @@ export function FootprintChoropleth({
     }
   }, [geography, includeIslands])
 
+  const geoBox = useMemo(
+    () => geoBounds(mapGeography) as [[number, number], [number, number]],
+    [mapGeography],
+  )
+
   /** fitExtent — đất liền + (tuỳ chọn) Hoàng Sa / Trường Sa. */
   const projection = useMemo(() => {
-    const padX = includeIslands ? 6 : 8
-    const padY = 8
+    const padX = includeIslands ? 4 : 6
+    const padY = 6
     return geoMercator().fitExtent(
       [
         [padX, padY],
@@ -126,11 +150,22 @@ export function FootprintChoropleth({
     )
   }, [mapGeography, mapH, includeIslands])
 
+  function applyView(coordinates: [number, number], z: number) {
+    const zoom = clampZoom(z)
+    setView({
+      coordinates: clampCenter(coordinates, zoom, geoBox, center),
+      zoom,
+    })
+  }
+
   function zoomBy(factor: number) {
-    setView((v) => ({
-      ...v,
-      zoom: clampZoom(v.zoom * factor),
-    }))
+    setView((v) => {
+      const zoom = clampZoom(v.zoom * factor)
+      return {
+        coordinates: clampCenter(v.coordinates, zoom, geoBox, center),
+        zoom,
+      }
+    })
   }
 
   return (
@@ -144,16 +179,20 @@ export function FootprintChoropleth({
         projection={projection}
         width={MAP_W}
         height={mapH}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', background: 'transparent' }}
       >
         <ZoomableGroup
           center={view.coordinates}
           zoom={view.zoom}
           minZoom={ZOOM_MIN}
           maxZoom={ZOOM_MAX}
+          translateExtent={[
+            [-MAP_W * 0.15, -mapH * 0.15],
+            [MAP_W * 1.15, mapH * 1.15],
+          ]}
           onMoveEnd={({ coordinates, zoom: z }) => {
             if (!coordinates || typeof z !== 'number') return
-            setView({ coordinates, zoom: z })
+            applyView(coordinates, z)
           }}
         >
           <Geographies geography={mapGeography}>
@@ -181,7 +220,7 @@ export function FootprintChoropleth({
                     onClick={() => onSelect?.(selectCode, selectName)}
                     fill={fillFor(count)}
                     stroke={visited ? STROKE.visited : STROKE.idle}
-                    strokeWidth={isIsland ? 0.5 : visited ? 1 : 0.8}
+                    strokeWidth={isIsland ? 0.25 : visited ? 0.45 : 0.35}
                     style={{
                       outline: 'none',
                       cursor: onSelect ? 'pointer' : 'default',

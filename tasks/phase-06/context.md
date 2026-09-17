@@ -58,3 +58,6 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | 2026-09-17 | Map: inset Hoàng Sa + Trường Sa (tô theo tỉnh cha Đà Nẵng / Khánh Hòa) | Xong | Smoke `/map` |
 | 2026-09-17 | Map: vẽ Hoàng Sa/Trường Sa trên cùng bản đồ (bỏ ô inset), fitExtent cả Biển Đông | Xong | Smoke `/map` |
 | 2026-09-17 | Thử polygon trong DB rồi **đổi lại**: giữ GeoJSON ở `src/lib/geo/` như cũ (không cột geometry / không seed:geo) | Đã revert xong | Smoke `/map` · `db push` admin_units nếu chưa |
+| 2026-09-17 | Map UI: số thống nhất; list tỉnh đã đi (sort lần↓/tên); bỏ popup hỏi tỉnh → nhóm Khác + sửa qua PostDetail; nền map `bg-surface` | Xong | Smoke `/map` + sửa kỉ niệm gắn tỉnh |
+| 2026-09-17 | Map: thêm tổng lần + bỏ bold; Trang cá nhân `/profile` (cover + avatar); lối vào từ Home (avatar) + Cài đặt | Xong | Đổi avatar trên máy thật |
+| 2026-09-17 | Profile: tên cùng hàng avatar; sheet xem/đổi; status “Bạn đang nghĩ gì?” (bảng riêng); trang `/profile/:userId` + nhận xét 1 ghi chú (chỉ tác giả sửa) | Cần `db push` migration `20261003120000_profile_wall` | `npx supabase db push` · smoke 2 tài khoản |

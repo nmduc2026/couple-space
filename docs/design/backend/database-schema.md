@@ -128,6 +128,10 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 ```
 
+**Tường trang cá nhân** (không phải Timeline): `profile_statuses` — bài “Bạn đang nghĩ gì?”;
+`partner_notes` — một ghi chú của A về B (unique theo cặp author/about). Chi tiết SQL:
+`app/supabase/migrations/20261003120000_profile_wall.sql`.
+
 ## 5. Không gian đôi (couples)
 
 ```sql

@@ -161,8 +161,26 @@ export function HomeScreen() {
         </Link>
 
         <p className="text-[15px] font-semibold opacity-95">
-          {leftName} <span aria-hidden className="opacity-60">&amp;</span>{' '}
-          {rightName}
+          <Link
+            to="/profile"
+            className="underline-offset-2 transition hover:underline active:opacity-80"
+          >
+            {leftName}
+          </Link>
+          <span aria-hidden className="opacity-60">
+            {' '}
+            &amp;{' '}
+          </span>
+          {partner ? (
+            <Link
+              to={`/profile/${partner.user_id}`}
+              className="underline-offset-2 transition hover:underline active:opacity-80"
+            >
+              {rightName}
+            </Link>
+          ) : (
+            <span>{rightName}</span>
+          )}
         </p>
         <p className="mt-0.5 text-[62px] leading-[0.95] font-extrabold tracking-[-0.04em] tabular-nums">
           {days}

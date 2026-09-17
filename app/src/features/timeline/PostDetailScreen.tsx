@@ -30,12 +30,14 @@ import {
 import { PhotoCarousel } from '../../components/PhotoCarousel'
 import { AmountInput } from '../../components/AmountInput'
 import { DateField } from '../../components/DateField'
+import { SelectField } from '../../components/SelectField'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { IconArrowLeft } from '../../components/icons'
 import { btn, fieldButton, input } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
 import { formatCommentTime, formatDay, formatPostTime } from '../../lib/formatDate'
 import { useKeyboardShell } from '../../hooks/useKeyboardShell'
+import { useCommunes, useProvinces } from '../../hooks/useAdminUnits'
 import {
   categoryFromActivity,
   formatAmountInput,
@@ -106,6 +108,27 @@ function revokeNewMedia(items: EditMediaItem[]) {
   }
 }
 
+async function resolveEditUnits(
+  adminUnitId: string | null,
+  provinceIds: Set<string>,
+): Promise<{ provinceId: string; communeId: string }> {
+  if (!adminUnitId) return { provinceId: '', communeId: '' }
+  if (provinceIds.has(adminUnitId)) {
+    return { provinceId: adminUnitId, communeId: '' }
+  }
+  if (PREVIEW) return { provinceId: '', communeId: '' }
+  const { data } = await supabase
+    .from('admin_units')
+    .select('id, level, parent_id')
+    .eq('id', adminUnitId)
+    .maybeSingle()
+  if (!data) return { provinceId: '', communeId: '' }
+  if (data.level === 'province') {
+    return { provinceId: data.id, communeId: '' }
+  }
+  return { provinceId: data.parent_id ?? '', communeId: data.id }
+}
+
 export function PostDetailScreen() {
   const { id = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -114,6 +137,10 @@ export function PostDetailScreen() {
   const { user } = useSession()
   const { couple } = useCouple()
   const { post, isLoading } = usePost(id)
+  const { data: provinces = [] } = useProvinces()
+  const [editProvinceId, setEditProvinceId] = useState('')
+  const [editCommuneId, setEditCommuneId] = useState('')
+  const { data: editCommunes = [] } = useCommunes(editProvinceId || null)
 
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
@@ -307,6 +334,13 @@ export function PostDetailScreen() {
     setEditMedia(mediaFromPost(post.media))
     setPickHint('')
     setEditProgress('')
+    void resolveEditUnits(
+      post.admin_unit_id,
+      new Set(provinces.map((p) => p.id)),
+    ).then(({ provinceId, communeId }) => {
+      setEditProvinceId(provinceId)
+      setEditCommuneId(communeId)
+    })
     setEditing(true)
   }, [
     openEditFromUrl,
@@ -315,6 +349,7 @@ export function PostDetailScreen() {
     linkedExpense,
     expenseQuery.isLoading,
     setSearchParams,
+    provinces,
   ])
 
   if (isLoading) return <Loading />
@@ -427,6 +462,12 @@ export function PostDetailScreen() {
       expenseId: exp?.id ?? null,
     })
     setEditMedia(mediaFromPost(post.media))
+    const units = await resolveEditUnits(
+      post.admin_unit_id,
+      new Set(provinces.map((p) => p.id)),
+    )
+    setEditProvinceId(units.provinceId)
+    setEditCommuneId(units.communeId)
     setEditing(true)
   }
 
@@ -435,6 +476,8 @@ export function PostDetailScreen() {
     setEditing(false)
     setEdit(null)
     setEditMedia([])
+    setEditProvinceId('')
+    setEditCommuneId('')
     setEditError('')
     setEditProgress('')
     setPickHint('')
@@ -500,7 +543,7 @@ export function PostDetailScreen() {
         place_name: edit.place.trim() || null,
         happened_on: edit.day,
         activity: edit.activity,
-        admin_unit_id: null,
+        admin_unit_id: editCommuneId || editProvinceId || null,
       })
       .eq('id', post.id)
 
@@ -659,6 +702,8 @@ export function PostDetailScreen() {
     setEditing(false)
     setEdit(null)
     setEditMedia([])
+    setEditProvinceId('')
+    setEditCommuneId('')
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
     await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
     await queryClient.invalidateQueries({ queryKey: ['post_expense', post.id] })
@@ -774,6 +819,37 @@ export function PostDetailScreen() {
                   max={todayYmd()}
                   onChange={(next) => setEdit({ ...edit, day: next })}
                   className={fieldButton}
+                />
+              </Field>
+
+              <Field label="Tỉnh / thành">
+                <SelectField
+                  value={editProvinceId}
+                  disabled={editBlocked}
+                  placeholder="Tỉnh / thành"
+                  clearLabel="Bỏ chọn"
+                  options={provinces.map((p) => ({
+                    value: p.id,
+                    label: p.name,
+                  }))}
+                  onChange={(next) => {
+                    setEditProvinceId(next)
+                    setEditCommuneId('')
+                  }}
+                />
+              </Field>
+
+              <Field label="Xã / phường">
+                <SelectField
+                  value={editCommuneId}
+                  disabled={editBlocked || !editProvinceId}
+                  placeholder="Xã / phường"
+                  clearLabel="Bỏ chọn"
+                  options={editCommunes.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
+                  onChange={setEditCommuneId}
                 />
               </Field>
 

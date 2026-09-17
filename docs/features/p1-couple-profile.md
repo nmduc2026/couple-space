@@ -25,7 +25,9 @@ của hai người — không bao giờ dùng "đối tác", "người dùng B".
 | Trường | Bắt buộc | Ghi chú |
 |---|---|---|
 | Biệt danh | ✅ | Cách người kia gọi mình. Hiện khắp app. |
-| Avatar | — | Bỏ qua được, dùng chữ cái đầu làm ảnh mặc định. |
+| Avatar | — | Bỏ qua được, dùng chữ cái đầu làm ảnh mặc định. Đổi ở **Trang cá nhân** (`/profile`) — chạm avatar → xem / đổi. |
+| Status tường | — | “Bạn đang nghĩ gì?” — bài ngắn trên trang cá nhân, **không** phải kỉ niệm Timeline. |
+| Nhận xét về người kia | — | Một ghi chú dài, chỉ người viết sửa được; người được viết chỉ đọc. Xem/viết trên trang đối phương. |
 | Theme màu | — | Chọn từ bộ có sẵn. Dùng **biến màu ngay từ đầu**. |
 
 ## 3. Luật nghiệp vụ

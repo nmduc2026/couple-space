@@ -23,6 +23,7 @@ export type Unresolved = {
   placeName: string
   alias: string
   count: number
+  postIds: string[]
 }
 
 export type PlaceCount = { placeName: string; count: number }
@@ -139,8 +140,17 @@ export function usePlaceResolution(posts: Post[]): Resolution {
       }
 
       const row = pending.get(alias)
-      if (row) row.count++
-      else pending.set(alias, { placeName: post.place_name, alias, count: 1 })
+      if (row) {
+        row.count++
+        row.postIds.push(post.id)
+      } else {
+        pending.set(alias, {
+          placeName: post.place_name,
+          alias,
+          count: 1,
+          postIds: [post.id],
+        })
+      }
     }
 
     const placesByProvince = new Map<string, PlaceCount[]>()
