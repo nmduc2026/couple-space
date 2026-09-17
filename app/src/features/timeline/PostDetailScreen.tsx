@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
@@ -24,7 +24,7 @@ import { SegmentedControl } from '../../components/SegmentedControl'
 import { IconArrowLeft } from '../../components/icons'
 import { btn, input, inputChrome } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
-import { formatCommentTime, formatDay } from '../../lib/formatDate'
+import { formatCommentTime, formatDay, formatPostTime } from '../../lib/formatDate'
 import {
   categoryFromActivity,
   formatAmountInput,
@@ -65,6 +65,7 @@ type EditDraft = {
 
 export function PostDetailScreen() {
   const { id = '' } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useSession()
@@ -90,6 +91,8 @@ export function PostDetailScreen() {
       : override
         ? 1
         : -1)
+  const openEditFromUrl = searchParams.get('edit') === '1'
+  const editBootstrapped = useRef(false)
 
   const commentsQuery = useQuery({
     queryKey: ['comments', id],
@@ -146,6 +149,49 @@ export function PostDetailScreen() {
       void supabase.removeChannel(channel)
     }
   }, [id, queryClient])
+
+  // Timeline bấm "Cập nhật" → vào đây với ?edit=1, mở form luôn.
+  useEffect(() => {
+    editBootstrapped.current = false
+  }, [id])
+
+  useEffect(() => {
+    if (!openEditFromUrl || !post || !user || editBootstrapped.current) return
+    if (!PREVIEW && expenseQuery.isLoading) return
+
+    editBootstrapped.current = true
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('edit')
+        return next
+      },
+      { replace: true },
+    )
+
+    if (post.author_id !== user.id) return
+
+    const exp = linkedExpense
+    setEditError('')
+    setEdit({
+      caption: post.caption ?? '',
+      place: post.place_name ?? '',
+      day: post.happened_on,
+      activity: post.activity,
+      addExpense: !!exp,
+      amount: exp ? formatAmountInput(String(exp.amount_minor)) : '',
+      paidBy: exp ? (exp.paid_by == null ? 'shared' : exp.paid_by) : user.id,
+      expenseId: exp?.id ?? null,
+    })
+    setEditing(true)
+  }, [
+    openEditFromUrl,
+    post,
+    user,
+    linkedExpense,
+    expenseQuery.isLoading,
+    setSearchParams,
+  ])
 
   if (isLoading) return <Loading />
   if (!post) {
@@ -546,6 +592,23 @@ export function PostDetailScreen() {
         onDelete={askRemovePost}
       />
 
+      <div className="flex gap-2.5 px-4 pt-3 pb-2">
+        <span
+          aria-hidden
+          className="grid h-9 w-9 flex-none place-items-center self-start rounded-full bg-soft text-sm font-bold text-accent"
+        >
+          {nameOf(post.author_id).slice(0, 1).toUpperCase()}
+        </span>
+        <span className="min-w-0 flex-1 pt-0.5">
+          <span className="block truncate text-[14px] leading-none font-semibold text-text">
+            {nameOf(post.author_id)}
+          </span>
+          <span className="mt-1 block text-[12px] leading-none text-muted">
+            {formatPostTime(post.created_at)}
+          </span>
+        </span>
+      </div>
+
       {media.length > 0 ? (
         <PhotoCarousel
           items={media}
@@ -572,7 +635,6 @@ export function PostDetailScreen() {
           {linkedExpense ? (
             <span>💰 {formatVnd(linkedExpense.amount_minor)}</span>
           ) : null}
-          <span>· {nameOf(post.author_id)} đăng</span>
         </div>
 
         <div className="mt-4 flex items-center gap-4 border-y border-border py-2.5">

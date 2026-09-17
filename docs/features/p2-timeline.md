@@ -54,9 +54,17 @@ MỘT màn hình soạn bài duy nhất (không chia nhiều bước)
 
 - Hai chế độ: **Dòng thời gian** (thẻ lớn, có caption và tương tác) và
   **Lưới ảnh** (3 cột, chỉ ảnh).
+- Mỗi thẻ timeline hiện **header kiểu feed**: avatar chữ cái + biệt danh người
+  đăng + thời điểm đăng (`created_at`, dạng tương đối). Không cần vào chi tiết
+  mới biết ai đăng.
+- Bài **của mình** có nút `⋯` ngay trên thẻ → **Cập nhật** / **Xoá** (xoá hỏi
+  xác nhận tại chỗ; cập nhật mở form sửa ở màn chi tiết). Bài của người kia
+  không có menu này.
+- Ngày kỉ niệm (`happened_on`), nơi chốn và hoạt động vẫn nằm dưới caption —
+  đó là ngày sự kiện, khác với lúc bài được đăng lên.
 - Chia nhóm theo tháng, tiêu đề dính (`Tháng 9, 2026`).
-- Chạm vào → chi tiết: ảnh toàn màn hình (vuốt ngang) + bình luận bên dưới.
-- Nhấn giữ → Sửa / Xoá, **chỉ với bài của mình**.
+- Chạm vào → chi tiết: cùng header người đăng, ảnh toàn màn hình (vuốt ngang)
+  + bình luận bên dưới.
 - Lọc theo năm, theo hoạt động.
 
 ## 5. Tương tác

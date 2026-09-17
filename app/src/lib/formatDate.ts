@@ -30,3 +30,32 @@ export function formatCommentTime(iso: string) {
   const day = at.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })
   return `${day} · ${time}`
 }
+
+/** Thời điểm đăng bài trên timeline — đọc kiểu feed (Facebook):
+ *  "Vừa xong" / "12 phút" / "3 giờ" / "Hôm qua · 14:32" / "12/9 · 14:32". */
+export function formatPostTime(iso: string) {
+  const at = new Date(iso)
+  const now = new Date()
+  const diffMs = Math.max(0, now.getTime() - at.getTime())
+  const mins = Math.floor(diffMs / 60_000)
+  if (mins < 1) return 'Vừa xong'
+  if (mins < 60) return `${mins} phút`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24 && at.toDateString() === now.toDateString()) {
+    return `${hours} giờ`
+  }
+  const time = at.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (at.toDateString() === yesterday.toDateString()) {
+    return `Hôm qua · ${time}`
+  }
+  const dayOpts: Intl.DateTimeFormatOptions =
+    at.getFullYear() === now.getFullYear()
+      ? { day: 'numeric', month: 'numeric' }
+      : { day: 'numeric', month: 'numeric', year: 'numeric' }
+  return `${at.toLocaleDateString('vi-VN', dayOpts)} · ${time}`
+}

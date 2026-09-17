@@ -65,4 +65,5 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | 2026-09-11 | Viết đặc tả timeline + phạm vi phase | Chưa bắt đầu — chờ Phase 1 | Bắt đầu sau khi Phase 1 đạt DoD |
 | 2026-09-11 | Viết 6 file hướng dẫn từng bước trong `steps/` (P2-01 → P2-26) | Tài liệu Phase 2 đã đủ để code | Chờ Phase 1 đạt DoD |
 | 2026-09-11 | Viết nốt đặc tả Phase 3–6, chốt D6 (không ghi nợ), lưu prototype 36 màn hình vào `docs/design/frontend/ui/` | Không đổi gì trong phase này | Không đổi |
-| 2026-09-11 | Phase 2: migration `posts`/`post_media`/`reactions`/`comments`/`eat_items`/`eat_visits` + RLS + bucket `couple-media` + RPC `spin_eat`. Frontend: thanh tab dưới đáy, timeline thẻ/lưới, chi tiết bài + tim + bình luận realtime, soạn bài có nén ảnh 1600px + EXIF, Ăn gì 2 tab + vòng quay, Home có kỉ niệm gần đây | Build/lint/test sạch, đã chụp 17 màn xem lại. Chưa `db push`, chưa thử trên Supabase thật | P2-04 thử RLS bằng tài khoản thứ ba · P2-09 hàng đợi ngoại tuyến · P2-14 sửa bài |
+| 2026-09-17 | Timeline thẻ + chi tiết: thêm header kiểu feed (avatar chữ cái, biệt danh, `created_at` tương đối). Cập nhật prototype + đặc tả p2-timeline mục 4 | Đã xong UI; chưa cần migration | Mở app xem timeline dạng thẻ |
+| 2026-09-17 | Thêm menu `⋯` Cập nhật/Xoá ngay trên thẻ timeline (chỉ bài của mình); xoá xác nhận tại chỗ, cập nhật → chi tiết `?edit=1` | Đã xong | Thử trên máy: sửa + xoá từ feed |

@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { EmptyState, InlineLoading } from '../../components/EmptyState'
 import { PhotoCarousel } from '../../components/PhotoCarousel'
+import { ConfirmSheet } from '../../components/ui'
+import { useCouple } from '../../hooks/useCouple'
 import {
   groupByMonth,
   useInfinitePosts,
@@ -10,9 +13,12 @@ import {
   usePostYears,
   type Post,
 } from '../../hooks/usePosts'
+import { useSession } from '../../hooks/useSession'
 import { TimelineFilters, type TimeFilter } from './TimelineFilters'
 import { ACTIVITY_LABELS } from '../../lib/activities'
-import { formatDay } from '../../lib/formatDate'
+import { formatDay, formatPostTime } from '../../lib/formatDate'
+import { PREVIEW } from '../../dev/preview'
+import { supabase } from '../../lib/supabase'
 
 type View = 'cards' | 'grid'
 
@@ -182,10 +188,121 @@ function CardView({ posts }: { posts: Post[] }) {
 
 function PostCard({ post }: { post: Post }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { user } = useSession()
+  const { couple } = useCouple()
   const activity = post.activity ? ACTIVITY_LABELS[post.activity] : undefined
+  const authorName =
+    couple?.members.find((m) => m.user_id === post.author_id)?.nickname ?? '?'
+  const initial = authorName.slice(0, 1).toUpperCase()
+  const mine = post.author_id === user?.id
+
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState(false)
+  const menuBox = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (!menuBox.current?.contains(e.target as Node)) setMenuOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
+
+  async function removePost() {
+    if (PREVIEW) return
+    const stamp = new Date().toISOString()
+    await supabase
+      .from('posts')
+      .update({ deleted_at: stamp })
+      .eq('id', post.id)
+    await supabase
+      .from('expenses')
+      .update({ post_id: null })
+      .eq('post_id', post.id)
+      .is('deleted_at', null)
+    await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    await queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    await queryClient.invalidateQueries({ queryKey: ['expense_summary'] })
+  }
 
   return (
-    <article className="overflow-hidden rounded-xl border border-border bg-surface">
+    <article className="relative rounded-xl border border-border bg-surface">
+      <div className="flex gap-2.5 px-3.5 pt-3 pb-2">
+        <Link
+          to={`/timeline/${post.id}`}
+          className="flex min-w-0 flex-1 gap-2.5 transition active:opacity-80"
+        >
+          <span
+            aria-hidden
+            className="grid h-9 w-9 flex-none place-items-center self-start rounded-full bg-soft text-sm font-bold text-accent"
+          >
+            {initial}
+          </span>
+          <span className="min-w-0 pt-0.5">
+            <span className="block truncate text-[14px] leading-none font-semibold text-text">
+              {authorName}
+            </span>
+            <span className="mt-1 block text-[12px] leading-none text-muted">
+              {formatPostTime(post.created_at)}
+            </span>
+          </span>
+        </Link>
+
+        {mine ? (
+          <div ref={menuBox} className="relative -mt-0.5 -mr-1.5 flex-none self-start">
+            <button
+              type="button"
+              aria-label="Tuỳ chọn"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+              className={`grid h-8 w-8 place-items-center rounded-full border text-[16px] leading-none text-muted transition active:scale-95 ${
+                menuOpen ? 'border-accent text-text' : 'border-transparent'
+              }`}
+            >
+              ⋯
+            </button>
+            {menuOpen ? (
+              <div
+                role="menu"
+                className="absolute top-full right-0 z-30 mt-1 min-w-[10.5rem] overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-xl"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    navigate(`/timeline/${post.id}?edit=1`)
+                  }}
+                  className="flex w-full px-3.5 py-2.5 text-left text-[14px] font-medium text-text active:bg-soft"
+                >
+                  Cập nhật
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    setPendingDelete(true)
+                  }}
+                  className="flex w-full px-3.5 py-2.5 text-left text-[14px] font-medium text-accent active:bg-soft"
+                >
+                  Xoá
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
       {post.media.length > 0 ? (
         <PhotoCarousel
           items={post.media}
@@ -228,6 +345,18 @@ function PostCard({ post }: { post: Post }) {
           <span>💬 {post.comment_count}</span>
         </div>
       </Link>
+
+      {pendingDelete ? (
+        <ConfirmSheet
+          title="Xoá kỉ niệm này?"
+          confirmLabel="Xoá"
+          onConfirm={() => {
+            setPendingDelete(false)
+            void removePost()
+          }}
+          onCancel={() => setPendingDelete(false)}
+        />
+      ) : null}
     </article>
   )
 }
