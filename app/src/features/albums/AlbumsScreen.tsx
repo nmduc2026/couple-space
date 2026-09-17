@@ -12,7 +12,8 @@ import {
   groupTrips,
   type Suggestion,
 } from '../../lib/albumGrouping'
-import { provinceByCode } from '../../lib/provinces'
+import { useProvinces } from '../../hooks/useAdminUnits'
+import { unitById } from '../../lib/adminUnits'
 import { formatDay } from '../../lib/formatDate'
 import { PREVIEW } from '../../dev/preview'
 
@@ -23,12 +24,13 @@ export function AlbumsScreen() {
   const { user } = useSession()
   const { posts, isLoading } = usePosts()
   const { albums } = useAlbums()
+  const { data: provinces = [] } = useProvinces()
   const [saving, setSaving] = useState<string | null>(null)
 
   const suggestions = useMemo(() => {
-    const provinceName = (code: string) => provinceByCode(code)?.name ?? code
+    const provinceName = (id: string) => unitById(provinces, id)?.name ?? id
     return [...groupTrips(posts, provinceName), ...groupActivities(posts)]
-  }, [posts])
+  }, [posts, provinces])
 
   // Gợi ý đã lưu rồi thì không mời lưu lại nữa. So bằng tiêu đề vì đó là
   // thứ duy nhất còn lại sau khi album được lưu.

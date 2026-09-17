@@ -24,8 +24,8 @@ export type Post = {
   place_name: string | null
   place_lat: number | null
   place_lng: number | null
-  /** Tỉnh/thành đã chốt cho bài này, nếu có. Bản đồ tin cột này trước hết. */
-  province_code: string | null
+  /** Đơn vị hành chính đã chốt (tỉnh hoặc xã). Bản đồ tin cột này trước hết. */
+  admin_unit_id: string | null
   /** Phường/xã và quận/huyện — chỉ có khi bài được tạo bằng "Lấy vị trí". */
   ward: string | null
   district: string | null
@@ -46,7 +46,7 @@ type Row = {
   place_name: string | null
   place_lat: number | null
   place_lng: number | null
-  province_code: string | null
+  admin_unit_id: string | null
   ward: string | null
   district: string | null
   activity: string | null
@@ -80,7 +80,7 @@ function toPost(row: Row, urls: Map<string, string>, myId: string): Post {
     place_name: row.place_name,
     place_lat: row.place_lat,
     place_lng: row.place_lng,
-    province_code: row.province_code,
+    admin_unit_id: row.admin_unit_id,
     ward: row.ward,
     district: row.district,
     activity: row.activity,
@@ -99,7 +99,7 @@ export async function fetchPosts(coupleId: string, myId: string) {
     .from('posts')
     .select(
       'id, couple_id, author_id, caption, happened_on, place_name,' +
-        ' place_lat, place_lng, province_code, ward, district, activity, created_at,' +
+        ' place_lat, place_lng, admin_unit_id, ward, district, activity, created_at,' +
         ' post_media(id, storage_path, width, height, position),' +
         ' reactions(user_id), comments(id)',
     )
@@ -161,7 +161,7 @@ export type PostFilters = {
   activities?: string[]
   /** Tên địa điểm khớp chính xác, đến từ màn Dấu chân. */
   place?: string | null
-  /** Mã tỉnh. Dựa vào `posts.province_code`, cột này do màn Dấu chân ghi. */
+  /** Mã tỉnh (`admin_units.code` cấp province), từ màn Dấu chân. */
   province?: string | null
 }
 
@@ -169,9 +169,26 @@ const PAGE_SIZE = 12
 
 const SELECT =
   'id, couple_id, author_id, caption, happened_on, place_name,' +
-  ' place_lat, place_lng, province_code, ward, district, activity, created_at,' +
+  ' place_lat, place_lng, admin_unit_id, ward, district, activity, created_at,' +
   ' post_media(id, storage_path, width, height, position),' +
   ' reactions(user_id), comments(id)'
+
+async function adminUnitIdsForProvinceCode(code: string): Promise<string[]> {
+  const { data: prov, error } = await supabase
+    .from('admin_units')
+    .select('id')
+    .eq('code', code)
+    .eq('level', 'province')
+    .maybeSingle()
+  if (error) throw error
+  if (!prov) return []
+  const { data: kids, error: kidErr } = await supabase
+    .from('admin_units')
+    .select('id')
+    .eq('parent_id', prov.id)
+  if (kidErr) throw kidErr
+  return [prov.id, ...(kids ?? []).map((k) => k.id as string)]
+}
 
 /**
  * Timeline theo trang, mới nhất trước.
@@ -206,7 +223,11 @@ export function useInfinitePosts(filters: PostFilters) {
       }
       if (activities.length > 0) q = q.in('activity', activities)
       if (place) q = q.eq('place_name', place)
-      if (province) q = q.eq('province_code', province)
+      if (province) {
+        const ids = await adminUnitIdsForProvinceCode(province)
+        if (ids.length === 0) return []
+        q = q.in('admin_unit_id', ids)
+      }
 
       const { data, error } = await q
         .order('happened_on', { ascending: false })
@@ -288,7 +309,7 @@ export function usePostPlaces() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('posts')
-        .select('place_name, province_code')
+        .select('place_name, admin_unit_id')
         .eq('couple_id', couple!.id)
         .is('deleted_at', null)
         .not('place_name', 'is', null)
@@ -296,15 +317,15 @@ export function usePostPlaces() {
 
       const rows = (data ?? []) as Array<{
         place_name: string | null
-        province_code: string | null
+        admin_unit_id: string | null
       }>
       const places = new Map<string, number>()
       const provinces = new Map<string, number>()
       for (const r of rows) {
         const name = r.place_name?.trim()
         if (name) places.set(name, (places.get(name) ?? 0) + 1)
-        if (r.province_code) {
-          provinces.set(r.province_code, (provinces.get(r.province_code) ?? 0) + 1)
+        if (r.admin_unit_id) {
+          provinces.set(r.admin_unit_id, (provinces.get(r.admin_unit_id) ?? 0) + 1)
         }
       }
       const sort = (m: Map<string, number>) =>

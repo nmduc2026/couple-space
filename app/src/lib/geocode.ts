@@ -1,33 +1,26 @@
-import { guessProvince, provinceByCoords } from './provinces'
+import type { AdminUnit } from './adminUnits'
+import { guessUnit, unitByCoords } from './adminUnits'
 
 /*
  * Lấy vị trí máy rồi tra ngược ra địa chỉ tiếng Việt.
  *
  * Dùng Nominatim của OpenStreetMap: miễn phí, không cần khoá API, trả đúng
- * số nhà / đường / phường / tỉnh bằng tiếng Việt. Google Geocoding cũng làm
- * được nhưng cần khoá và có tính tiền — thừa cho một app hai người dùng.
- *
- * Điều kiện dùng của Nominatim: tối đa 1 lượt/giây, không gọi hàng loạt. Ở đây
- * mỗi lần đăng bài người dùng bấm một lần, nên không chạm tới giới hạn. Dữ
- * liệu là của OpenStreetMap, ghi nguồn ở màn soạn bài.
+ * số nhà / đường / phường / tỉnh bằng tiếng Việt.
  */
 
 export type ResolvedAddress = {
   lat: number
   lng: number
-  /** Chuỗi ngắn để làm tên địa điểm: "79 Phố Đinh Tiên Hoàng" */
   shortName: string
-  /** Địa chỉ đầy đủ để hiện lại nguyên văn */
   address: string
   ward: string | null
   district: string | null
-  /** Mã tỉnh trong lib/provinces.ts, null nếu không khớp (nước ngoài chẳng hạn) */
-  provinceCode: string | null
+  /** admin_units.id — tỉnh hoặc xã nếu đoán được */
+  adminUnitId: string | null
 }
 
 const ENDPOINT = 'https://nominatim.openstreetmap.org/reverse'
 
-/** Vị trí máy. Trình duyệt hỏi quyền, người dùng từ chối thì ném lỗi có chữ. */
 export function currentPosition(): Promise<{ lat: number; lng: number }> {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -37,7 +30,6 @@ export function currentPosition(): Promise<{ lat: number; lng: number }> {
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       (err) => {
-        // Nói rõ lý do: "không lấy được vị trí" thì người dùng không biết sửa gì
         if (err.code === err.PERMISSION_DENIED) {
           reject(new Error('Bạn chưa cho phép app dùng vị trí.'))
         } else if (err.code === err.TIMEOUT) {
@@ -65,11 +57,28 @@ type NominatimAddress = {
   state?: string
 }
 
-/** Toạ độ → địa chỉ. Tra không ra thì vẫn trả toạ độ, không ném lỗi. */
+function resolveUnit(
+  units: AdminUnit[],
+  placeText: string,
+  lat: number,
+  lng: number,
+): AdminUnit | null {
+  return (
+    guessUnit(units, placeText) ??
+    unitByCoords(units, lat, lng, 'commune') ??
+    unitByCoords(units, lat, lng, 'province')
+  )
+}
+
+/** Toạ độ → địa chỉ. `units` từ DB để gắn admin_unit_id. */
 export async function reverseGeocode(
   lat: number,
   lng: number,
+  units: AdminUnit[] = [],
 ): Promise<ResolvedAddress> {
+  const byCoords = units.length
+    ? resolveUnit(units, '', lat, lng)
+    : null
   const fallback: ResolvedAddress = {
     lat,
     lng,
@@ -77,7 +86,7 @@ export async function reverseGeocode(
     address: '',
     ward: null,
     district: null,
-    provinceCode: provinceByCoords(lat, lng),
+    adminUnitId: byCoords?.id ?? null,
   }
 
   try {
@@ -103,6 +112,15 @@ export async function reverseGeocode(
       [shortName, ward, district, provinceName].filter(Boolean).join(', ') ||
       (json.display_name ?? '')
 
+    const guessed = units.length
+      ? resolveUnit(
+          units,
+          [ward, district, provinceName].filter(Boolean).join(' '),
+          lat,
+          lng,
+        )
+      : null
+
     return {
       lat,
       lng,
@@ -110,9 +128,7 @@ export async function reverseGeocode(
       address,
       ward,
       district,
-      // Khớp tên tỉnh trước vì nó chính xác hơn; không ra thì mới đoán theo
-      // toạ độ như màn Dấu chân vẫn làm
-      provinceCode: guessProvince(provinceName) ?? provinceByCoords(lat, lng),
+      adminUnitId: guessed?.id ?? null,
     }
   } catch {
     return fallback

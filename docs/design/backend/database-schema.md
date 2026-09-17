@@ -254,6 +254,33 @@ $$;
 
 ## 7. Nội dung: kỉ niệm, tương tác
 
+### Đơn vị hành chính (34 tỉnh + ~3321 xã/phường)
+
+Bảng danh mục dùng chung (không theo `couple_id`). Seed từ atlas sáp nhập 2025
+(CC-BY-NC). Client chỉ `SELECT`. Polygon vẽ map nằm ở file GeoJSON
+(`app/src/lib/geo/`), join bằng `code`.
+
+```sql
+create table public.admin_units (
+  id          uuid primary key,
+  code        text not null unique,
+  name        text not null,
+  level       text not null check (level in ('province', 'commune')),
+  kind        text,
+  parent_id   uuid references public.admin_units(id),
+  zone        text check (zone is null or zone in ('bac', 'trung', 'nam')),
+  merged_from text,
+  lat         double precision,
+  lng         double precision,
+  sort_order  int not null default 0,
+  check (
+    (level = 'province' and parent_id is null)
+    or (level = 'commune' and parent_id is not null)
+  )
+);
+-- posts.admin_unit_id → admin_units(id)  (đơn vị cụ thể nhất đã chọn)
+```
+
 ```sql
 -- ============================================================
 -- PHẦN 4: KỈ NIỆM

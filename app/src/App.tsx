@@ -52,6 +52,9 @@ const QuestionScreen = lazy(() => import('./features/question/QuestionScreen').t
 const LettersScreen = lazy(() => import('./features/letters/LettersScreen').then((m) => ({ default: m.LettersScreen })))
 const MoodScreen = lazy(() => import('./features/mood/MoodScreen').then((m) => ({ default: m.MoodScreen })))
 const MapScreen = lazy(() => import('./features/map/MapScreen').then((m) => ({ default: m.MapScreen })))
+const ProvinceMapScreen = lazy(() =>
+  import('./features/map/ProvinceMapScreen').then((m) => ({ default: m.ProvinceMapScreen })),
+)
 const WrappedScreen = lazy(() => import('./features/wrapped/WrappedScreen').then((m) => ({ default: m.WrappedScreen })))
 const WishlistScreen = lazy(() => import('./features/wishlist/WishlistScreen').then((m) => ({ default: m.WishlistScreen })))
 const SpinScreen = lazy(() => import('./features/eat/SpinScreen').then((m) => ({ default: m.SpinScreen })))
@@ -121,6 +124,7 @@ export default function App() {
               <Route path="/letters" element={<LettersScreen />} />
               <Route path="/mood" element={<MoodScreen />} />
               <Route path="/map" element={<MapScreen />} />
+              <Route path="/map/:code" element={<ProvinceMapScreen />} />
               <Route path="/wrapped" element={<WrappedScreen />} />
               <Route path="/wishlist" element={<WishlistScreen />} />
               <Route path="/albums" element={<AlbumsScreen />} />

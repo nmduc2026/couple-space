@@ -11,7 +11,7 @@ export type PostLike = {
   id: string
   happened_on: string
   activity: string | null
-  province_code: string | null
+  admin_unit_id: string | null
 }
 
 export type Suggestion = {
@@ -39,7 +39,7 @@ function daysBetween(a: string, b: string) {
 /**
  * Gom theo chuyến: cùng tỉnh, các bài liên tiếp cách nhau không quá 2 ngày,
  * ít nhất 3 bài. Cùng luật với `suggested_trips()` ở DB — bản client này
- * dùng khi `province_code` vừa mới suy ra xong và chưa kịp ghi xuống.
+ * dùng khi `admin_unit_id` vừa mới suy ra xong và chưa kịp ghi xuống.
  */
 export function groupTrips(
   posts: PostLike[],
@@ -47,8 +47,8 @@ export function groupTrips(
 ): Suggestion[] {
   const byProvince = new Map<string, PostLike[]>()
   for (const p of posts) {
-    if (!p.province_code) continue
-    byProvince.set(p.province_code, [...(byProvince.get(p.province_code) ?? []), p])
+    if (!p.admin_unit_id) continue
+    byProvince.set(p.admin_unit_id, [...(byProvince.get(p.admin_unit_id) ?? []), p])
   }
 
   const out: Suggestion[] = []

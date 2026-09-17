@@ -34,7 +34,7 @@ export function TimelineScreen() {
   const place = params.get('place')
 
   const years = usePostYears()
-  const { places, provinces } = usePostPlaces()
+  const { provinces } = usePostPlaces()
   const {
     posts,
     isLoading,
@@ -65,18 +65,12 @@ export function TimelineScreen() {
     return () => io.disconnect()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  /** Nơi chốn nằm ở URL để đi từ Dấu chân sang vẫn giữ được, và để bấm quay
-   *  lại là về đúng chỗ cũ. */
-  function setPlaceFilter(next: {
-    place?: string | null
-    province?: string | null
-  }) {
+  /** Tỉnh nằm ở URL để đi từ Dấu chân sang vẫn giữ được. */
+  function setProvinceFilter(next: string | null) {
     const p = new URLSearchParams(params)
-    for (const key of ['place', 'province'] as const) {
-      const value = next[key]
-      if (value) p.set(key, value)
-      else p.delete(key)
-    }
+    p.delete('place')
+    if (next) p.set('province', next)
+    else p.delete('province')
     setParams(p, { replace: true })
   }
 
@@ -125,11 +119,9 @@ export function TimelineScreen() {
           onTime={setTime}
           activities={activities}
           onActivities={setActivities}
-          places={places}
           provinces={provinces}
-          place={place}
           province={province}
-          onPlace={setPlaceFilter}
+          onProvince={setProvinceFilter}
         />
       ) : null}
 

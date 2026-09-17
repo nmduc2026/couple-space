@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ACTIVITY_LABELS } from '../../lib/activities'
-import { provinceByCode } from '../../lib/provinces'
+import { useProvinces } from '../../hooks/useAdminUnits'
+import { unitById } from '../../lib/adminUnits'
 import {
   IconCalendar,
   IconChevronDown,
@@ -9,7 +10,7 @@ import {
 } from '../../components/icons'
 
 /*
- * Ba bộ lọc cho Timeline: thời gian (chọn một), nơi chốn (chọn một) và hoạt
+ * Ba bộ lọc cho Timeline: thời gian (chọn một), tỉnh thành (chọn một) và hoạt
  * động (chọn nhiều).
  *
  * Cả ba LUÔN hiện. Trước đây lọc theo nơi chốn chỉ xuất hiện khi đi từ màn Dấu
@@ -31,24 +32,27 @@ export function TimelineFilters({
   onTime,
   activities,
   onActivities,
-  places,
   provinces,
-  place,
   province,
-  onPlace,
+  onProvince,
 }: {
   years: string[]
   time: TimeFilter
   onTime: (next: TimeFilter) => void
   activities: string[]
   onActivities: (next: string[]) => void
-  places: Array<{ key: string; count: number }>
   provinces: Array<{ key: string; count: number }>
-  place: string | null
   province: string | null
-  onPlace: (next: { place?: string | null; province?: string | null }) => void
+  onProvince: (next: string | null) => void
 }) {
-  const [open, setOpen] = useState<'time' | 'activity' | 'place' | null>(null)
+  const { data: adminProvinces = [] } = useProvinces()
+  const [open, setOpen] = useState<'time' | 'activity' | 'province' | null>(null)
+
+  const nameOfUnit = (idOrCode: string) => {
+    const byId = unitById(adminProvinces, idOrCode)
+    if (byId) return byId.name
+    return adminProvinces.find((p) => p.code === idOrCode)?.name ?? idOrCode
+  }
 
   const timeLabel = time.kind === 'all' ? 'Thời gian' : `Năm ${time.year}`
   const activityLabel =
@@ -58,11 +62,7 @@ export function TimelineFilters({
         ? (ACTIVITY_LABELS[activities[0]]?.label ?? activities[0])
         : `${activities.length} loại`
 
-  const placeLabel = place
-    ? place
-    : province
-      ? (provinceByCode(province)?.name ?? province)
-      : 'Địa điểm'
+  const provinceLabel = province ? nameOfUnit(province) : 'Tỉnh thành'
 
   const toggle = (key: string) =>
     onActivities(
@@ -141,57 +141,37 @@ export function TimelineFilters({
 
       <Dropdown
         Icon={IconMap}
-        label={placeLabel}
-        active={!!place || !!province}
-        open={open === 'place'}
-        onOpen={() => setOpen(open === 'place' ? null : 'place')}
+        label={provinceLabel}
+        active={!!province}
+        open={open === 'province'}
+        onOpen={() => setOpen(open === 'province' ? null : 'province')}
         onClose={() => setOpen(null)}
       >
         <Option
-          active={!place && !province}
+          active={!province}
           onClick={() => {
-            onPlace({ place: null, province: null })
+            onProvince(null)
             setOpen(null)
           }}
         >
           Tất cả
         </Option>
-
-        {provinces.length > 0 ? (
-          <p className="px-2.5 pt-2 pb-1 text-[12.5px] font-medium text-muted">
-            Tỉnh thành
-          </p>
-        ) : null}
-        {provinces.map((p) => (
-          <Option
-            key={`prov-${p.key}`}
-            active={province === p.key}
-            onClick={() => {
-              onPlace({ place: null, province: p.key })
-              setOpen(null)
-            }}
-          >
-            {provinceByCode(p.key)?.name ?? p.key}
-          </Option>
-        ))}
-
-        {places.length > 0 ? (
-          <p className="px-2.5 pt-2 pb-1 text-[12.5px] font-medium text-muted">
-            Địa điểm
-          </p>
-        ) : null}
-        {places.map((p) => (
-          <Option
-            key={`place-${p.key}`}
-            active={place === p.key}
-            onClick={() => {
-              onPlace({ place: p.key, province: null })
-              setOpen(null)
-            }}
-          >
-            {p.key}
-          </Option>
-        ))}
+        {provinces.map((p) => {
+          const unit = unitById(adminProvinces, p.key)
+          const code = unit?.code ?? p.key
+          return (
+            <Option
+              key={`prov-${p.key}`}
+              active={province === code}
+              onClick={() => {
+                onProvince(code)
+                setOpen(null)
+              }}
+            >
+              {unit?.name ?? p.key}
+            </Option>
+          )
+        })}
       </Dropdown>
     </div>
   )

@@ -171,7 +171,7 @@ export function previewPosts() {
     place_name: b.place,
     place_lat: 'lat' in b ? (b.lat as number) : null,
     place_lng: 'lng' in b ? (b.lng as number) : null,
-    province_code: null,
+    admin_unit_id: null,
     ward: null,
     district: null,
     activity: b.activity,

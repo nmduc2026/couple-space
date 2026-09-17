@@ -15,7 +15,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị 
 
 ## A. Bản đồ dấu chân → [steps/a-map.md](steps/a-map.md)
 
-- [~] **P6-01** Tìm/dựng file **SVG 63 tỉnh thành Việt Nam** (không dùng Leaflet — xem đặc tả mục 3) — **chưa có SVG thật**; bản đồ hiện là lưới 63 tỉnh xếp theo ba miền
+- [x] **P6-01** Bản đồ Việt Nam thật — GeoJSON 34 tỉnh + lazy-load xã theo tỉnh (`react-simple-maps`); nguồn sapnhap/HF; bảng `admin_units`
 - [x] **P6-02** Bảng chuẩn hoá địa điểm: tên tự do → tỉnh/thành, có danh sách đồng nghĩa (*Sài Gòn* = *TP.HCM*)
 - [x] **P6-03** Tra ngược từ toạ độ (bài có link Google Maps) ra tỉnh/thành — `provinceByCoords()`, tâm 63 tỉnh gần đúng; lấp lửng hoặc ngoài VN thì trả null chứ không đoán bừa
 - [x] **P6-04** Khớp tên với danh sách 63 tỉnh, xử lý dấu và cách viết

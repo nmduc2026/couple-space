@@ -9,13 +9,15 @@ export function AppShell() {
   const { pending } = useOutbox()
 
   return (
-    <div className="flex min-h-app flex-col bg-bg">
+    <div className="flex h-app flex-col overflow-hidden bg-bg">
       {pending.length > 0 ? (
-        <p className="top-safe sticky top-0 z-20 bg-soft px-4 py-1.5 text-center text-[12.5px] text-accent">
+        <p className="top-safe z-20 shrink-0 bg-soft px-4 py-1.5 text-center text-[12.5px] text-accent">
           Đang chờ gửi ({pending.length})
         </p>
       ) : null}
-      <Outlet />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <Outlet />
+      </div>
       <TabBar />
     </div>
   )
@@ -36,7 +38,7 @@ export function TopHeader({
   back?: string
 }) {
   return (
-    <header className="top-safe sticky top-0 z-10 flex items-center gap-2.5 border-b border-border bg-[color-mix(in_srgb,var(--color-bg)_92%,transparent)] px-4 pb-2.5 backdrop-blur-xl">
+    <header className="top-safe sticky top-0 z-10 flex shrink-0 items-center gap-2.5 border-b border-border bg-[color-mix(in_srgb,var(--color-bg)_92%,transparent)] px-4 pb-2.5 backdrop-blur-xl">
       {back ? (
         <Link
           to={back}

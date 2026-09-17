@@ -1,0 +1,308 @@
+[
+  {
+    "code": "32",
+    "name": "An Giang",
+    "type": "Tỉnh",
+    "merged_from": "An Giang, Kiên Giang",
+    "zone": "nam",
+    "lat": 10.04112,
+    "lng": 104.55977
+  },
+  {
+    "code": "02",
+    "name": "Bắc Ninh",
+    "type": "Tỉnh",
+    "merged_from": "Bắc Ninh, Bắc Giang",
+    "zone": "bac",
+    "lat": 21.32144,
+    "lng": 106.33787
+  },
+  {
+    "code": "07",
+    "name": "Cao Bằng",
+    "type": "Tỉnh",
+    "merged_from": "Cao Bằng",
+    "zone": "bac",
+    "lat": 22.78177,
+    "lng": 106.0497
+  },
+  {
+    "code": "34",
+    "name": "Cà Mau",
+    "type": "Tỉnh",
+    "merged_from": "Cà Mau, Bạc Liêu",
+    "zone": "nam",
+    "lat": 9.13681,
+    "lng": 105.23128
+  },
+  {
+    "code": "33",
+    "name": "Cần Thơ",
+    "type": "Thành phố",
+    "merged_from": "Cần Thơ, Sóc Trăng, Hậu Giang",
+    "zone": "nam",
+    "lat": 9.53897,
+    "lng": 105.68467
+  },
+  {
+    "code": "24",
+    "name": "Gia Lai",
+    "type": "Tỉnh",
+    "merged_from": "Gia Lai, Bình Định",
+    "zone": "trung",
+    "lat": 13.83702,
+    "lng": 108.71661
+  },
+  {
+    "code": "20",
+    "name": "Huế",
+    "type": "Thành phố",
+    "merged_from": "Huế",
+    "zone": "trung",
+    "lat": 16.31466,
+    "lng": 107.51854
+  },
+  {
+    "code": "01",
+    "name": "Hà Nội",
+    "type": "Thành phố",
+    "merged_from": "Hà Nội",
+    "zone": "bac",
+    "lat": 21.00992,
+    "lng": 105.72648
+  },
+  {
+    "code": "18",
+    "name": "Hà Tĩnh",
+    "type": "Tỉnh",
+    "merged_from": "Hà Tĩnh",
+    "zone": "trung",
+    "lat": 18.26225,
+    "lng": 105.82248
+  },
+  {
+    "code": "05",
+    "name": "Hưng Yên",
+    "type": "Tỉnh",
+    "merged_from": "Hưng Yên, Thái Bình",
+    "zone": "bac",
+    "lat": 20.74754,
+    "lng": 106.2143
+  },
+  {
+    "code": "04",
+    "name": "Hải Phòng",
+    "type": "Thành phố",
+    "merged_from": "Hải Phòng, Hải Dương",
+    "zone": "bac",
+    "lat": 20.79084,
+    "lng": 106.93941
+  },
+  {
+    "code": "23",
+    "name": "Khánh Hòa",
+    "type": "Tỉnh",
+    "merged_from": "Khánh Hòa, Ninh Thuận",
+    "zone": "nam",
+    "lat": 10.02051,
+    "lng": 113.48093
+  },
+  {
+    "code": "14",
+    "name": "Lai Châu",
+    "type": "Tỉnh",
+    "merged_from": "Lai Châu",
+    "zone": "bac",
+    "lat": 22.37135,
+    "lng": 103.19323
+  },
+  {
+    "code": "09",
+    "name": "Lào Cai",
+    "type": "Tỉnh",
+    "merged_from": "Lào Cai, Yên Bái",
+    "zone": "bac",
+    "lat": 22.18253,
+    "lng": 104.23388
+  },
+  {
+    "code": "26",
+    "name": "Lâm Đồng",
+    "type": "Tỉnh",
+    "merged_from": "Lâm Đồng, Đắk Nông, Bình Thuận",
+    "zone": "nam",
+    "lat": 11.6445,
+    "lng": 107.8553
+  },
+  {
+    "code": "11",
+    "name": "Lạng Sơn",
+    "type": "Tỉnh",
+    "merged_from": "Lạng Sơn",
+    "zone": "bac",
+    "lat": 21.8855,
+    "lng": 106.70583
+  },
+  {
+    "code": "17",
+    "name": "Nghệ An",
+    "type": "Tỉnh",
+    "merged_from": "Nghệ An",
+    "zone": "trung",
+    "lat": 19.32184,
+    "lng": 104.86629
+  },
+  {
+    "code": "06",
+    "name": "Ninh Bình",
+    "type": "Tỉnh",
+    "merged_from": "Hà Nam, Ninh Bình, Nam Định",
+    "zone": "bac",
+    "lat": 20.3632,
+    "lng": 105.94116
+  },
+  {
+    "code": "12",
+    "name": "Phú Thọ",
+    "type": "Tỉnh",
+    "merged_from": "Phú Thọ, Vĩnh Phúc, Hoà Bình",
+    "zone": "bac",
+    "lat": 21.07693,
+    "lng": 105.38524
+  },
+  {
+    "code": "22",
+    "name": "Quảng Ngãi",
+    "type": "Tỉnh",
+    "merged_from": "Quảng Ngãi, Kon Tum",
+    "zone": "trung",
+    "lat": 14.90294,
+    "lng": 108.30754
+  },
+  {
+    "code": "03",
+    "name": "Quảng Ninh",
+    "type": "Tỉnh",
+    "merged_from": "Quảng Ninh",
+    "zone": "bac",
+    "lat": 21.1181,
+    "lng": 107.50613
+  },
+  {
+    "code": "19",
+    "name": "Quảng Trị",
+    "type": "Tỉnh",
+    "merged_from": "Quảng Trị, Quảng Bình",
+    "zone": "trung",
+    "lat": 17.13062,
+    "lng": 106.71204
+  },
+  {
+    "code": "15",
+    "name": "Sơn La",
+    "type": "Tỉnh",
+    "merged_from": "Sơn La",
+    "zone": "bac",
+    "lat": 21.22668,
+    "lng": 103.94839
+  },
+  {
+    "code": "79",
+    "name": "TP. Hồ Chí Minh",
+    "type": "Thành phố",
+    "merged_from": "TP HCM, Bình Dương, Bà Rịa - Vũng Tàu",
+    "zone": "nam",
+    "lat": 10.82887,
+    "lng": 106.8429
+  },
+  {
+    "code": "16",
+    "name": "Thanh Hóa",
+    "type": "Tỉnh",
+    "merged_from": "Thanh Hóa",
+    "zone": "trung",
+    "lat": 19.88342,
+    "lng": 105.31737
+  },
+  {
+    "code": "10",
+    "name": "Thái Nguyên",
+    "type": "Tỉnh",
+    "merged_from": "Thái Nguyên, Bắc Kạn",
+    "zone": "bac",
+    "lat": 22.0429,
+    "lng": 105.85337
+  },
+  {
+    "code": "08",
+    "name": "Tuyên Quang",
+    "type": "Tỉnh",
+    "merged_from": "Tuyên Quang, Hà Giang",
+    "zone": "bac",
+    "lat": 22.5552,
+    "lng": 105.0642
+  },
+  {
+    "code": "27",
+    "name": "Tây Ninh",
+    "type": "Tỉnh",
+    "merged_from": "Tây Ninh, Long An",
+    "zone": "nam",
+    "lat": 10.91811,
+    "lng": 106.41273
+  },
+  {
+    "code": "30",
+    "name": "Vĩnh Long",
+    "type": "Tỉnh",
+    "merged_from": "Vĩnh Long, Trà Vinh, Bến Tre",
+    "zone": "nam",
+    "lat": 10.04115,
+    "lng": 106.1656
+  },
+  {
+    "code": "13",
+    "name": "Điện Biên",
+    "type": "Tỉnh",
+    "merged_from": "Điện Biên",
+    "zone": "bac",
+    "lat": 21.87578,
+    "lng": 102.80601
+  },
+  {
+    "code": "21",
+    "name": "Đà Nẵng",
+    "type": "Thành phố",
+    "merged_from": "Đà Nẵng, Quảng Nam",
+    "zone": "trung",
+    "lat": 15.78023,
+    "lng": 108.49127
+  },
+  {
+    "code": "25",
+    "name": "Đắk Lắk",
+    "type": "Tỉnh",
+    "merged_from": "Đăk Lăk, Phú Yên",
+    "zone": "trung",
+    "lat": 13.00682,
+    "lng": 108.70615
+  },
+  {
+    "code": "28",
+    "name": "Đồng Nai",
+    "type": "Tỉnh",
+    "merged_from": "Đồng Nai, Bình Phước",
+    "zone": "nam",
+    "lat": 11.36188,
+    "lng": 106.97944
+  },
+  {
+    "code": "31",
+    "name": "Đồng Tháp",
+    "type": "Tỉnh",
+    "merged_from": "Đồng Tháp, Tiền Giang",
+    "zone": "nam",
+    "lat": 10.5142,
+    "lng": 106.01444
+  }
+]
