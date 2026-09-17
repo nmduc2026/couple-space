@@ -3,14 +3,20 @@ import { useEffect, useRef, useState } from 'react'
 /** Co bao nhiêu px so với baseline thì coi là bàn phím (không phải URL bar). */
 const KEYBOARD_DROP_PX = 120
 
+export type KeyboardPinPhase = 'open' | 'resize'
+
 /**
  * Khóa scroll trang + khi bàn phím mở thì ghim shell đúng vùng nhìn thấy.
- * Form nằm đáy shell → sát bàn phím. Không ép scroll scroller (tránh giật
- * kéo lên rồi kéo xuống). Focus input nên dùng `preventScroll`.
+ * `onPinned('open')` lần đầu mở; `'resize'` khi vv đổi lúc đang mở.
  */
-export function useKeyboardShell(enabled: boolean) {
+export function useKeyboardShell(
+  enabled: boolean,
+  onPinned?: (phase: KeyboardPinPhase) => void,
+) {
   const shellRef = useRef<HTMLElement>(null)
   const scrollerRef = useRef<HTMLDivElement>(null)
+  const onPinnedRef = useRef(onPinned)
+  onPinnedRef.current = onPinned
   const [keyboardOpen, setKeyboardOpen] = useState(false)
 
   useEffect(() => {
@@ -57,7 +63,6 @@ export function useKeyboardShell(enabled: boolean) {
     const pin = () => {
       const top = `${vv.offsetTop}px`
       const height = `${Math.round(vv.height)}px`
-      // Đã ghim đúng chỗ → thôi gán lại (tránh giật mỗi event scroll)
       if (
         pinned &&
         shell.style.top === top &&
@@ -65,6 +70,7 @@ export function useKeyboardShell(enabled: boolean) {
       ) {
         return
       }
+      const justOpened = !pinned
       pinned = true
       shell.style.position = 'fixed'
       shell.style.top = top
@@ -74,7 +80,8 @@ export function useKeyboardShell(enabled: boolean) {
       shell.style.width = '100%'
       shell.style.zIndex = '40'
       if (window.scrollY !== 0) window.scrollTo(0, 0)
-      setKeyboardOpen(true)
+      onPinnedRef.current?.(justOpened ? 'open' : 'resize')
+      if (justOpened) setKeyboardOpen(true)
     }
 
     const sync = () => {

@@ -102,13 +102,73 @@ export function PostDetailScreen() {
   const openEditFromUrl = searchParams.get('edit') === '1'
   const editBootstrapped = useRef(false)
   const detailReady = !!post && !editing && !isLoading
-  const { shellRef, scrollerRef, keyboardOpen } = useKeyboardShell(detailReady)
   const commentInputRef = useRef<HTMLInputElement>(null)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
+  const scrollAnimRef = useRef<number | null>(null)
 
-  /** iOS: focus mặc định sẽ scroll cả trang (giật lên rồi bị kéo xuống).
-   *  Chặn gesture rồi focus với preventScroll. */
-  /** iOS: focus mặc định sẽ scroll cả trang (giật lên rồi bị kéo xuống).
-   *  Chặn gesture rồi focus với preventScroll — chỉ khi chưa focus. */
+  const { shellRef, scrollerRef, keyboardOpen } = useKeyboardShell(
+    detailReady,
+    (phase) => scrollCommentsIntoView(phase === 'open'),
+  )
+
+  /** Đưa khối bình luận vào tầm nhìn (phía trên ô nhập). */
+  function scrollCommentsIntoView(smooth: boolean) {
+    const scroller = scrollerRef.current
+    const end = commentsEndRef.current
+    if (!scroller || !end) return
+
+    const remaining = () => {
+      const s = scroller.getBoundingClientRect()
+      const e = end.getBoundingClientRect()
+      return e.bottom - s.bottom
+    }
+
+    if (scrollAnimRef.current != null) {
+      cancelAnimationFrame(scrollAnimRef.current)
+      scrollAnimRef.current = null
+    }
+
+    const delta = remaining()
+    if (delta <= 1) return
+
+    if (!smooth) {
+      scroller.scrollTop += delta
+      return
+    }
+
+    const startTop = scroller.scrollTop
+    const targetTop = startTop + delta
+    const duration = 320
+    const t0 = performance.now()
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - t0) / duration)
+      // ease-out cubic — mềm hơn nhảy thẳng
+      const eased = 1 - (1 - t) ** 3
+      scroller.scrollTop = startTop + (targetTop - startTop) * eased
+      // vv còn co → bù lệch nhẹ cho khớp đáy
+      const drift = remaining()
+      if (Math.abs(drift) > 1) scroller.scrollTop += drift * 0.35
+      if (t < 1) {
+        scrollAnimRef.current = requestAnimationFrame(tick)
+      } else {
+        const final = remaining()
+        if (final > 1) scroller.scrollTop += final
+        scrollAnimRef.current = null
+      }
+    }
+    scrollAnimRef.current = requestAnimationFrame(tick)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (scrollAnimRef.current != null) {
+        cancelAnimationFrame(scrollAnimRef.current)
+      }
+    }
+  }, [])
+
+  /** iOS: focus mặc định sẽ scroll cả trang (giật). Chặn rồi focus preventScroll. */
   function focusCommentWithoutScroll(e: ReactTouchEvent | ReactMouseEvent) {
     if (document.activeElement === commentInputRef.current) return
     e.preventDefault()
@@ -707,6 +767,8 @@ export function PostDetailScreen() {
                 Chưa có bình luận nào.
               </p>
             ) : null}
+            {/* Neo để scrollIntoView khi mở bàn phím */}
+            <div ref={commentsEndRef} aria-hidden className="h-px" />
           </div>
         </div>
       </div>
