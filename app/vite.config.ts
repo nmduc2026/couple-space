@@ -1,12 +1,28 @@
 /// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+
+/** Vite không mặc định treat `.geojson` như JSON — cần bọc `export default`. */
+function geojsonAsJson(): Plugin {
+  return {
+    name: 'geojson-as-json',
+    transform(code, id) {
+      const file = id.split('?', 1)[0] ?? id
+      if (!file.endsWith('.geojson')) return null
+      return {
+        code: `export default ${code}`,
+        map: null,
+      }
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    geojsonAsJson(),
     react(),
     tailwindcss(),
     VitePWA({

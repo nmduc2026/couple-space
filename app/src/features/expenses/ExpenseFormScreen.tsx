@@ -22,7 +22,7 @@ import {
   Spacer,
   Stage,
 } from '../../components/ui'
-import { btn, input } from '../../lib/ui-classes'
+import { btn, fieldButton, input } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
 import { SegmentedControl } from '../../components/SegmentedControl'
 
@@ -214,7 +214,7 @@ export function ExpenseFormScreen() {
                 value={value.spentOn}
                 max={todayYmd()}
                 onChange={(next) => patch({ spentOn: next })}
-                className={`${input} flex items-center`}
+                className={fieldButton}
               />
             </Field>
 

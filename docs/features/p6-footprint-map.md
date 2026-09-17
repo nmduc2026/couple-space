@@ -30,7 +30,9 @@ trí.** Bài nào không gắn địa điểm thì không lên bản đồ — v
 ### Chuẩn hoá địa điểm — quyết định then chốt
 
 Người dùng nhập tự do (*"Hàng Quạt"*, *"quán bún chả chỗ cũ"*). Muốn đếm được
-*"5/63 tỉnh thành"* thì phải quy về tỉnh/thành.
+*"5/34 tỉnh thành"* thì phải quy về đơn vị trong bảng `admin_units` (34 tỉnh +
+xã/phường). Compose có select tỉnh → xã; GPS đoán giúp; Dấu chân hỏi một lần
+nếu chưa khớp.
 
 Cách làm, theo thứ tự ưu tiên:
 
@@ -57,7 +59,7 @@ phải lời trách.
 
 | Cách | Chi phí | Ghi chú |
 |---|---|---|
-| **Bản đồ tĩnh SVG Việt Nam** | $0 | ✅ **Chọn cách này.** Một file SVG 63 tỉnh, tô màu tỉnh đã đi. Nhẹ, chạy offline, không phụ thuộc ai, và hợp với app chỉ dùng ở Việt Nam. |
+| **GeoJSON + react-simple-maps** | $0 | ✅ **Chọn cách này.** File tỉnh + lazy-load xã theo tỉnh; tô màu offline, không tile. |
 | Leaflet + OpenStreetMap | $0 nhưng tốn băng thông tải tile | Đẹp hơn, nhưng cần tải ảnh từ ngoài — **CSP của PWA phải mở thêm**, và tốn băng thông mỗi lần mở. |
 | Google Maps / Mapbox | Có phí sau hạn mức | Không đáng cho tính năng này. |
 

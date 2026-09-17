@@ -45,7 +45,7 @@ export function TabBar() {
   const { pathname } = useLocation()
 
   return (
-    <nav className="pb-safe sticky bottom-0 z-20 mt-auto flex items-center justify-around border-t border-border bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-1.5 pt-2.5 backdrop-blur-xl">
+    <nav className="pb-safe sticky bottom-0 z-20 mt-auto flex shrink-0 items-center justify-around border-t border-border bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-1.5 pt-2.5 backdrop-blur-xl">
       {TABS.slice(0, 2).map((tab) => (
         <TabLink key={tab.to} tab={tab} active={tab.match(pathname)} />
       ))}

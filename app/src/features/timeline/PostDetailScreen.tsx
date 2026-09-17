@@ -32,7 +32,7 @@ import { AmountInput } from '../../components/AmountInput'
 import { DateField } from '../../components/DateField'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { IconArrowLeft } from '../../components/icons'
-import { btn, input, inputChrome } from '../../lib/ui-classes'
+import { btn, fieldButton, input } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
 import { formatCommentTime, formatDay, formatPostTime } from '../../lib/formatDate'
 import { useKeyboardShell } from '../../hooks/useKeyboardShell'
@@ -500,7 +500,7 @@ export function PostDetailScreen() {
         place_name: edit.place.trim() || null,
         happened_on: edit.day,
         activity: edit.activity,
-        province_code: null,
+        admin_unit_id: null,
       })
       .eq('id', post.id)
 
@@ -773,7 +773,7 @@ export function PostDetailScreen() {
                   value={edit.day}
                   max={todayYmd()}
                   onChange={(next) => setEdit({ ...edit, day: next })}
-                  className={`${inputChrome} flex items-center text-[15px]`}
+                  className={fieldButton}
                 />
               </Field>
 

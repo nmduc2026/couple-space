@@ -15,6 +15,8 @@ import { compressImage, readExifDate } from '../../lib/image'
 import { notifyPartner } from '../../lib/notify'
 import { supabase } from '../../lib/supabase'
 import { currentPosition, reverseGeocode, type ResolvedAddress } from '../../lib/geocode'
+import { useAdminUnits } from '../../hooks/useAdminUnits'
+import { provinceOf, unitById, type AdminUnit } from '../../lib/adminUnits'
 import { enqueue, isRetriable, type QueuedPhoto } from '../../lib/syncQueue'
 import { errorText, networkHint } from '../../lib/netError'
 import {
@@ -25,9 +27,10 @@ import {
   Spacer,
   Stage,
 } from '../../components/ui'
-import { btn, input, inputChrome } from '../../lib/ui-classes'
+import { btn, fieldButton, input } from '../../lib/ui-classes'
 import { MAX_PHOTOS } from '../../lib/maxPhotos'
 import { DateField } from '../../components/DateField'
+import { SelectField } from '../../components/SelectField'
 import { SegmentedControl } from '../../components/SegmentedControl'
 
 type Picked = {
@@ -51,6 +54,11 @@ export function ComposeScreen() {
   const [placeName, setPlaceName] = useState(() => params.get('place') ?? '')
   // Địa chỉ có cấu trúc, chỉ có khi người dùng bấm "Lấy vị trí hiện tại"
   const [located, setLocated] = useState<ResolvedAddress | null>(null)
+  const [provinceId, setProvinceId] = useState<string>('')
+  const [communeId, setCommuneId] = useState<string>('')
+  const { provinces, communes } = useAdminUnits({
+    communeParentId: provinceId || null,
+  })
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState('')
   const [activity, setActivity] = useState<string | null>(
@@ -128,17 +136,60 @@ export function ComposeScreen() {
     navigate('/timeline', { replace: true })
   }
 
-  /** Lấy vị trí máy rồi tra ngược ra địa chỉ, điền sẵn vào ô Địa điểm.
-   *  Người dùng vẫn sửa lại tên được — "79 Phố Đinh Tiên Hoàng" đúng về địa
-   *  chỉ nhưng "Cà phê Giảng" mới là thứ sau này họ nhớ ra. */
+  /** Lấy vị trí máy → điền Địa điểm + Tỉnh + Xã (nếu đoán được). */
   async function fillFromLocation() {
     setLocating(true)
     setLocateError('')
     try {
       const { lat, lng } = await currentPosition()
-      const found = await reverseGeocode(lat, lng)
+      // Lần 1: đủ để ra tỉnh (và địa chỉ Nominatim)
+      let found = await reverseGeocode(lat, lng, provinces)
       setLocated(found)
-      if (found.shortName && !placeName.trim()) setPlaceName(found.shortName)
+      if (found.shortName) setPlaceName(found.shortName)
+
+      let prov =
+        found.adminUnitId
+          ? provinceOf(provinces, unitById(provinces, found.adminUnitId))
+          : null
+      // adminUnitId có thể là xã chưa load — lấy tỉnh từ tên địa chỉ
+      if (!prov && found.address) {
+        const byName = provinces.find((p) =>
+          found.address.toLowerCase().includes(p.name.toLowerCase()),
+        )
+        if (byName) prov = byName
+      }
+      if (!prov) {
+        setProvinceId('')
+        setCommuneId('')
+        if (!found.address) {
+          setLocateError('Đã lấy được vị trí nhưng chưa tra ra địa chỉ.')
+        }
+        return
+      }
+
+      setProvinceId(prov.id)
+      setCommuneId('')
+
+      // Lần 2: load xã của tỉnh rồi đoán lại (cần list xã trong units)
+      const { data: communeRows, error } = await supabase
+        .from('admin_units')
+        .select(
+          'id, code, name, level, kind, parent_id, zone, merged_from, lat, lng, sort_order',
+        )
+        .eq('level', 'commune')
+        .eq('parent_id', prov.id)
+      if (error) throw error
+      const units = [...provinces, ...((communeRows ?? []) as AdminUnit[])]
+      found = await reverseGeocode(lat, lng, units)
+      setLocated(found)
+      if (found.shortName) setPlaceName(found.shortName)
+
+      const unit = found.adminUnitId
+        ? unitById(units, found.adminUnitId)
+        : null
+      if (unit?.level === 'commune') setCommuneId(unit.id)
+      else setCommuneId('')
+
       if (!found.address) {
         setLocateError('Đã lấy được vị trí nhưng chưa tra ra địa chỉ.')
       }
@@ -199,7 +250,7 @@ export function ComposeScreen() {
           place_name: placeName.trim() || null,
           place_lat: located?.lat ?? null,
           place_lng: located?.lng ?? null,
-          province_code: located?.provinceCode ?? null,
+          admin_unit_id: communeId || provinceId || located?.adminUnitId || null,
           ward: located?.ward ?? null,
           district: located?.district ?? null,
           address: located?.address || null,
@@ -421,7 +472,32 @@ export function ComposeScreen() {
                 value={happenedOn}
                 max={todayYmd()}
                 onChange={setHappenedOn}
-                className={`${inputChrome} flex items-center text-[15px]`}
+                className={fieldButton}
+              />
+            </Field>
+
+            <Field label="Tỉnh / thành">
+              <SelectField
+                value={provinceId}
+                disabled={blocked}
+                placeholder="Tỉnh / thành"
+                clearLabel="Bỏ chọn"
+                options={provinces.map((p) => ({ value: p.id, label: p.name }))}
+                onChange={(next) => {
+                  setProvinceId(next)
+                  setCommuneId('')
+                }}
+              />
+            </Field>
+
+            <Field label="Xã / phường">
+              <SelectField
+                value={communeId}
+                disabled={blocked || !provinceId}
+                placeholder="Xã / phường"
+                clearLabel="Bỏ chọn"
+                options={communes.map((c) => ({ value: c.id, label: c.name }))}
+                onChange={setCommuneId}
               />
             </Field>
 
@@ -437,10 +513,12 @@ export function ComposeScreen() {
                 type="button"
                 onClick={() => void fillFromLocation()}
                 disabled={locating || blocked}
-                className="mt-2 flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-[13.5px] text-accent disabled:opacity-50"
+                className={`${fieldButton} mt-2 text-accent disabled:opacity-50`}
               >
                 <span aria-hidden>📍</span>
-                {locating ? 'Đang tìm vị trí...' : 'Lấy vị trí hiện tại'}
+                <span className="min-w-0 flex-1">
+                  {locating ? 'Đang tìm vị trí...' : 'Lấy vị trí hiện tại'}
+                </span>
               </button>
 
               {located?.address ? (

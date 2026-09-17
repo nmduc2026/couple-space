@@ -6,10 +6,10 @@ const name = (code: string) => ({ LDG: 'Lâm Đồng', HNI: 'Hà Nội' })[code]
 function post(
   id: string,
   happened_on: string,
-  province_code: string | null = null,
+  admin_unit_id: string | null = null,
   activity: string | null = null,
 ): PostLike {
-  return { id, happened_on, province_code, activity }
+  return { id, happened_on, admin_unit_id, activity }
 }
 
 describe('groupTrips', () => {

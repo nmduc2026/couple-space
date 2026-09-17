@@ -19,3 +19,6 @@ export const inputChrome =
 
 /** Ô nhập thường: 16px — đủ để Safari iOS không phóng trang khi focus. */
 export const input = `${inputChrome} text-[16px]`
+
+/** Nút giả ô nhập (DateField, SelectField, …) — cùng cao / cùng cỡ chữ với `input`. */
+export const fieldButton = `${input} flex items-center gap-2 text-left`

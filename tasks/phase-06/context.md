@@ -49,4 +49,12 @@ Toàn bộ — xem [tasks.md](tasks.md).
 |---|---|---|---|
 | 2026-09-11 | Tạo khung phase | Chưa bắt đầu | Chờ phase trước đạt DoD |
 | 2026-09-11 | Viết đặc tả đầy đủ 4 tính năng Phase 6 + dựng 4 màn hình prototype | Đã có đặc tả, chưa chia task | Chờ Phase 5 đạt DoD |
-| 2026-09-11 | Phase 6: migration `place_aliases`/`wrapped_reports`/`albums`/`wishlist_items`/`wishlist_marks`/`export_runs` + hàm `wrapped_stats`, `suggested_trips`, `archive_wish`. Frontend: Dấu chân (lưới 63 tỉnh theo miền, có test chuẩn hoá tên), Wrapped vẽ ảnh bằng Canvas + chọn dòng khoe, Wishlist bất đối xứng. Edge Function `export-data` đóng ZIP kèm `ky-niem.html` + README, nối vào nút đã chừa sẵn ở màn huỷ ghép đôi | Build/lint/test sạch (37 test). Chưa `db push`, chưa deploy function | P6-01 SVG bản đồ thật · P6-22→26 giao diện album · P6-27→31 xuất PDF · P6-48 thử wishlist bằng 2 tài khoản |
+| 2026-09-17 | Admin units 34+3321 (DB), GeoJSON tỉnh+xã lazy, MapScreen choropleth + `/map/:code`, Compose select tỉnh→xã, bỏ hardcode provinces.ts | Migration `20261001120000_admin_units.sql` chưa `db push`; prototype chưa sync đầy đủ | `supabase db push` · smoke map trên máy thật · chỉnh UI zoom nếu cần |
+| 2026-09-17 | Vá Vite: plugin `geojson-as-json` (`.geojson` → `export default`) — hết crash `/map` `Unexpected token ':'` | Build pass; cần reload dev server | Smoke `/map` · `db push` nếu chưa |
+| 2026-09-17 | Map trống hồng: geometry simplify làm polygon “lật” tô kín khung; rebuild GeoJSON từ HF + contrast fill/stroke | Provinces+communes project sạch (d3 bounds OK) | Reload `/map` · `db push` nếu chưa |
+| 2026-09-17 | Map UI: bỏ hint, map `fillHeight`, nhãn tỉnh + tint miền + chip khi chạm | Đã xong UI polish | Smoke `/map` · `db push` nếu chưa |
+| 2026-09-17 | Sửa map cắt nửa: AppShell `h-app` + `fitExtent`; bỏ tint miền (chỉ tô khi đã đi) | Chờ reload xác nhận | Smoke `/map` |
+| 2026-09-17 | Compose: SelectField Modal, thứ tự Tỉnh→Xã→Địa điểm; GPS fill 2 bước; map nút ± zoom | Xong | Smoke compose + map |
+| 2026-09-17 | Map: inset Hoàng Sa + Trường Sa (tô theo tỉnh cha Đà Nẵng / Khánh Hòa) | Xong | Smoke `/map` |
+| 2026-09-17 | Map: vẽ Hoàng Sa/Trường Sa trên cùng bản đồ (bỏ ô inset), fitExtent cả Biển Đông | Xong | Smoke `/map` |
+| 2026-09-17 | Thử polygon trong DB rồi **đổi lại**: giữ GeoJSON ở `src/lib/geo/` như cũ (không cột geometry / không seed:geo) | Đã revert xong | Smoke `/map` · `db push` admin_units nếu chưa |

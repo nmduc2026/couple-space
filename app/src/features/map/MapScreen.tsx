@@ -1,75 +1,115 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { EmptyState, InlineLoading } from '../../components/EmptyState'
-import { usePosts } from '../../hooks/usePosts'
 import { useCouple } from '../../hooks/useCouple'
-import {
-  usePlaceResolution,
-  type Unresolved,
-  type WardGroup,
-} from '../../hooks/usePlaceResolution'
+import { usePosts } from '../../hooks/usePosts'
+import { usePlaceResolution, type Unresolved } from '../../hooks/usePlaceResolution'
+import { useProvinces } from '../../hooks/useAdminUnits'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW } from '../../dev/preview'
-import {
-  PROVINCES,
-  PROVINCE_COUNT,
-  normalizePlace,
-  provinceByCode,
-  type Zone,
-} from '../../lib/provinces'
+import { normalizePlace, type AdminUnit, type AdminZone } from '../../lib/adminUnits'
 import { Modal } from '../../components/Modal'
 import { btn, input } from '../../lib/ui-classes'
+import { FootprintChoropleth } from './FootprintChoropleth'
+import provincesGeo from '../../lib/geo/vietnam-provinces.geojson'
 
-const ZONES: Array<{ key: Zone; label: string }> = [
+const ZONES: Array<{ key: AdminZone; label: string }> = [
   { key: 'bac', label: 'Miền Bắc' },
   { key: 'trung', label: 'Miền Trung' },
   { key: 'nam', label: 'Miền Nam' },
 ]
 
+type View = 'map' | 'grid'
+
 export function MapScreen() {
+  const navigate = useNavigate()
+  const [params, setParams] = useSearchParams()
+  const view: View = params.get('view') === 'grid' ? 'grid' : 'map'
   const { posts, isLoading } = usePosts()
-  const { visits, foreign, unresolved, toStamp, wardsByProvince } =
-    usePlaceResolution(posts)
+  const { data: provinces = [] } = useProvinces()
+  const { visits, foreign, unresolved, toStamp } = usePlaceResolution(posts)
   const [asking, setAsking] = useState<Unresolved | null>(null)
-  // Chạm vào một tỉnh thì mở ra mức chi tiết hơn: những nơi CỤ THỂ đã đi
-  // trong tỉnh đó
-  const [drill, setDrill] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
-  // Ghi tỉnh đã xác định ngược vào bài. Không có bước này thì
-  // `suggested_trips()` (gom album theo chuyến) không bao giờ có dữ liệu.
   const stamped = useRef(false)
   useEffect(() => {
     if (PREVIEW || stamped.current || toStamp.length === 0) return
     stamped.current = true
-
     async function stamp() {
-      const byCode = new Map<string, string[]>()
+      const byUnit = new Map<string, string[]>()
       for (const row of toStamp) {
-        byCode.set(row.code, [...(byCode.get(row.code) ?? []), row.id])
+        byUnit.set(row.unitId, [...(byUnit.get(row.unitId) ?? []), row.id])
       }
-      for (const [code, ids] of byCode) {
-        await supabase.from('posts').update({ province_code: code }).in('id', ids)
+      for (const [unitId, ids] of byUnit) {
+        await supabase.from('posts').update({ admin_unit_id: unitId }).in('id', ids)
       }
       await queryClient.invalidateQueries({ queryKey: ['posts'] })
     }
-
     void stamp()
   }, [toStamp, queryClient])
 
+  const byId = useMemo(() => {
+    const m = new Map<string, AdminUnit>()
+    for (const p of provinces) m.set(p.id, p)
+    return m
+  }, [provinces])
+
+  const visitsByCode = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const [id, count] of visits) {
+      const code = byId.get(id)?.code
+      if (code) m.set(code, count)
+    }
+    return m
+  }, [visits, byId])
+
   const visitedCount = visits.size
+  const provinceCount = provinces.length || 34
   const topProvince = [...visits.entries()].sort((a, b) => b[1] - a[1])[0]
+
+  function setView(next: View) {
+    const p = new URLSearchParams(params)
+    if (next === 'grid') p.set('view', 'grid')
+    else p.delete('view')
+    setParams(p, { replace: true })
+  }
 
   return (
     <>
-      <TopHeader title="Dấu chân" back="/" />
+      <TopHeader
+        title="Dấu chân"
+        back="/"
+        right={
+          <div className="flex overflow-hidden rounded-full border border-border">
+            {(
+              [
+                ['map', '🗺️'],
+                ['grid', '▦'],
+              ] as const
+            ).map(([value, icon]) => (
+              <button
+                key={value}
+                type="button"
+                aria-label={value === 'map' ? 'Bản đồ' : 'Dạng lưới'}
+                aria-pressed={view === value}
+                onClick={() => setView(value)}
+                className={`px-3 py-1 text-sm ${
+                  view === value ? 'bg-accent text-on-accent' : 'text-muted'
+                }`}
+              >
+                {icon}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
-      <div className="flex-1 px-4 py-4">
+      <div className="flex min-h-0 flex-1 flex-col px-4 pb-2 pt-3">
         {isLoading ? (
           <InlineLoading />
-        ) : visitedCount === 0 ? (
+        ) : visitedCount === 0 && unresolved.length === 0 ? (
           <EmptyState
             emoji="🗺️"
             title="Chưa có địa điểm trên bản đồ."
@@ -81,27 +121,27 @@ export function MapScreen() {
           />
         ) : (
           <>
-            <section className="rounded-xl border border-border bg-surface p-4">
-              <p className="text-[30px] leading-tight font-extrabold text-text">
+            <section className="shrink-0 rounded-xl border border-border bg-surface p-3.5">
+              <p className="text-[28px] leading-tight font-extrabold text-text">
                 {visitedCount}
-                <span className="text-[17px] font-semibold text-muted">
-                  /{PROVINCE_COUNT} tỉnh thành
+                <span className="text-[16px] font-semibold text-muted">
+                  /{provinceCount} tỉnh thành
                 </span>
               </p>
-              <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-soft">
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-soft">
                 <span
                   className="block h-full rounded-full bg-accent"
                   style={{
-                    width: `${(visitedCount / PROVINCE_COUNT) * 100}%`,
+                    width: `${provinceCount ? (visitedCount / provinceCount) * 100 : 0}%`,
                   }}
                 />
               </div>
-              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-muted">
+              <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-muted">
                 {topProvince ? (
                   <span>
                     Đi nhiều nhất:{' '}
                     <b className="font-semibold text-text">
-                      {provinceByCode(topProvince[0])?.name}
+                      {byId.get(topProvince[0])?.name}
                     </b>{' '}
                     ({topProvince[1]} lần)
                   </span>
@@ -119,7 +159,7 @@ export function MapScreen() {
               <button
                 type="button"
                 onClick={() => setAsking(unresolved[0])}
-                className="mt-3 flex w-full items-center gap-3 rounded-xl border border-accent/30 bg-soft p-3.5 text-left"
+                className="mt-2.5 flex w-full shrink-0 items-center gap-3 rounded-xl border border-accent/30 bg-soft p-3 text-left"
               >
                 <span aria-hidden className="text-xl">
                   📍
@@ -137,280 +177,120 @@ export function MapScreen() {
               </button>
             ) : null}
 
-            {ZONES.map((zone) => (
-              <section key={zone.key} className="mt-5">
-                <h2 className="text-[14px] font-semibold text-muted">
-                  {zone.label}
-                </h2>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {PROVINCES.filter((p) => p.zone === zone.key).map((p) => {
-                    const count = visits.get(p.code) ?? 0
-                    return count > 0 ? (
-                      <button
-                        key={p.code}
-                        type="button"
-                        onClick={() => setDrill(p.code)}
-                        className="rounded-full bg-accent px-2.5 py-1 text-[12px] font-semibold text-on-accent"
-                      >
-                        {p.name} · {count}
-                      </button>
-                    ) : (
-                      <span
-                        key={p.code}
-                        className="rounded-full border border-border px-2.5 py-1 text-[12px] text-muted/60"
-                      >
-                        {p.name}
-                      </span>
-                    )
-                  })}
-                </div>
-              </section>
-            ))}
+            {view === 'map' ? (
+              <div className="mt-2.5 min-h-0 flex-1">
+                <FootprintChoropleth
+                  geography={provincesGeo}
+                  visitsByCode={visitsByCode}
+                  onSelect={(code) => navigate(`/map/${code}`)}
+                  fillHeight
+                  includeIslands
+                />
+              </div>
+            ) : (
+              <div className="mt-2.5 min-h-0 flex-1 overflow-y-auto">
+                {ZONES.map((zone) => (
+                  <section key={zone.key} className="mt-4 first:mt-1">
+                    <h2 className="text-[14px] font-semibold text-muted">
+                      {zone.label}
+                    </h2>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {provinces
+                        .filter((p) => p.zone === zone.key)
+                        .map((p) => {
+                          const count = visits.get(p.id) ?? 0
+                          return count > 0 ? (
+                            <Link
+                              key={p.id}
+                              to={`/map/${p.code}`}
+                              className="rounded-full bg-accent px-2.5 py-1 text-[12px] font-semibold text-on-accent"
+                            >
+                              {p.name} · {count}
+                            </Link>
+                          ) : (
+                            <span
+                              key={p.id}
+                              className="rounded-full border border-border px-2.5 py-1 text-[12px] text-muted/60"
+                            >
+                              {p.name}
+                            </span>
+                          )
+                        })}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
 
-      {drill ? (
-        <ProvinceDrill
-          code={drill}
-          wards={wardsByProvince.get(drill) ?? []}
-          onClose={() => setDrill(null)}
-        />
-      ) : null}
-
       {asking ? (
-        <AskProvince
-          place={asking}
-          onDone={() => setAsking(null)}
-        />
+        <AskUnit place={asking} provinces={provinces} onDone={() => setAsking(null)} />
       ) : null}
     </>
   )
 }
 
-/** Hỏi đúng một lần cho mỗi tên địa điểm, rồi lưu vào `place_aliases`.
- *  Lưu theo tên đã chuẩn hoá nên "Đà Lạt" và "da lat" tính là một. */
-function AskProvince({
+function AskUnit({
   place,
+  provinces,
   onDone,
 }: {
   place: Unresolved
+  provinces: AdminUnit[]
   onDone: () => void
 }) {
   const queryClient = useQueryClient()
   const { couple } = useCouple()
-  const [term, setTerm] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [q, setQ] = useState('')
+  const needle = normalizePlace(q)
+  const list = needle
+    ? provinces.filter((p) => normalizePlace(p.name).includes(needle))
+    : provinces
 
-  const needle = normalizePlace(term)
-  const matches = needle
-    ? PROVINCES.filter((p) => normalizePlace(p.name).includes(needle))
-    : PROVINCES
-
-  // Gom theo miền như trên bản đồ: 63 dòng phẳng thì phải đọc từng cái một
-  const zones: Array<[Zone, string]> = [
-    ['bac', 'Miền Bắc'],
-    ['trung', 'Miền Trung'],
-    ['nam', 'Miền Nam'],
-  ]
-
-  async function save(provinceCode: string | null) {
-    if (!couple || PREVIEW) return onDone()
-    setSaving(true)
-    await supabase.from('place_aliases').insert({
-      couple_id: couple.id,
-      alias: place.alias,
-      province_code: provinceCode,
-      country: provinceCode ? 'VN' : 'XX',
-    })
-    setSaving(false)
+  async function save(unitId: string | null) {
+    if (!couple?.id) return
+    await supabase.from('place_aliases').upsert(
+      {
+        couple_id: couple.id,
+        alias: place.alias,
+        admin_unit_id: unitId,
+        country: unitId ? 'VN' : 'XX',
+      },
+      { onConflict: 'couple_id,alias' },
+    )
     await queryClient.invalidateQueries({ queryKey: ['place_aliases'] })
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
     onDone()
   }
 
   return (
-    <Modal
-      onClose={onDone}
-      ariaLabel="Chọn tỉnh thành"
-      panelClassName="max-h-sheet"
-    >
-      {/* `flex-none` cho phần đầu: không có nó thì flex bóp dẹt cả ô tìm
-          kiếm lẫn tiêu đề để nhường chỗ cho danh sách dài bên dưới. */}
-      <div className="flex-none">
-        <p className="text-[17px] font-semibold text-text">
-          “{place.placeName}” ở đâu?
-        </p>
-        <p className="mt-1 text-[13px] text-muted">
-          {place.count > 1 ? `${place.count} kỉ niệm · ` : ''}Trả lời một lần,
-          lần sau app tự nhận.
-        </p>
-
-        <div className="relative mt-4">
-          <span
-            aria-hidden
-            className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
-          >
-            🔍
-          </span>
-          <input
-            value={term}
-            onChange={(e) => setTerm(e.target.value)}
-            placeholder="Tên tỉnh"
-            autoFocus
-            className={`${input} pl-10`}
-          />
+    <Modal onClose={onDone} ariaLabel="Chọn tỉnh thành">
+      <div className="p-4">
+        <h2 className="text-[17px] font-bold text-text">
+          “{place.placeName}” thuộc đâu?
+        </h2>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Tên tỉnh"
+          className={`${input} mt-3`}
+        />
+        <div className="mt-3 max-h-72 space-y-1 overflow-y-auto">
+          {list.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => void save(p.id)}
+              className="flex w-full rounded-xl px-3 py-2.5 text-left text-[14px] text-text hover:bg-soft"
+            >
+              {p.name}
+            </button>
+          ))}
         </div>
-      </div>
-
-      <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-surface">
-        {matches.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm leading-relaxed text-muted">
-            Không có tỉnh nào tên như vậy.
-            <br />
-            Ở nước ngoài thì chọn nút bên dưới.
-          </p>
-        ) : (
-          zones.map(([zone, label]) => {
-            const inZone = matches.filter((p) => p.zone === zone)
-            if (inZone.length === 0) return null
-            return (
-              <div key={zone}>
-                <p className="sticky top-0 z-10 bg-surface px-4 pt-3 pb-1.5 text-[13px] font-medium text-muted">
-                  {label}
-                </p>
-                {inZone.map((p) => (
-                  <button
-                    key={p.code}
-                    type="button"
-                    disabled={saving}
-                    onClick={() => void save(p.code)}
-                    className="w-full px-4 py-3 text-left text-[15px] text-text transition active:bg-soft disabled:opacity-50"
-                  >
-                    {p.name}
-                  </button>
-                ))}
-              </div>
-            )
-          })
-        )}
-      </div>
-
-      <div className="mt-3 flex-none space-y-2">
-        <button
-          type="button"
-          disabled={saving}
-          onClick={() => void save(null)}
-          className={btn.outline}
-        >
-          🌏 Ở nước ngoài
-        </button>
-        <button type="button" onClick={onDone} className={btn.ghost}>
-          Hủy
-        </button>
-      </div>
-    </Modal>
-  )
-}
-
-/**
- * Mức chi tiết bên trong một tỉnh: phường/xã, rồi tới từng địa điểm.
- *
- * Phường/xã chỉ có với bài tạo bằng nút "Lấy vị trí hiện tại" — lúc đó app tra
- * ngược toạ độ ra địa chỉ thật. Bài gõ tay thì không suy ra được phường từ
- * "Quán Cây Bàng", nên gom vào một nhóm riêng ở cuối thay vì đoán bừa.
- */
-function ProvinceDrill({
-  code,
-  wards,
-  onClose,
-}: {
-  code: string
-  wards: WardGroup[]
-  onClose: () => void
-}) {
-  const [openWard, setOpenWard] = useState<string | null>(null)
-  const name = provinceByCode(code)?.name ?? code
-  const total = wards.reduce((n, w) => n + w.count, 0)
-  const named = wards.filter((w) => w.ward !== null).length
-
-  return (
-    <Modal
-      onClose={onClose}
-      ariaLabel={name}
-      panelClassName="max-h-sheet"
-    >
-      <div className="flex-none">
-        <p className="text-[17px] font-semibold text-text">{name}</p>
-        <p className="mt-1 text-[13px] text-muted">
-          {named > 0 ? `${named} phường/xã · ` : ''}
-          {total} kỉ niệm
-        </p>
-      </div>
-
-      <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-surface">
-        {wards.map((w) => {
-          const key = w.ward ?? ''
-          const isOpen = openWard === key
-          return (
-            <div key={key} className="border-b border-border last:border-b-0">
-              <button
-                type="button"
-                onClick={() => setOpenWard(isOpen ? null : key)}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left"
-              >
-                <span aria-hidden>{w.ward ? '🏘️' : '📍'}</span>
-                <span className="min-w-0 flex-1">
-                  <b className="block truncate text-[15px] font-medium text-text">
-                    {w.ward ?? 'Chưa rõ phường/xã'}
-                  </b>
-                  {w.ward ? null : (
-                    <small className="block text-[11.5px] text-muted">
-                      Bài gõ địa điểm bằng tay
-                    </small>
-                  )}
-                </span>
-                <span className="shrink-0 text-[12.5px] text-muted">
-                  {w.count}
-                </span>
-                <span aria-hidden className="shrink-0 text-muted">
-                  {isOpen ? '▾' : '▸'}
-                </span>
-              </button>
-
-              {isOpen ? (
-                <ul className="bg-bg/60 px-2 pb-2">
-                  {w.places.map((p) => (
-                    <li key={p.placeName}>
-                      <Link
-                        to={`/timeline?place=${encodeURIComponent(p.placeName)}`}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] text-text"
-                      >
-                        <span aria-hidden className="text-[12px]">
-                          📍
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">
-                          {p.placeName}
-                        </span>
-                        <span className="shrink-0 text-[12px] text-muted">
-                          {p.count} lần
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          )
-        })}
-      </div>
-
-      <div className="mt-3 flex-none space-y-2">
-        <Link to={`/timeline?province=${code}`} className={btn.outline}>
-          Xem tất cả kỉ niệm ở {name}
-        </Link>
-        <button type="button" onClick={onClose} className={btn.ghost}>
-          Hủy
+        <button type="button" onClick={() => void save(null)} className={`${btn.outline} mt-3 w-full`}>
+          Nước ngoài
         </button>
       </div>
     </Modal>
