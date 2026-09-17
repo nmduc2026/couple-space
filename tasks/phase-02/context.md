@@ -67,3 +67,5 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | 2026-09-11 | Viết nốt đặc tả Phase 3–6, chốt D6 (không ghi nợ), lưu prototype 36 màn hình vào `docs/design/frontend/ui/` | Không đổi gì trong phase này | Không đổi |
 | 2026-09-17 | Timeline thẻ + chi tiết: thêm header kiểu feed (avatar chữ cái, biệt danh, `created_at` tương đối). Cập nhật prototype + đặc tả p2-timeline mục 4 | Đã xong UI; chưa cần migration | Mở app xem timeline dạng thẻ |
 | 2026-09-17 | Thêm menu `⋯` Cập nhật/Xoá ngay trên thẻ timeline (chỉ bài của mình); xoá xác nhận tại chỗ, cập nhật → chi tiết `?edit=1` | Đã xong | Thử trên máy: sửa + xoá từ feed |
+| 2026-09-17 | Điều tra `TypeError: Load failed` khi đăng caption có emoji: không phải lỗi emoji (DB UTF-8 ok) mà là lỗi mạng Safari. Sửa `isRetriable` đọc message từ object Supabase + try/catch ComposeScreen, thông báo tiếng Việt, tránh nhân đôi bài khi đứt mạng lúc upload | Đã xong code | Thử đăng lại caption có ☀️🇻🇳💕 trên iPhone |
+| 2026-09-17 | Chuyển `MAX_PHOTOS` sang `VITE_MAX_PHOTOS` trong `.env` (mặc định 8). Flow đăng giữ nguyên | Đã xong | Muốn tăng giảm → sửa env rồi restart Vite |

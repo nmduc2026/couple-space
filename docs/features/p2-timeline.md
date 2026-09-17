@@ -21,7 +21,7 @@ trường = không ai đăng = app chết. Đây là cùng một bài học đã
 
 | Trường | Cách lấy |
 |---|---|
-| Ảnh / video | Người dùng chọn, 1–9 ảnh |
+| Ảnh / video | Người dùng chọn, tối đa theo `VITE_MAX_PHOTOS` (mặc định 8) |
 | Caption | Gõ tay — **trường duy nhất nên có** |
 | Ngày | **Tự điền từ EXIF** ảnh đầu tiên, sửa được |
 | Địa điểm | Tuỳ chọn, gợi ý từ các nơi đã đi |
