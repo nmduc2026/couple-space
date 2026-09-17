@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+  type TouchEvent as ReactTouchEvent,
+} from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
@@ -25,6 +32,7 @@ import { IconArrowLeft } from '../../components/icons'
 import { btn, input, inputChrome } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
 import { formatCommentTime, formatDay, formatPostTime } from '../../lib/formatDate'
+import { useKeyboardShell } from '../../hooks/useKeyboardShell'
 import {
   categoryFromActivity,
   formatAmountInput,
@@ -93,6 +101,19 @@ export function PostDetailScreen() {
         : -1)
   const openEditFromUrl = searchParams.get('edit') === '1'
   const editBootstrapped = useRef(false)
+  const detailReady = !!post && !editing && !isLoading
+  const { shellRef, scrollerRef, keyboardOpen } = useKeyboardShell(detailReady)
+  const commentInputRef = useRef<HTMLInputElement>(null)
+
+  /** iOS: focus mặc định sẽ scroll cả trang (giật lên rồi bị kéo xuống).
+   *  Chặn gesture rồi focus với preventScroll. */
+  /** iOS: focus mặc định sẽ scroll cả trang (giật lên rồi bị kéo xuống).
+   *  Chặn gesture rồi focus với preventScroll — chỉ khi chưa focus. */
+  function focusCommentWithoutScroll(e: ReactTouchEvent | ReactMouseEvent) {
+    if (document.activeElement === commentInputRef.current) return
+    e.preventDefault()
+    commentInputRef.current?.focus({ preventScroll: true })
+  }
 
   const commentsQuery = useQuery({
     queryKey: ['comments', id],
@@ -582,7 +603,10 @@ export function PostDetailScreen() {
   }
 
   return (
-    <Screen>
+    <main
+      ref={shellRef}
+      className="flex h-app flex-col overflow-hidden bg-bg"
+    >
       <DetailChrome
         to="/timeline"
         menuOpen={menuOpen}
@@ -592,98 +616,115 @@ export function PostDetailScreen() {
         onDelete={askRemovePost}
       />
 
-      <div className="flex gap-2.5 px-4 pt-3 pb-2">
-        <span
-          aria-hidden
-          className="grid h-9 w-9 flex-none place-items-center self-start rounded-full bg-soft text-sm font-bold text-accent"
-        >
-          {nameOf(post.author_id).slice(0, 1).toUpperCase()}
-        </span>
-        <span className="min-w-0 flex-1 pt-0.5">
-          <span className="block truncate text-[14px] leading-none font-semibold text-text">
-            {nameOf(post.author_id)}
-          </span>
-          <span className="mt-1 block text-[12px] leading-none text-muted">
-            {formatPostTime(post.created_at)}
-          </span>
-        </span>
-      </div>
-
-      {media.length > 0 ? (
-        <PhotoCarousel
-          items={media}
-          className="aspect-square w-full"
-          autoPlayMs={5000}
-          showArrows
-          showDots
-          showCounter
-        />
-      ) : null}
-
-      <div className="px-4 pt-4">
-        {post.caption ? (
-          <p className="text-[15px] leading-relaxed text-text">{post.caption}</p>
-        ) : null}
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-          <span>{formatDay(post.happened_on)}</span>
-          {post.place_name ? <span>📍 {post.place_name}</span> : null}
-          {activity ? (
-            <span>
-              {activity.emoji} {activity.label}
-            </span>
-          ) : null}
-          {linkedExpense ? (
-            <span>💰 {formatVnd(linkedExpense.amount_minor)}</span>
-          ) : null}
-        </div>
-
-        <div className="mt-4 flex items-center gap-4 border-y border-border py-2.5">
-          <button
-            type="button"
-            onClick={() => void toggleLike()}
-            className={`text-sm ${liked ? 'text-accent' : 'text-muted'}`}
+      <div
+        ref={scrollerRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
+        <div className="flex gap-2.5 px-4 pt-3 pb-2">
+          <span
+            aria-hidden
+            className="grid h-9 w-9 flex-none place-items-center self-start rounded-full bg-soft text-sm font-bold text-accent"
           >
-            {liked ? '❤️' : '🤍'} {likeCount}
-          </button>
-          <span className="text-sm text-muted">💬 {comments.length}</span>
+            {nameOf(post.author_id).slice(0, 1).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1 pt-0.5">
+            <span className="block truncate text-[14px] leading-none font-semibold text-text">
+              {nameOf(post.author_id)}
+            </span>
+            <span className="mt-1 block text-[12px] leading-none text-muted">
+              {formatPostTime(post.created_at)}
+            </span>
+          </span>
         </div>
 
-        <div className="pb-4">
-          {comments.map((c) => (
-            <div
-              key={c.id}
-              className="flex items-start gap-2.5 border-b border-border py-3"
-            >
-              <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-soft text-xs font-bold text-accent">
-                {nameOf(c.author_id).slice(0, 1).toUpperCase()}
-              </span>
-              <div className="min-w-0">
-                <span className="flex items-baseline gap-2">
-                  <b className="text-[13px] text-text">{nameOf(c.author_id)}</b>
-                  <span className="text-[11.5px] text-muted">
-                    {formatCommentTime(c.created_at)}
-                  </span>
-                </span>
-                <p className="text-[14px] leading-relaxed text-text">{c.body}</p>
-              </div>
-            </div>
-          ))}
-          {comments.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted">
-              Chưa có bình luận nào.
+        {media.length > 0 ? (
+          <PhotoCarousel
+            items={media}
+            className="aspect-square w-full"
+            autoPlayMs={5000}
+            showArrows
+            showDots
+            showCounter
+          />
+        ) : null}
+
+        <div className="px-4 pt-4">
+          {post.caption ? (
+            <p className="text-[15px] leading-relaxed text-text">
+              {post.caption}
             </p>
           ) : null}
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+            <span>{formatDay(post.happened_on)}</span>
+            {post.place_name ? <span>📍 {post.place_name}</span> : null}
+            {activity ? (
+              <span>
+                {activity.emoji} {activity.label}
+              </span>
+            ) : null}
+            {linkedExpense ? (
+              <span>💰 {formatVnd(linkedExpense.amount_minor)}</span>
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex items-center gap-4 border-y border-border py-2.5">
+            <button
+              type="button"
+              onClick={() => void toggleLike()}
+              className={`text-sm ${liked ? 'text-accent' : 'text-muted'}`}
+            >
+              {liked ? '❤️' : '🤍'} {likeCount}
+            </button>
+            <span className="text-sm text-muted">💬 {comments.length}</span>
+          </div>
+
+          <div className="pb-4">
+            {comments.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-start gap-2.5 border-b border-border py-3"
+              >
+                <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-soft text-xs font-bold text-accent">
+                  {nameOf(c.author_id).slice(0, 1).toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <span className="flex items-baseline gap-2">
+                    <b className="text-[13px] text-text">
+                      {nameOf(c.author_id)}
+                    </b>
+                    <span className="text-[11.5px] text-muted">
+                      {formatCommentTime(c.created_at)}
+                    </span>
+                  </span>
+                  <p className="text-[14px] leading-relaxed text-text">
+                    {c.body}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {comments.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted">
+                Chưa có bình luận nào.
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
 
       <form
         onSubmit={sendComment}
-        className="pb-safe sticky bottom-0 mt-auto flex gap-2 border-t border-border bg-bg/95 px-4 pt-2.5 backdrop-blur"
+        className={`flex shrink-0 gap-2 border-t border-border bg-bg px-4 pt-2.5 ${
+          keyboardOpen ? 'pb-2' : 'pb-safe'
+        }`}
       >
         <input
+          ref={commentInputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
+          onTouchEnd={focusCommentWithoutScroll}
+          onMouseDown={focusCommentWithoutScroll}
           placeholder="Viết bình luận..."
+          enterKeyHint="send"
           className={`${input} flex-1`}
         />
         <button
@@ -705,7 +746,7 @@ export function PostDetailScreen() {
           onCancel={() => setPendingDelete(false)}
         />
       ) : null}
-    </Screen>
+    </main>
   )
 }
 
