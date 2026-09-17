@@ -133,6 +133,7 @@ export default function App() {
               <Route path="/eat" element={<EatScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
+              <Route path="/profile/:userId" element={<ProfileScreen />} />
             </Route>
 
             {/* Màn toàn trang — tab bar sẽ che mất nút chính */}
