@@ -33,12 +33,22 @@ export function TimeField({
   className?: string
 }) {
   const [open, setOpen] = useState(false)
+  // Mobile: chạm đóng có thể "rơi" xuống nút mở → đóng rồi mở lại.
+  const blockOpenUntil = useRef(0)
+
+  function closeSheet() {
+    blockOpenUntil.current = Date.now() + 400
+    setOpen(false)
+  }
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          if (Date.now() < blockOpenUntil.current) return
+          setOpen(true)
+        }}
         aria-haspopup="dialog"
         aria-label={label}
         className={`${className} ${value ? '' : 'text-muted'}`}
@@ -52,9 +62,9 @@ export function TimeField({
           label={label}
           onPick={(next) => {
             onChange(next)
-            setOpen(false)
+            closeSheet()
           }}
-          onClose={() => setOpen(false)}
+          onClose={closeSheet}
         />
       ) : null}
     </>

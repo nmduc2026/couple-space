@@ -10,11 +10,10 @@ import { PREVIEW } from '../../dev/preview'
 import {
   ErrorText,
   Field,
+  FormHeader,
   Screen,
   Spacer,
   Stage,
-  Title,
-  TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
 import { suggestedEmoji } from '../../lib/eventSuggestion'
@@ -132,11 +131,9 @@ export function EventFormScreen() {
 
   return (
     <Screen>
-      <TopBar to="/plan" label="Huỷ" />
+      <FormHeader to="/plan" title={editing ? 'Sửa dịp' : 'Thêm dịp'} />
       <form onSubmit={submit} className="contents">
         <Stage>
-          <Title>{editing ? 'Sửa dịp' : 'Thêm dịp'}</Title>
-
           <div className="mt-6 space-y-4">
             <Field label="Tên">
               <input

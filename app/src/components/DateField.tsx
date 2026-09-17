@@ -52,14 +52,18 @@ export function DateField({
   clearable?: boolean
 }) {
   const [open, setOpen] = useState(false)
-  // Mobile: sau khi chọn ngày, cùng một lượt chạm hay "rơi" xuống nút mở
+  // Mobile: sau khi đóng sheet, cùng một lượt chạm hay "rơi" xuống nút mở
   // → sheet đóng rồi mở lại ngay. Chặn mở trong ~400ms.
   const blockOpenUntil = useRef(0)
 
-  function closeAfterPick(next: string) {
-    onChange(next)
+  function closeSheet() {
     blockOpenUntil.current = Date.now() + 400
     setOpen(false)
+  }
+
+  function closeAfterPick(next: string) {
+    onChange(next)
+    closeSheet()
   }
 
   return (
@@ -83,7 +87,7 @@ export function DateField({
           max={max}
           clearable={clearable}
           onPick={closeAfterPick}
-          onClose={() => setOpen(false)}
+          onClose={closeSheet}
         />
       ) : null}
     </>
@@ -236,9 +240,6 @@ function CalendarSheet({
             Xoá ngày
           </button>
         ) : null}
-        <button type="button" onClick={onClose} className={btn.ghost}>
-          Đóng
-        </button>
       </div>
     </Modal>
   )

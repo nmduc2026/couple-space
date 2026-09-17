@@ -16,16 +16,17 @@ import { notifyPartner } from '../../lib/notify'
 import { supabase } from '../../lib/supabase'
 import { currentPosition, reverseGeocode, type ResolvedAddress } from '../../lib/geocode'
 import { enqueue, isRetriable, type QueuedPhoto } from '../../lib/syncQueue'
+import { errorText, networkHint } from '../../lib/netError'
 import {
   ErrorText,
   Field,
+  FormHeader,
   Screen,
   Spacer,
   Stage,
-  Title,
-  TopBar,
 } from '../../components/ui'
 import { btn, input, inputChrome } from '../../lib/ui-classes'
+import { MAX_PHOTOS } from '../../lib/maxPhotos'
 import { DateField } from '../../components/DateField'
 import { SegmentedControl } from '../../components/SegmentedControl'
 
@@ -33,8 +34,6 @@ type Picked = {
   file: File
   previewUrl: string
 }
-
-const MAX_PHOTOS = 8
 
 export function ComposeScreen() {
   const navigate = useNavigate()
@@ -185,40 +184,46 @@ export function ComposeScreen() {
       return
     }
 
-    const { data: created, error: postErr } = await supabase
-      .from('posts')
-      .insert({
-        couple_id: couple.id,
-        author_id: user.id,
-        caption: caption.trim() || null,
-        happened_on: happenedOn,
-        place_name: placeName.trim() || null,
-        place_lat: located?.lat ?? null,
-        place_lng: located?.lng ?? null,
-        province_code: located?.provinceCode ?? null,
-        ward: located?.ward ?? null,
-        district: located?.district ?? null,
-        address: located?.address || null,
-        activity,
-      })
-      .select('id')
-      .single()
+    // Theo dõi xem bài đã tạo trên server chưa — tránh enqueue nhân đôi
+    // khi mạng đứt lúc đang tải ảnh.
+    let createdId: string | null = null
 
-    if (postErr || !created) {
-      // Mất mạng giữa chừng thì xếp hàng, không bắt người dùng gõ lại
-      if (isRetriable(postErr)) {
-        await queueIt(ready)
+    try {
+      const { data: created, error: postErr } = await supabase
+        .from('posts')
+        .insert({
+          couple_id: couple.id,
+          author_id: user.id,
+          caption: caption.trim() || null,
+          happened_on: happenedOn,
+          place_name: placeName.trim() || null,
+          place_lat: located?.lat ?? null,
+          place_lng: located?.lng ?? null,
+          province_code: located?.provinceCode ?? null,
+          ward: located?.ward ?? null,
+          district: located?.district ?? null,
+          address: located?.address || null,
+          activity,
+        })
+        .select('id')
+        .single()
+
+      if (postErr || !created) {
+        // Mất mạng giữa chừng thì xếp hàng, không bắt người dùng gõ lại
+        if (isRetriable(postErr)) {
+          await queueIt(ready)
+          return
+        }
+        setStatus('error')
+        setProgress('')
+        setErrorMessage(errorText(postErr) || 'Không lưu được kỉ niệm.')
         return
       }
-      setStatus('error')
-      setProgress('')
-      setErrorMessage(postErr?.message ?? 'Không lưu được kỉ niệm.')
-      return
-    }
 
-    for (const [i, photo] of ready.entries()) {
-      setProgress(`Đang tải ảnh ${i + 1}/${ready.length}...`)
-      try {
+      createdId = created.id
+
+      for (const [i, photo] of ready.entries()) {
+        setProgress(`Đang tải ảnh ${i + 1}/${ready.length}...`)
         const path = `${couple.id}/${created.id}/${crypto.randomUUID()}.${photo.ext}`
         const { error: upErr } = await supabase.storage
           .from(MEDIA_BUCKET)
@@ -226,7 +231,24 @@ export function ComposeScreen() {
             contentType: photo.blob.type,
             upsert: false,
           })
-        if (upErr) throw upErr
+        if (upErr) {
+          if (isRetriable(upErr)) {
+            // Bài đã tạo — không enqueue lại (sẽ bị nhân đôi). Báo rõ để thử lại.
+            setStatus('error')
+            setProgress('')
+            setErrorMessage(
+              'Mạng chập chờn lúc tải ảnh. Bài có thể đã hiện trên timeline — mở lại kiểm tra rồi đăng tiếp phần còn thiếu nếu cần.',
+            )
+            await queryClient.invalidateQueries({ queryKey: ['posts'] })
+            return
+          }
+          setStatus('error')
+          setProgress('')
+          setErrorMessage(
+            `Ảnh ${i + 1} tải lên thất bại: ${errorText(upErr) || 'không rõ lý do'}`,
+          )
+          return
+        }
 
         const { error: mediaErr } = await supabase.from('post_media').insert({
           post_id: created.id,
@@ -236,62 +258,92 @@ export function ComposeScreen() {
           height: photo.height,
           position: i,
         })
-        if (mediaErr) throw mediaErr
-      } catch (err) {
-        setStatus('error')
-        setProgress('')
-        setErrorMessage(
-          err instanceof Error
-            ? `Ảnh ${i + 1} tải lên thất bại: ${err.message}`
-            : `Ảnh ${i + 1} tải lên thất bại.`,
-        )
-        return
+        if (mediaErr) {
+          if (isRetriable(mediaErr)) {
+            setStatus('error')
+            setProgress('')
+            setErrorMessage(
+              'Mạng chập chờn lúc gắn ảnh vào bài. Thử mở timeline xem bài đã lên chưa.',
+            )
+            await queryClient.invalidateQueries({ queryKey: ['posts'] })
+            return
+          }
+          setStatus('error')
+          setProgress('')
+          setErrorMessage(
+            `Ảnh ${i + 1} lưu thất bại: ${errorText(mediaErr) || 'không rõ lý do'}`,
+          )
+          return
+        }
       }
-    }
 
-    setProgress('')
-    await queryClient.invalidateQueries({ queryKey: ['posts'] })
+      setProgress('')
+      await queryClient.invalidateQueries({ queryKey: ['posts'] })
 
-    const myName =
-      couple.members.find((m) => m.user_id === user.id)?.nickname ?? 'Người ấy'
-    void notifyPartner(couple, user.id, {
-      title: 'Couple Space',
-      body:
-        photos.length > 1
-          ? `${myName} vừa thêm ${photos.length} tấm ảnh mới`
-          : `${myName} vừa thêm một kỉ niệm`,
-      path: `/timeline/${created.id}`,
-    })
-
-    // Khoản chi ghi cùng lúc với bài. Hỏng ở bước này thì KHÔNG huỷ bài —
-    // kỉ niệm đã đăng rồi, bắt làm lại từ đầu là mất cả ảnh vừa tải lên.
-    const minor = parseAmountInput(amount)
-    if (addExpense && minor > 0) {
-      const { error: expErr } = await supabase.from('expenses').insert({
-        couple_id: couple.id,
-        post_id: created.id,
-        amount_minor: minor,
-        // Danh mục đoán sẵn theo hoạt động của bài — 🍜 thì là ăn uống
-        category: categoryFromActivity(activity),
-        note: placeName.trim() || caption.trim().slice(0, 40) || null,
-        spent_on: happenedOn,
-        paid_by: paidBy === 'shared' ? null : paidBy || user.id,
-        created_by: user.id,
+      const myName =
+        couple.members.find((m) => m.user_id === user.id)?.nickname ??
+        'Người ấy'
+      void notifyPartner(couple, user.id, {
+        title: 'Couple Space',
+        body:
+          photos.length > 1
+            ? `${myName} vừa thêm ${photos.length} tấm ảnh mới`
+            : `${myName} vừa thêm một kỉ niệm`,
+        path: `/timeline/${created.id}`,
       })
-      if (expErr) {
-        setStatus('error')
-        setErrorMessage(
-          /paid_by/i.test(expErr.message) && /null|not-null|not null/i.test(expErr.message)
-            ? 'Kỉ niệm đã đăng. Quỹ chung chưa bật trên database — chạy migration expense_shared_payer trên Supabase rồi sửa khoản chi.'
-            : `Kỉ niệm đã đăng, nhưng chưa ghi được khoản chi: ${expErr.message}`,
-        )
+
+      // Khoản chi ghi cùng lúc với bài. Hỏng ở bước này thì KHÔNG huỷ bài —
+      // kỉ niệm đã đăng rồi, bắt làm lại từ đầu là mất cả ảnh vừa tải lên.
+      const minor = parseAmountInput(amount)
+      if (addExpense && minor > 0) {
+        const { error: expErr } = await supabase.from('expenses').insert({
+          couple_id: couple.id,
+          post_id: created.id,
+          amount_minor: minor,
+          // Danh mục đoán sẵn theo hoạt động của bài — 🍜 thì là ăn uống
+          category: categoryFromActivity(activity),
+          note: placeName.trim() || caption.trim().slice(0, 40) || null,
+          spent_on: happenedOn,
+          paid_by: paidBy === 'shared' ? null : paidBy || user.id,
+          created_by: user.id,
+        })
+        if (expErr) {
+          setStatus('error')
+          setErrorMessage(
+            /paid_by/i.test(expErr.message) &&
+              /null|not-null|not null/i.test(expErr.message)
+              ? 'Kỉ niệm đã đăng. Quỹ chung chưa bật trên database — chạy migration expense_shared_payer trên Supabase rồi sửa khoản chi.'
+              : `Kỉ niệm đã đăng, nhưng chưa ghi được khoản chi: ${expErr.message}`,
+          )
+          return
+        }
+        await queryClient.invalidateQueries({ queryKey: ['expenses'] })
+        await queryClient.invalidateQueries({ queryKey: ['expense_summary'] })
+      }
+
+      navigate(`/timeline/${created.id}`, { replace: true })
+    } catch (err) {
+      // Safari hay ném TypeError: Load failed thay vì trả { error }.
+      if (isRetriable(err) && !createdId) {
+        await queueIt(ready)
         return
       }
-      await queryClient.invalidateQueries({ queryKey: ['expenses'] })
-      await queryClient.invalidateQueries({ queryKey: ['expense_summary'] })
+      setStatus('error')
+      setProgress('')
+      if (isRetriable(err) && createdId) {
+        setErrorMessage(
+          'Mạng chập chờn. Bài có thể đã lên timeline — mở lại kiểm tra trước khi đăng lại.',
+        )
+        await queryClient.invalidateQueries({ queryKey: ['posts'] })
+        return
+      }
+      setErrorMessage(
+        networkHint(err) ||
+          (errorText(err)
+            ? `Không đăng được: ${errorText(err)}`
+            : 'Không đăng được kỉ niệm.'),
+      )
     }
-
-    navigate(`/timeline/${created.id}`, { replace: true })
   }
 
   const busy = status === 'saving'
@@ -299,11 +351,9 @@ export function ComposeScreen() {
 
   return (
     <Screen>
-      <TopBar to="/timeline" label="Huỷ" />
+      <FormHeader to="/timeline" title="Thêm kỉ niệm" />
       <form onSubmit={submit} className="contents">
         <Stage>
-          <Title>Thêm kỉ niệm</Title>
-
           <div className="mt-5 grid grid-cols-4 gap-2">
             {photos.map((p, i) => (
               <div

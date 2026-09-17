@@ -1,8 +1,12 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 /**
  * Popup giữa màn hình — shell chung cho ConfirmSheet, Date/Time, Map, Nudge.
  * Thay cho BottomSheet (trượt từ đáy).
+ *
+ * Đóng khi bấm nền mờ (pointerdown, không dùng click — trên mobile click hay
+ * “xuyên” xuống nút bên dưới khiến sheet đóng rồi mở lại ngay).
  */
 export function Modal({
   onClose,
@@ -19,22 +23,36 @@ export function Modal({
   /** Mặc định z-50; Nudge dùng z-40 để nằm dưới tab khi cần. */
   zClass?: string
 }) {
-  return (
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const node = (
     <div
       className={`fixed inset-0 flex items-center justify-center bg-black/40 px-4 ${zClass}`}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
-      onClick={onClose}
+      onPointerDown={(e) => {
+        if (e.target !== e.currentTarget) return
+        e.preventDefault()
+        onClose()
+      }}
     >
       <div
         className={`flex max-h-[min(85svh,40rem)] w-full max-w-[calc(28rem/var(--ui-scale))] flex-col overflow-hidden rounded-2xl border border-border bg-bg p-5 shadow-xl ${panelClassName}`}
-        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         {children}
       </div>
     </div>
   )
+
+  return createPortal(node, document.body)
 }
 
 /** @deprecated Dùng `Modal` — giữ alias để import cũ không gãy. */

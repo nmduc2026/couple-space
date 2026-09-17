@@ -1,21 +1,31 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+  type TouchEvent as ReactTouchEvent,
+} from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCouple } from '../../hooks/useCouple'
 import { useSession } from '../../hooks/useSession'
-import { usePost } from '../../hooks/usePosts'
+import { MEDIA_BUCKET, usePost } from '../../hooks/usePosts'
 import { ACTIVITY_LABELS } from '../../lib/activities'
 import { supabase } from '../../lib/supabase'
 import { notifyPartner } from '../../lib/notify'
+import { compressImage } from '../../lib/image'
+import { MAX_PHOTOS } from '../../lib/maxPhotos'
+import { errorText } from '../../lib/netError'
 import { PREVIEW, previewComments } from '../../dev/preview'
 import {
   ConfirmSheet,
   Field,
+  FormHeader,
   Loading,
   Screen,
   Spacer,
   Stage,
-  Title,
 } from '../../components/ui'
 import { PhotoCarousel } from '../../components/PhotoCarousel'
 import { AmountInput } from '../../components/AmountInput'
@@ -24,7 +34,8 @@ import { SegmentedControl } from '../../components/SegmentedControl'
 import { IconArrowLeft } from '../../components/icons'
 import { btn, input, inputChrome } from '../../lib/ui-classes'
 import { todayYmd } from '../../lib/dateCount'
-import { formatCommentTime, formatDay } from '../../lib/formatDate'
+import { formatCommentTime, formatDay, formatPostTime } from '../../lib/formatDate'
+import { useKeyboardShell } from '../../hooks/useKeyboardShell'
 import {
   categoryFromActivity,
   formatAmountInput,
@@ -63,8 +74,41 @@ type EditDraft = {
   expenseId: string | null
 }
 
+/** Ảnh đang giữ từ server hoặc ảnh mới chọn khi sửa bài. */
+type EditMediaItem =
+  | {
+      kind: 'existing'
+      id: string
+      url: string
+      storage_path: string
+    }
+  | {
+      kind: 'new'
+      key: string
+      file: File
+      previewUrl: string
+    }
+
+function mediaFromPost(
+  media: { id: string; url?: string; storage_path: string }[],
+): EditMediaItem[] {
+  return media.map((m) => ({
+    kind: 'existing' as const,
+    id: m.id,
+    url: m.url ?? '',
+    storage_path: m.storage_path,
+  }))
+}
+
+function revokeNewMedia(items: EditMediaItem[]) {
+  for (const m of items) {
+    if (m.kind === 'new') URL.revokeObjectURL(m.previewUrl)
+  }
+}
+
 export function PostDetailScreen() {
   const { id = '' } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useSession()
@@ -76,9 +120,14 @@ export function PostDetailScreen() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editing, setEditing] = useState(false)
   const [edit, setEdit] = useState<EditDraft | null>(null)
+  const [editMedia, setEditMedia] = useState<EditMediaItem[]>([])
   const [savingEdit, setSavingEdit] = useState(false)
+  const [editProgress, setEditProgress] = useState('')
   const [editError, setEditError] = useState('')
+  const [pickingEdit, setPickingEdit] = useState(false)
+  const [pickHint, setPickHint] = useState('')
   const [pendingDelete, setPendingDelete] = useState(false)
+  const editFileInput = useRef<HTMLInputElement>(null)
   // Thả tim phản hồi lạc quan: `override` là ý muốn của người dùng,
   // null nghĩa là chưa bấm gì nên cứ tin dữ liệu server.
   const [override, setOverride] = useState<boolean | null>(null)
@@ -90,6 +139,81 @@ export function PostDetailScreen() {
       : override
         ? 1
         : -1)
+  const openEditFromUrl = searchParams.get('edit') === '1'
+  const editBootstrapped = useRef(false)
+  const detailReady = !!post && !editing && !isLoading
+  const commentInputRef = useRef<HTMLInputElement>(null)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
+  const scrollAnimRef = useRef<number | null>(null)
+
+  const { shellRef, scrollerRef, keyboardOpen } = useKeyboardShell(
+    detailReady,
+    (phase) => scrollCommentsIntoView(phase === 'open'),
+  )
+
+  /** Đưa khối bình luận vào tầm nhìn (phía trên ô nhập). */
+  function scrollCommentsIntoView(smooth: boolean) {
+    const scroller = scrollerRef.current
+    const end = commentsEndRef.current
+    if (!scroller || !end) return
+
+    const remaining = () => {
+      const s = scroller.getBoundingClientRect()
+      const e = end.getBoundingClientRect()
+      return e.bottom - s.bottom
+    }
+
+    if (scrollAnimRef.current != null) {
+      cancelAnimationFrame(scrollAnimRef.current)
+      scrollAnimRef.current = null
+    }
+
+    const delta = remaining()
+    if (delta <= 1) return
+
+    if (!smooth) {
+      scroller.scrollTop += delta
+      return
+    }
+
+    const startTop = scroller.scrollTop
+    const targetTop = startTop + delta
+    const duration = 320
+    const t0 = performance.now()
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - t0) / duration)
+      // ease-out cubic — mềm hơn nhảy thẳng
+      const eased = 1 - (1 - t) ** 3
+      scroller.scrollTop = startTop + (targetTop - startTop) * eased
+      // vv còn co → bù lệch nhẹ cho khớp đáy
+      const drift = remaining()
+      if (Math.abs(drift) > 1) scroller.scrollTop += drift * 0.35
+      if (t < 1) {
+        scrollAnimRef.current = requestAnimationFrame(tick)
+      } else {
+        const final = remaining()
+        if (final > 1) scroller.scrollTop += final
+        scrollAnimRef.current = null
+      }
+    }
+    scrollAnimRef.current = requestAnimationFrame(tick)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (scrollAnimRef.current != null) {
+        cancelAnimationFrame(scrollAnimRef.current)
+      }
+    }
+  }, [])
+
+  /** iOS: focus mặc định sẽ scroll cả trang (giật). Chặn rồi focus preventScroll. */
+  function focusCommentWithoutScroll(e: ReactTouchEvent | ReactMouseEvent) {
+    if (document.activeElement === commentInputRef.current) return
+    e.preventDefault()
+    commentInputRef.current?.focus({ preventScroll: true })
+  }
 
   const commentsQuery = useQuery({
     queryKey: ['comments', id],
@@ -146,6 +270,52 @@ export function PostDetailScreen() {
       void supabase.removeChannel(channel)
     }
   }, [id, queryClient])
+
+  // Timeline bấm "Cập nhật" → vào đây với ?edit=1, mở form luôn.
+  useEffect(() => {
+    editBootstrapped.current = false
+  }, [id])
+
+  useEffect(() => {
+    if (!openEditFromUrl || !post || !user || editBootstrapped.current) return
+    if (!PREVIEW && expenseQuery.isLoading) return
+
+    editBootstrapped.current = true
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('edit')
+        return next
+      },
+      { replace: true },
+    )
+
+    if (post.author_id !== user.id) return
+
+    const exp = linkedExpense
+    setEditError('')
+    setEdit({
+      caption: post.caption ?? '',
+      place: post.place_name ?? '',
+      day: post.happened_on,
+      activity: post.activity,
+      addExpense: !!exp,
+      amount: exp ? formatAmountInput(String(exp.amount_minor)) : '',
+      paidBy: exp ? (exp.paid_by == null ? 'shared' : exp.paid_by) : user.id,
+      expenseId: exp?.id ?? null,
+    })
+    setEditMedia(mediaFromPost(post.media))
+    setPickHint('')
+    setEditProgress('')
+    setEditing(true)
+  }, [
+    openEditFromUrl,
+    post,
+    user,
+    linkedExpense,
+    expenseQuery.isLoading,
+    setSearchParams,
+  ])
 
   if (isLoading) return <Loading />
   if (!post) {
@@ -221,11 +391,13 @@ export function PostDetailScreen() {
     })
   }
 
-  /** Form cập nhật giống thêm mới — ảnh giữ nguyên (đổi ảnh = bài khác). */
+  /** Form cập nhật giống thêm mới — thêm/xoá ảnh được, tối đa MAX_PHOTOS. */
   async function startEdit() {
     if (!post || !user) return
     setMenuOpen(false)
     setEditError('')
+    setPickHint('')
+    setEditProgress('')
 
     let exp = linkedExpense
     if (!PREVIEW) {
@@ -254,20 +426,72 @@ export function PostDetailScreen() {
         : user.id,
       expenseId: exp?.id ?? null,
     })
+    setEditMedia(mediaFromPost(post.media))
     setEditing(true)
   }
 
   function cancelEdit() {
+    revokeNewMedia(editMedia)
     setEditing(false)
     setEdit(null)
+    setEditMedia([])
     setEditError('')
+    setEditProgress('')
+    setPickHint('')
+  }
+
+  async function pickEditFiles(files: FileList | null) {
+    if (!files?.length) return
+    const incoming = Array.from(files)
+    const room = MAX_PHOTOS - editMedia.length
+    if (room <= 0) {
+      setPickHint(`Tối đa ${MAX_PHOTOS} ảnh mỗi bài.`)
+      return
+    }
+    if (incoming.length > room) {
+      setPickHint(
+        `Bạn chọn ${incoming.length} ảnh — chỉ lấy ${room} ảnh đầu (tối đa ${MAX_PHOTOS}/bài).`,
+      )
+    } else {
+      setPickHint('')
+    }
+
+    setPickingEdit(true)
+    await new Promise((r) => window.setTimeout(r, 0))
+    try {
+      const picked: EditMediaItem[] = incoming.slice(0, room).map((file) => ({
+        kind: 'new',
+        key: crypto.randomUUID(),
+        file,
+        previewUrl: URL.createObjectURL(file),
+      }))
+      setEditMedia((prev) => [...prev, ...picked])
+    } finally {
+      setPickingEdit(false)
+      if (editFileInput.current) editFileInput.current.value = ''
+    }
+  }
+
+  function removeEditMedia(index: number) {
+    setEditMedia((prev) => {
+      const target = prev[index]
+      if (target?.kind === 'new') URL.revokeObjectURL(target.previewUrl)
+      return prev.filter((_, i) => i !== index)
+    })
   }
 
   async function saveEdit(event: FormEvent) {
     event.preventDefault()
     if (!post || !user || !edit || PREVIEW) return
+
+    if (!edit.caption.trim() && editMedia.length === 0) {
+      setEditError('Thêm một tấm ảnh hoặc viết vài chữ.')
+      return
+    }
+
     setSavingEdit(true)
     setEditError('')
+    setEditProgress('')
 
     const { error } = await supabase
       .from('posts')
@@ -284,6 +508,98 @@ export function PostDetailScreen() {
       setSavingEdit(false)
       setEditError(error.message)
       return
+    }
+
+    // Đồng bộ ảnh: xoá ảnh bỏ đi, upload ảnh mới, cập nhật thứ tự.
+    const keptIds = new Set(
+      editMedia.filter((m) => m.kind === 'existing').map((m) => m.id),
+    )
+    const removed = post.media.filter((m) => !keptIds.has(m.id))
+    const newTotal = editMedia.filter((m) => m.kind === 'new').length
+    let newUploadIndex = 0
+    if (removed.length > 0) {
+      setEditProgress('Đang xoá ảnh…')
+      const { error: delErr } = await supabase
+        .from('post_media')
+        .delete()
+        .in(
+          'id',
+          removed.map((m) => m.id),
+        )
+      if (delErr) {
+        setSavingEdit(false)
+        setEditProgress('')
+        setEditError(
+          `Đã lưu bài, nhưng chưa xoá được ảnh: ${errorText(delErr) || delErr.message}`,
+        )
+        return
+      }
+      await supabase.storage
+        .from(MEDIA_BUCKET)
+        .remove(removed.map((m) => m.storage_path))
+    }
+
+    for (const [i, item] of editMedia.entries()) {
+      if (item.kind === 'existing') {
+        const { error: posErr } = await supabase
+          .from('post_media')
+          .update({ position: i })
+          .eq('id', item.id)
+        if (posErr) {
+          setSavingEdit(false)
+          setEditProgress('')
+          setEditError(
+            `Đã lưu bài, nhưng chưa sắp lại ảnh: ${errorText(posErr) || posErr.message}`,
+          )
+          return
+        }
+        continue
+      }
+
+      newUploadIndex += 1
+      setEditProgress(`Đang tải ảnh mới ${newUploadIndex}/${newTotal}…`)
+      let ready
+      try {
+        ready = await compressImage(item.file)
+      } catch {
+        setSavingEdit(false)
+        setEditProgress('')
+        setEditError('Không đọc được một tấm ảnh mới. Thử bỏ tấm đó ra.')
+        return
+      }
+
+      const path = `${post.couple_id}/${post.id}/${crypto.randomUUID()}.${ready.ext}`
+      const { error: upErr } = await supabase.storage
+        .from(MEDIA_BUCKET)
+        .upload(path, ready.blob, {
+          contentType: ready.blob.type,
+          upsert: false,
+        })
+      if (upErr) {
+        setSavingEdit(false)
+        setEditProgress('')
+        setEditError(
+          `Ảnh mới tải lên thất bại: ${errorText(upErr) || upErr.message}`,
+        )
+        return
+      }
+
+      const { error: mediaErr } = await supabase.from('post_media').insert({
+        post_id: post.id,
+        couple_id: post.couple_id,
+        storage_path: path,
+        width: ready.width,
+        height: ready.height,
+        position: i,
+      })
+      if (mediaErr) {
+        setSavingEdit(false)
+        setEditProgress('')
+        setEditError(
+          `Ảnh mới lưu thất bại: ${errorText(mediaErr) || mediaErr.message}`,
+        )
+        return
+      }
     }
 
     const minor = parseAmountInput(edit.amount)
@@ -303,6 +619,7 @@ export function PostDetailScreen() {
           .eq('id', edit.expenseId)
         if (expErr) {
           setSavingEdit(false)
+          setEditProgress('')
           setEditError(
             `Đã lưu bài, nhưng chưa sửa được khoản chi: ${expenseSaveError(expErr.message)}`,
           )
@@ -321,6 +638,7 @@ export function PostDetailScreen() {
         })
         if (expErr) {
           setSavingEdit(false)
+          setEditProgress('')
           setEditError(
             `Đã lưu bài, nhưng chưa ghi được khoản chi: ${expenseSaveError(expErr.message)}`,
           )
@@ -335,9 +653,12 @@ export function PostDetailScreen() {
         .eq('id', edit.expenseId)
     }
 
+    revokeNewMedia(editMedia)
     setSavingEdit(false)
+    setEditProgress('')
     setEditing(false)
     setEdit(null)
+    setEditMedia([])
     await queryClient.invalidateQueries({ queryKey: ['posts'] })
     await queryClient.invalidateQueries({ queryKey: ['post', post.id] })
     await queryClient.invalidateQueries({ queryKey: ['post_expense', post.id] })
@@ -375,28 +696,63 @@ export function PostDetailScreen() {
   const media = post.media
 
   if (editing && edit) {
+    const editBlocked = savingEdit || pickingEdit
     return (
       <Screen>
-        <DetailChrome onAction={cancelEdit} actionLabel="Hủy" />
+        <FormHeader
+          title="Cập nhật kỉ niệm"
+          onBack={cancelEdit}
+        />
         <form onSubmit={(e) => void saveEdit(e)} className="contents">
           <Stage>
-            <Title>Cập nhật kỉ niệm</Title>
-
-            {media.length > 0 ? (
-              <div className="mt-4 overflow-hidden rounded-xl">
-                <PhotoCarousel
-                  items={media}
-                  className="aspect-[4/3] w-full"
-                  autoPlayMs={0}
-                  showArrows={media.length > 1}
-                  showDots={media.length > 1}
-                  showCounter={false}
-                />
-              </div>
-            ) : null}
+            <div className="mt-5 grid grid-cols-4 gap-2">
+              {editMedia.map((m, i) => (
+                <div
+                  key={m.kind === 'existing' ? m.id : m.key}
+                  className="relative aspect-square overflow-hidden rounded-xl bg-soft"
+                >
+                  <img
+                    src={m.kind === 'existing' ? m.url : m.previewUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    aria-label={`Bỏ ảnh ${i + 1}`}
+                    disabled={editBlocked}
+                    onClick={() => removeEditMedia(i)}
+                    className="absolute top-1 right-1 grid h-6 w-6 place-items-center rounded-full bg-black/55 text-xs text-white disabled:opacity-40"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {editMedia.length < MAX_PHOTOS ? (
+                <button
+                  type="button"
+                  disabled={editBlocked}
+                  onClick={() => editFileInput.current?.click()}
+                  className="grid aspect-square place-items-center rounded-xl border border-dashed border-border text-2xl text-muted disabled:opacity-40"
+                >
+                  +
+                </button>
+              ) : null}
+            </div>
             <p className="mt-2 text-[12.5px] text-muted">
-              Ảnh giữ nguyên — muốn đổi ảnh thì đăng bài mới.
+              {editMedia.length}/{MAX_PHOTOS} ảnh
+              {pickingEdit ? ' · Đang thêm ảnh…' : ''}
             </p>
+            {pickHint ? (
+              <p className="mt-1 text-[12.5px] text-accent">{pickHint}</p>
+            ) : null}
+            <input
+              ref={editFileInput}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              onChange={(e) => void pickEditFiles(e.target.files)}
+            />
 
             <div className="mt-5 space-y-4">
               <Field label="Caption">
@@ -407,7 +763,7 @@ export function PostDetailScreen() {
                   }
                   rows={3}
                   placeholder="Hôm nay..."
-                  disabled={savingEdit}
+                  disabled={editBlocked}
                   className={`${input} h-auto py-3 leading-relaxed`}
                 />
               </Field>
@@ -426,7 +782,7 @@ export function PostDetailScreen() {
                   value={edit.place}
                   onChange={(e) => setEdit({ ...edit, place: e.target.value })}
                   placeholder="Địa điểm"
-                  disabled={savingEdit}
+                  disabled={editBlocked}
                   className={input}
                 />
               </Field>
@@ -437,7 +793,7 @@ export function PostDetailScreen() {
                     <button
                       key={key}
                       type="button"
-                      disabled={savingEdit}
+                      disabled={editBlocked}
                       onClick={() =>
                         setEdit({
                           ...edit,
@@ -459,7 +815,7 @@ export function PostDetailScreen() {
 
             <button
               type="button"
-              disabled={savingEdit}
+              disabled={editBlocked}
               onClick={() =>
                 setEdit({ ...edit, addExpense: !edit.addExpense })
               }
@@ -524,10 +880,10 @@ export function PostDetailScreen() {
 
             <button
               type="submit"
-              disabled={savingEdit}
+              disabled={editBlocked}
               className={btn.primary}
             >
-              {savingEdit ? 'Đang lưu...' : 'Lưu'}
+              {savingEdit ? editProgress || 'Đang lưu...' : 'Lưu'}
             </button>
           </Stage>
         </form>
@@ -536,7 +892,10 @@ export function PostDetailScreen() {
   }
 
   return (
-    <Screen>
+    <main
+      ref={shellRef}
+      className="flex h-app flex-col overflow-hidden bg-bg"
+    >
       <DetailChrome
         to="/timeline"
         menuOpen={menuOpen}
@@ -546,82 +905,117 @@ export function PostDetailScreen() {
         onDelete={askRemovePost}
       />
 
-      {media.length > 0 ? (
-        <PhotoCarousel
-          items={media}
-          className="aspect-square w-full"
-          autoPlayMs={5000}
-          showArrows
-          showDots
-          showCounter
-        />
-      ) : null}
-
-      <div className="px-4 pt-4">
-        {post.caption ? (
-          <p className="text-[15px] leading-relaxed text-text">{post.caption}</p>
-        ) : null}
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-          <span>{formatDay(post.happened_on)}</span>
-          {post.place_name ? <span>📍 {post.place_name}</span> : null}
-          {activity ? (
-            <span>
-              {activity.emoji} {activity.label}
-            </span>
-          ) : null}
-          {linkedExpense ? (
-            <span>💰 {formatVnd(linkedExpense.amount_minor)}</span>
-          ) : null}
-          <span>· {nameOf(post.author_id)} đăng</span>
-        </div>
-
-        <div className="mt-4 flex items-center gap-4 border-y border-border py-2.5">
-          <button
-            type="button"
-            onClick={() => void toggleLike()}
-            className={`text-sm ${liked ? 'text-accent' : 'text-muted'}`}
+      <div
+        ref={scrollerRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
+        <div className="flex gap-2.5 px-4 pt-3 pb-2">
+          <span
+            aria-hidden
+            className="grid h-9 w-9 flex-none place-items-center self-start rounded-full bg-soft text-sm font-bold text-accent"
           >
-            {liked ? '❤️' : '🤍'} {likeCount}
-          </button>
-          <span className="text-sm text-muted">💬 {comments.length}</span>
+            {nameOf(post.author_id).slice(0, 1).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1 pt-0.5">
+            <span className="block truncate text-[14px] leading-none font-semibold text-text">
+              {nameOf(post.author_id)}
+            </span>
+            <span className="mt-1 block text-[12px] leading-none text-muted">
+              {formatPostTime(post.created_at)}
+            </span>
+          </span>
         </div>
 
-        <div className="pb-4">
-          {comments.map((c) => (
-            <div
-              key={c.id}
-              className="flex items-start gap-2.5 border-b border-border py-3"
-            >
-              <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-soft text-xs font-bold text-accent">
-                {nameOf(c.author_id).slice(0, 1).toUpperCase()}
-              </span>
-              <div className="min-w-0">
-                <span className="flex items-baseline gap-2">
-                  <b className="text-[13px] text-text">{nameOf(c.author_id)}</b>
-                  <span className="text-[11.5px] text-muted">
-                    {formatCommentTime(c.created_at)}
-                  </span>
-                </span>
-                <p className="text-[14px] leading-relaxed text-text">{c.body}</p>
-              </div>
-            </div>
-          ))}
-          {comments.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted">
-              Chưa có bình luận nào.
+        {media.length > 0 ? (
+          <PhotoCarousel
+            items={media}
+            className="aspect-square w-full"
+            autoPlayMs={5000}
+            showArrows
+            showDots
+            showCounter
+          />
+        ) : null}
+
+        <div className="px-4 pt-4">
+          {post.caption ? (
+            <p className="text-[15px] leading-relaxed text-text">
+              {post.caption}
             </p>
           ) : null}
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+            <span>{formatDay(post.happened_on)}</span>
+            {post.place_name ? <span>📍 {post.place_name}</span> : null}
+            {activity ? (
+              <span>
+                {activity.emoji} {activity.label}
+              </span>
+            ) : null}
+            {linkedExpense ? (
+              <span>💰 {formatVnd(linkedExpense.amount_minor)}</span>
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex items-center gap-4 border-y border-border py-2.5">
+            <button
+              type="button"
+              onClick={() => void toggleLike()}
+              className={`text-sm ${liked ? 'text-accent' : 'text-muted'}`}
+            >
+              {liked ? '❤️' : '🤍'} {likeCount}
+            </button>
+            <span className="text-sm text-muted">💬 {comments.length}</span>
+          </div>
+
+          <div className="pb-4">
+            {comments.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-start gap-2.5 border-b border-border py-3"
+              >
+                <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-soft text-xs font-bold text-accent">
+                  {nameOf(c.author_id).slice(0, 1).toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <span className="flex items-baseline gap-2">
+                    <b className="text-[13px] text-text">
+                      {nameOf(c.author_id)}
+                    </b>
+                    <span className="text-[11.5px] text-muted">
+                      {formatCommentTime(c.created_at)}
+                    </span>
+                  </span>
+                  <p className="text-[14px] leading-relaxed text-text">
+                    {c.body}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {comments.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted">
+                Chưa có bình luận nào.
+              </p>
+            ) : null}
+            {/* Neo để scrollIntoView khi mở bàn phím */}
+            <div ref={commentsEndRef} aria-hidden className="h-px" />
+          </div>
         </div>
       </div>
 
       <form
         onSubmit={sendComment}
-        className="pb-safe sticky bottom-0 mt-auto flex gap-2 border-t border-border bg-bg/95 px-4 pt-2.5 backdrop-blur"
+        className={`flex shrink-0 gap-2 border-t border-border bg-bg px-4 pt-2.5 ${
+          keyboardOpen ? 'pb-2' : 'pb-safe'
+        }`}
       >
         <input
+          ref={commentInputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
+          onTouchEnd={focusCommentWithoutScroll}
+          onMouseDown={focusCommentWithoutScroll}
           placeholder="Viết bình luận..."
+          enterKeyHint="send"
           className={`${input} flex-1`}
         />
         <button
@@ -643,15 +1037,13 @@ export function PostDetailScreen() {
           onCancel={() => setPendingDelete(false)}
         />
       ) : null}
-    </Screen>
+    </main>
   )
 }
 
-/** Thanh trên: quay lại / Hủy + dropdown ⋯ (Cập nhật / Xoá). */
+/** Thanh trên: quay lại + dropdown ⋯ (Cập nhật / Xoá). */
 function DetailChrome({
   to,
-  onAction,
-  actionLabel = 'Hủy',
   menuOpen = false,
   onMenuToggle,
   onMenuClose,
@@ -659,8 +1051,6 @@ function DetailChrome({
   onDelete,
 }: {
   to?: string
-  onAction?: () => void
-  actionLabel?: string
   menuOpen?: boolean
   onMenuToggle?: () => void
   onMenuClose?: () => void
@@ -687,34 +1077,18 @@ function DetailChrome({
 
   return (
     <div className="top-safe relative z-20 flex items-center justify-between gap-3 px-4 pb-2">
-      {onAction ? (
-        <button
-          type="button"
-          onClick={onAction}
-          className="inline-flex items-center gap-2 text-[14px] font-medium text-muted transition active:scale-95 hover:text-text"
+      <Link
+        to={to ?? '/timeline'}
+        className="inline-flex items-center gap-2 text-[14px] font-medium text-muted transition active:scale-95 hover:text-text"
+      >
+        <span
+          aria-hidden
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-text"
         >
-          <span
-            aria-hidden
-            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-text"
-          >
-            <IconArrowLeft size={18} />
-          </span>
-          {actionLabel}
-        </button>
-      ) : (
-        <Link
-          to={to ?? '/timeline'}
-          className="inline-flex items-center gap-2 text-[14px] font-medium text-muted transition active:scale-95 hover:text-text"
-        >
-          <span
-            aria-hidden
-            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-text"
-          >
-            <IconArrowLeft size={18} />
-          </span>
-          Quay lại
-        </Link>
-      )}
+          <IconArrowLeft size={18} />
+        </span>
+        Quay lại
+      </Link>
 
       {onMenuToggle ? (
         <div ref={menuBox} className="relative">

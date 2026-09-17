@@ -258,6 +258,14 @@ h4.t{margin:0 0 6px;font-size:23px;font-weight:700;letter-spacing:-.02em;text-wr
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .post{background:var(--a-surface);border:1px solid var(--a-line);border-radius:12px;overflow:hidden;
   width:100%;text-align:left;display:block}
+.post .who{display:flex;align-items:flex-start;gap:10px;padding:12px 14px 8px}
+.post .who .av{width:36px;height:36px;border-radius:999px;background:var(--a-soft);color:var(--a-accent);
+  display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.post .who .id{flex:1;min-width:0;padding-top:2px}
+.post .who b{display:block;font-size:14px;font-weight:600;line-height:1}
+.post .who time{display:block;font-size:12px;color:var(--a-muted);line-height:1;margin-top:4px}
+.post .who .more{margin:-2px -6px 0 0;width:32px;height:32px;border-radius:999px;border:0;background:transparent;
+  color:var(--a-muted);font-size:16px;line-height:1;flex:none}
 .post .big{aspect-ratio:4/3;display:grid;place-items:center;font-size:38px}
 .post .meta{padding:12px 14px}
 .post .cap{font-size:14.5px;margin-bottom:7px;line-height:1.5}
@@ -863,27 +871,30 @@ const S = [
   <div class="body" style="padding-top:0">
     <div class="month">Tháng 9, 2026</div>
     <button class="post" data-go="post">
+      <div class="who"><span class="av">M</span><div class="id"><b>Minh</b><time>2 giờ</time></div><span class="more">⋯</span></div>
       <div class="big ph1">🍜</div>
       <div class="meta">
         <div class="cap">Bún chả ngon nhất từ trước tới giờ. Lần sau đi sớm hơn cho khỏi xếp hàng 🤍</div>
-        <div class="fine"><span>📍 Hàng Quạt</span><span>🍜 Ăn uống</span><span>180.000đ</span><span>12/09 · Minh</span></div>
+        <div class="fine"><span>12/9/2026</span><span>📍 Hàng Quạt</span><span>🍜 Ăn uống</span></div>
       </div>
       <div class="acts"><span class="liked">❤️ 2</span><span>💬 3</span></div>
     </button>
     <button class="post">
+      <div class="who"><span class="av">L</span><div class="id"><b>Linh</b><time>Hôm qua · 21:14</time></div></div>
       <div class="big ph4">🎬</div>
       <div class="meta">
         <div class="cap">Xem phim mà em ngủ mất nửa tiếng 😌</div>
-        <div class="fine"><span>📍 CGV Vincom</span><span>🎬 Giải trí</span><span>240.000đ</span><span>10/09 · Linh</span></div>
+        <div class="fine"><span>10/9/2026</span><span>📍 CGV Vincom</span><span>🎬 Giải trí</span></div>
       </div>
       <div class="acts"><span class="liked">❤️ 1</span><span>💬 0</span></div>
     </button>
     <div class="month">Tháng 8, 2026</div>
     <button class="post">
+      <div class="who"><span class="av">M</span><div class="id"><b>Minh</b><time>28/8 · 09:02</time></div><span class="more">⋯</span></div>
       <div class="big ph2">✈️</div>
       <div class="meta">
         <div class="cap">Đà Lạt lạnh hơn tưởng tượng.</div>
-        <div class="fine"><span>📍 Đà Lạt</span><span>✈️ Du lịch</span><span>28/08 · Minh</span></div>
+        <div class="fine"><span>28/8/2026</span><span>📍 Đà Lạt</span><span>✈️ Du lịch</span></div>
       </div>
       <div class="acts"><span class="liked">❤️ 2</span><span>💬 7</span></div>
     </button>
@@ -921,15 +932,20 @@ const S = [
  src:"steps/c-browse.md · P2-13 · steps/d-reactions.md",
  desc:"Xem ảnh toàn màn hình, vuốt ngang. Bình luận hiện realtime — đây là thứ biến app từ hai cuốn nhật ký thành một cuộc trò chuyện chậm.",
  rules:[["Một loại reaction duy nhất","Trái tim. Với hai người thì bộ reaction chỉ thêm lựa chọn, không thêm ý nghĩa."],
-        ["Khử trùng khi realtime bắn về","Bình luận vừa gửi dễ hiện hai lần: một do cập nhật lạc quan, một do realtime."]],
+        ["Khử trùng khi realtime bắn về","Bình luận vừa gửi dễ hiện hai lần: một do cập nhật lạc quan, một do realtime."],
+        ["Sửa bài được đổi ảnh","Form Cập nhật cho thêm/xoá ảnh (cùng giới hạn số ảnh), không khoá ảnh cũ."]],
  html:`<div class="scr flush">
   <div class="topbar" style="padding-bottom:11px"><span data-go="timeline">‹</span><b>12 tháng 9, 2026</b>
     <div class="right"><span style="color:var(--a-muted)">···</span></div></div>
+  <div class="who" style="display:flex;align-items:center;gap:10px;padding:12px 16px 10px">
+    <span class="av" style="width:36px;height:36px;border-radius:999px;background:var(--a-soft);color:var(--a-accent);display:grid;place-items:center;font-size:13px;font-weight:700">M</span>
+    <div><b style="display:block;font-size:14px">Minh</b><time style="font-size:12px;color:var(--a-muted)">2 giờ</time></div>
+  </div>
   <div class="hero ph1">🍜<span class="cnt">1/3</span></div>
   <div style="padding:14px 16px 92px">
     <div style="font-size:15px;line-height:1.6">Bún chả ngon nhất từ trước tới giờ. Lần sau đi sớm hơn cho khỏi xếp hàng 🤍</div>
     <div class="fine" style="display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--a-muted);margin-top:10px">
-      <span>📍 Bún chả Hàng Quạt</span><span>🍜 Ăn uống</span><span>180.000đ · Minh trả · chia đôi</span>
+      <span>12/9/2026</span><span>📍 Bún chả Hàng Quạt</span><span>🍜 Ăn uống</span><span>180.000đ · Minh trả · chia đôi</span>
     </div>
     <div style="display:flex;gap:18px;font-size:14px;padding:14px 0;border-bottom:1px solid var(--a-line)">
       <span style="color:var(--a-accent)">❤️ Cả hai đã thả tim</span><span style="color:var(--a-muted)">💬 3</span>

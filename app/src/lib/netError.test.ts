@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { isRetriable } from './netError'
+import { errorText, isRetriable, networkHint } from './netError'
 
 function setOnline(value: boolean) {
   vi.stubGlobal('navigator', { onLine: value })
@@ -7,6 +7,16 @@ function setOnline(value: boolean) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('errorText', () => {
+  it('đọc được message từ Error và object kiểu Supabase', () => {
+    expect(errorText(new Error('Load failed'))).toBe('Load failed')
+    expect(errorText({ message: 'TypeError: Load failed' })).toBe(
+      'TypeError: Load failed',
+    )
+    expect(errorText(null)).toBe('')
+  })
 })
 
 describe('isRetriable', () => {
@@ -19,6 +29,9 @@ describe('isRetriable', () => {
     setOnline(true)
     expect(isRetriable(new Error('Failed to fetch'))).toBe(true)
     expect(isRetriable(new Error('network timeout'))).toBe(true)
+    expect(isRetriable(new TypeError('Load failed'))).toBe(true)
+    // Supabase đôi khi trả plain object, không phải instanceof Error
+    expect(isRetriable({ message: 'TypeError: Load failed' })).toBe(true)
   })
 
   it('có mạng: lỗi dữ liệu thì bỏ, thử lại cũng vậy', () => {
@@ -27,5 +40,12 @@ describe('isRetriable', () => {
       false,
     )
     expect(isRetriable(null)).toBe(false)
+  })
+})
+
+describe('networkHint', () => {
+  it('đổi lỗi Safari thành câu tiếng Việt', () => {
+    setOnline(true)
+    expect(networkHint(new TypeError('Load failed'))).toMatch(/Mạng/)
   })
 })
