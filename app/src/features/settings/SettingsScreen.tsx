@@ -447,6 +447,17 @@ export function SettingsScreen() {
         <div className="mt-7">
           <SectionLabel>Tài khoản</SectionLabel>
           <Group>
+            <Row>
+              <Link
+                to="/profile"
+                className="flex w-full items-center justify-between gap-3 text-[15px] text-text"
+              >
+                <span>Trang cá nhân</span>
+                <span className="text-muted" aria-hidden>
+                  ›
+                </span>
+              </Link>
+            </Row>
             <Row className="flex items-center justify-between gap-3">
               <span className="text-[15px] text-text">Email</span>
               <span className="truncate text-sm text-muted">{user?.email}</span>

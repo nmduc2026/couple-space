@@ -25,7 +25,7 @@ của hai người — không bao giờ dùng "đối tác", "người dùng B".
 | Trường | Bắt buộc | Ghi chú |
 |---|---|---|
 | Biệt danh | ✅ | Cách người kia gọi mình. Hiện khắp app. |
-| Avatar | — | Bỏ qua được, dùng chữ cái đầu làm ảnh mặc định. |
+| Avatar | — | Bỏ qua được, dùng chữ cái đầu làm ảnh mặc định. Đổi ở **Trang cá nhân** (`/profile`). |
 | Theme màu | — | Chọn từ bộ có sẵn. Dùng **biến màu ngay từ đầu**. |
 
 ## 3. Luật nghiệp vụ

@@ -70,7 +70,7 @@ phải lời trách.
 | Tình huống | Xử lý |
 |---|---|
 | Chưa bài nào có địa điểm | Bản đồ trống + *"Gắn địa điểm vào kỉ niệm để bắt đầu vẽ bản đồ"* + nút mở bài gần nhất để bổ sung. |
-| Địa điểm không khớp tỉnh nào | Gom vào nhóm "Chưa xác định", hỏi một lần rồi thôi. Không hỏi lại mỗi lần mở. |
+| Địa điểm không khớp tỉnh nào | Gom vào nhóm **Khác** trên màn Dấu chân. Sửa bằng cách mở chỉnh sửa kỉ niệm (chọn tỉnh), không popup hỏi trên map. |
 | Địa điểm nước ngoài | Đếm riêng: *"1 quốc gia khác"*. Không cố vẽ lên bản đồ Việt Nam. |
 | Cùng một nơi, hai cách viết (*Sài Gòn* / *TP.HCM*) | Gộp khi chuẩn hoá. Danh sách đồng nghĩa viết sẵn cho các trường hợp phổ biến. |
 | Xoá bài | Số lần ghé giảm. Về 0 thì chấm biến mất. |

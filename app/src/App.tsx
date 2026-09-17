@@ -59,6 +59,7 @@ const WrappedScreen = lazy(() => import('./features/wrapped/WrappedScreen').then
 const WishlistScreen = lazy(() => import('./features/wishlist/WishlistScreen').then((m) => ({ default: m.WishlistScreen })))
 const SpinScreen = lazy(() => import('./features/eat/SpinScreen').then((m) => ({ default: m.SpinScreen })))
 const SettingsScreen = lazy(() => import('./features/settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen })))
+const ProfileScreen = lazy(() => import('./features/profile/ProfileScreen').then((m) => ({ default: m.ProfileScreen })))
 const UnpairScreen = lazy(() => import('./features/settings/UnpairScreen').then((m) => ({ default: m.UnpairScreen })))
 
 function JoinEntry() {
@@ -131,6 +132,7 @@ export default function App() {
               <Route path="/expenses" element={<ExpensesScreen />} />
               <Route path="/eat" element={<EatScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
+              <Route path="/profile" element={<ProfileScreen />} />
             </Route>
 
             {/* Màn toàn trang — tab bar sẽ che mất nút chính */}

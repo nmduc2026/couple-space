@@ -152,6 +152,22 @@ export function HomeScreen() {
         }
       >
         <Link
+          to="/profile"
+          aria-label="Trang cá nhân"
+          className="absolute left-4 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white/15 text-[15px] font-semibold backdrop-blur-sm transition active:scale-95"
+          style={{ top: 'calc(env(safe-area-inset-top) + 0.5rem)' }}
+        >
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span>{(leftName.trim().charAt(0) || '?').toUpperCase()}</span>
+          )}
+        </Link>
+        <Link
           to="/settings"
           aria-label="Cài đặt"
           className="absolute right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm transition active:scale-95"

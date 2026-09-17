@@ -1,17 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { TopHeader } from '../../components/AppShell'
 import { EmptyState, InlineLoading } from '../../components/EmptyState'
-import { useCouple } from '../../hooks/useCouple'
 import { usePosts } from '../../hooks/usePosts'
-import { usePlaceResolution, type Unresolved } from '../../hooks/usePlaceResolution'
+import { usePlaceResolution } from '../../hooks/usePlaceResolution'
 import { useProvinces } from '../../hooks/useAdminUnits'
 import { supabase } from '../../lib/supabase'
 import { PREVIEW } from '../../dev/preview'
-import { normalizePlace, type AdminUnit, type AdminZone } from '../../lib/adminUnits'
-import { Modal } from '../../components/Modal'
-import { btn, input } from '../../lib/ui-classes'
+import { type AdminUnit, type AdminZone } from '../../lib/adminUnits'
 import { FootprintChoropleth } from './FootprintChoropleth'
 import provincesGeo from '../../lib/geo/vietnam-provinces.geojson'
 
@@ -30,7 +27,6 @@ export function MapScreen() {
   const { posts, isLoading } = usePosts()
   const { data: provinces = [] } = useProvinces()
   const { visits, foreign, unresolved, toStamp } = usePlaceResolution(posts)
-  const [asking, setAsking] = useState<Unresolved | null>(null)
   const queryClient = useQueryClient()
 
   const stamped = useRef(false)
@@ -65,9 +61,29 @@ export function MapScreen() {
     return m
   }, [visits, byId])
 
+  const visitedList = useMemo(() => {
+    return [...visits.entries()]
+      .map(([id, count]) => ({
+        id,
+        count,
+        name: byId.get(id)?.name ?? '—',
+        code: byId.get(id)?.code ?? '',
+      }))
+      .filter((row) => row.code)
+      .sort(
+        (a, b) =>
+          b.count - a.count || a.name.localeCompare(b.name, 'vi'),
+      )
+  }, [visits, byId])
+
   const visitedCount = visits.size
+  const visitTotal = useMemo(
+    () => [...visits.values()].reduce((n, c) => n + c, 0),
+    [visits],
+  )
   const provinceCount = provinces.length || 34
-  const topProvince = [...visits.entries()].sort((a, b) => b[1] - a[1])[0]
+  const hasPlaces =
+    visitedCount > 0 || unresolved.length > 0 || foreign > 0
 
   function setView(next: View) {
     const p = new URLSearchParams(params)
@@ -109,7 +125,7 @@ export function MapScreen() {
       <div className="flex min-h-0 flex-1 flex-col px-4 pb-2 pt-3">
         {isLoading ? (
           <InlineLoading />
-        ) : visitedCount === 0 && unresolved.length === 0 ? (
+        ) : !hasPlaces ? (
           <EmptyState
             emoji="🗺️"
             title="Chưa có địa điểm trên bản đồ."
@@ -122,11 +138,11 @@ export function MapScreen() {
         ) : (
           <>
             <section className="shrink-0 rounded-xl border border-border bg-surface p-3.5">
-              <p className="text-[28px] leading-tight font-extrabold text-text">
-                {visitedCount}
-                <span className="text-[16px] font-semibold text-muted">
-                  /{provinceCount} tỉnh thành
-                </span>
+              <p className="text-[15px] text-text">
+                {visitedCount}/{provinceCount} tỉnh thành
+                {visitTotal > 0 ? (
+                  <span className="text-muted"> · {visitTotal} lần</span>
+                ) : null}
               </p>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-soft">
                 <span
@@ -136,46 +152,66 @@ export function MapScreen() {
                   }}
                 />
               </div>
-              <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-muted">
-                {topProvince ? (
-                  <span>
-                    Đi nhiều nhất:{' '}
-                    <b className="font-semibold text-text">
-                      {byId.get(topProvince[0])?.name}
-                    </b>{' '}
-                    ({topProvince[1]} lần)
-                  </span>
-                ) : null}
-                {foreign > 0 ? (
-                  <span>
-                    <b className="font-semibold text-text">{foreign}</b> kỉ niệm
-                    ở nước ngoài
-                  </span>
-                ) : null}
-              </div>
-            </section>
 
-            {unresolved.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => setAsking(unresolved[0])}
-                className="mt-2.5 flex w-full shrink-0 items-center gap-3 rounded-xl border border-accent/30 bg-soft p-3 text-left"
-              >
-                <span aria-hidden className="text-xl">
-                  📍
-                </span>
-                <span className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-text">
-                  Chọn tỉnh cho “{unresolved[0].placeName}”
-                  {unresolved.length > 1
-                    ? ` và ${unresolved.length - 1} nơi nữa`
-                    : ''}
-                  .
-                </span>
-                <span aria-hidden className="shrink-0 text-muted">
-                  ›
-                </span>
-              </button>
-            ) : null}
+              {visitedList.length > 0 ? (
+                <ul className="mt-3 max-h-36 space-y-1.5 overflow-y-auto">
+                  {visitedList.map((row) => (
+                    <li key={row.id}>
+                      <Link
+                        to={`/map/${row.code}`}
+                        className="flex items-baseline justify-between gap-3 rounded-lg px-1 py-0.5 text-[13px] text-text hover:bg-soft"
+                      >
+                        <span className="min-w-0 truncate">{row.name}</span>
+                        <span className="shrink-0 text-muted">
+                          {row.count} lần
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {foreign > 0 ? (
+                <p className="mt-2 text-[13px] text-muted">
+                  {foreign} kỉ niệm ở nước ngoài
+                </p>
+              ) : null}
+
+              {unresolved.length > 0 ? (
+                <div className="mt-3 border-t border-border pt-3">
+                  <p className="text-[13px] text-muted">Khác</p>
+                  <ul className="mt-2 max-h-28 space-y-1.5 overflow-y-auto">
+                    {unresolved.map((row) => {
+                      const postId = row.postIds[0]
+                      return (
+                        <li key={row.alias}>
+                          {postId ? (
+                            <Link
+                              to={`/timeline/${postId}?edit=1`}
+                              className="flex items-baseline justify-between gap-3 rounded-lg px-1 py-0.5 text-[13px] text-text hover:bg-soft"
+                            >
+                              <span className="min-w-0 truncate">
+                                {row.placeName}
+                              </span>
+                              <span className="shrink-0 text-muted">
+                                {row.count} lần
+                              </span>
+                            </Link>
+                          ) : (
+                            <span className="flex items-baseline justify-between gap-3 px-1 py-0.5 text-[13px] text-muted">
+                              <span className="min-w-0 truncate">
+                                {row.placeName}
+                              </span>
+                              <span className="shrink-0">{row.count} lần</span>
+                            </span>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ) : null}
+            </section>
 
             {view === 'map' ? (
               <div className="mt-2.5 min-h-0 flex-1">
@@ -219,80 +255,37 @@ export function MapScreen() {
                     </div>
                   </section>
                 ))}
+                {unresolved.length > 0 ? (
+                  <section className="mt-4">
+                    <h2 className="text-[14px] font-semibold text-muted">Khác</h2>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {unresolved.map((row) => {
+                        const postId = row.postIds[0]
+                        return postId ? (
+                          <Link
+                            key={row.alias}
+                            to={`/timeline/${postId}?edit=1`}
+                            className="rounded-full border border-border px-2.5 py-1 text-[12px] text-text"
+                          >
+                            {row.placeName} · {row.count}
+                          </Link>
+                        ) : (
+                          <span
+                            key={row.alias}
+                            className="rounded-full border border-border px-2.5 py-1 text-[12px] text-muted"
+                          >
+                            {row.placeName} · {row.count}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  </section>
+                ) : null}
               </div>
             )}
           </>
         )}
       </div>
-
-      {asking ? (
-        <AskUnit place={asking} provinces={provinces} onDone={() => setAsking(null)} />
-      ) : null}
     </>
-  )
-}
-
-function AskUnit({
-  place,
-  provinces,
-  onDone,
-}: {
-  place: Unresolved
-  provinces: AdminUnit[]
-  onDone: () => void
-}) {
-  const queryClient = useQueryClient()
-  const { couple } = useCouple()
-  const [q, setQ] = useState('')
-  const needle = normalizePlace(q)
-  const list = needle
-    ? provinces.filter((p) => normalizePlace(p.name).includes(needle))
-    : provinces
-
-  async function save(unitId: string | null) {
-    if (!couple?.id) return
-    await supabase.from('place_aliases').upsert(
-      {
-        couple_id: couple.id,
-        alias: place.alias,
-        admin_unit_id: unitId,
-        country: unitId ? 'VN' : 'XX',
-      },
-      { onConflict: 'couple_id,alias' },
-    )
-    await queryClient.invalidateQueries({ queryKey: ['place_aliases'] })
-    await queryClient.invalidateQueries({ queryKey: ['posts'] })
-    onDone()
-  }
-
-  return (
-    <Modal onClose={onDone} ariaLabel="Chọn tỉnh thành">
-      <div className="p-4">
-        <h2 className="text-[17px] font-bold text-text">
-          “{place.placeName}” thuộc đâu?
-        </h2>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Tên tỉnh"
-          className={`${input} mt-3`}
-        />
-        <div className="mt-3 max-h-72 space-y-1 overflow-y-auto">
-          {list.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => void save(p.id)}
-              className="flex w-full rounded-xl px-3 py-2.5 text-left text-[14px] text-text hover:bg-soft"
-            >
-              {p.name}
-            </button>
-          ))}
-        </div>
-        <button type="button" onClick={() => void save(null)} className={`${btn.outline} mt-3 w-full`}>
-          Nước ngoài
-        </button>
-      </div>
-    </Modal>
   )
 }
