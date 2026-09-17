@@ -65,6 +65,57 @@ export function TopBar({ to, label = 'Quay lại' }: { to: string; label?: strin
   )
 }
 
+/**
+ * Header form: mũi tên (không chữ Huỷ) cùng hàng với tiêu đề.
+ * Dùng cho soạn bài / sửa khoản / sửa dịp — tránh title tách hàng dưới TopBar.
+ */
+export function FormHeader({
+  title,
+  to,
+  onBack,
+  backLabel = 'Huỷ',
+}: {
+  title: string
+  to?: string
+  onBack?: () => void
+  backLabel?: string
+}) {
+  const backClass = 'shrink-0 transition active:scale-95'
+  const icon = (
+    <span
+      aria-hidden
+      className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-text"
+    >
+      <IconArrowLeft size={18} />
+    </span>
+  )
+
+  return (
+    <div
+      className="top-safe flex items-center gap-3 px-4 pb-3"
+      style={{ ['--top-safe-extra' as string]: '1.35rem' }}
+    >
+      {onBack ? (
+        <button
+          type="button"
+          aria-label={backLabel}
+          onClick={onBack}
+          className={backClass}
+        >
+          {icon}
+        </button>
+      ) : (
+        <Link to={to ?? '/'} aria-label={backLabel} className={backClass}>
+          {icon}
+        </Link>
+      )}
+      <h1 className="min-w-0 flex-1 text-[23px] font-semibold tracking-[-0.02em] text-text">
+        {title}
+      </h1>
+    </div>
+  )
+}
+
 export function Title({ children }: { children: ReactNode }) {
   return (
     <h1 className="text-[23px] font-bold tracking-[-0.02em] text-balance text-text">

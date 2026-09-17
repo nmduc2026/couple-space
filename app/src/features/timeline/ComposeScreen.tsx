@@ -20,13 +20,13 @@ import { errorText, networkHint } from '../../lib/netError'
 import {
   ErrorText,
   Field,
+  FormHeader,
   Screen,
   Spacer,
   Stage,
-  Title,
-  TopBar,
 } from '../../components/ui'
 import { btn, input, inputChrome } from '../../lib/ui-classes'
+import { MAX_PHOTOS } from '../../lib/maxPhotos'
 import { DateField } from '../../components/DateField'
 import { SegmentedControl } from '../../components/SegmentedControl'
 
@@ -34,12 +34,6 @@ type Picked = {
   file: File
   previewUrl: string
 }
-
-/** Số ảnh tối đa mỗi bài — cấu hình qua `VITE_MAX_PHOTOS` trong `.env`. */
-const MAX_PHOTOS = (() => {
-  const raw = Number.parseInt(import.meta.env.VITE_MAX_PHOTOS ?? '', 10)
-  return Number.isFinite(raw) && raw > 0 ? raw : 8
-})()
 
 export function ComposeScreen() {
   const navigate = useNavigate()
@@ -357,11 +351,9 @@ export function ComposeScreen() {
 
   return (
     <Screen>
-      <TopBar to="/timeline" label="Huỷ" />
+      <FormHeader to="/timeline" title="Thêm kỉ niệm" />
       <form onSubmit={submit} className="contents">
         <Stage>
-          <Title>Thêm kỉ niệm</Title>
-
           <div className="mt-5 grid grid-cols-4 gap-2">
             {photos.map((p, i) => (
               <div

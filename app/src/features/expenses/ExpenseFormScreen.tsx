@@ -17,11 +17,10 @@ import { PREVIEW } from '../../dev/preview'
 import {
   ErrorText,
   Field,
+  FormHeader,
   Screen,
   Spacer,
   Stage,
-  Title,
-  TopBar,
 } from '../../components/ui'
 import { btn, input } from '../../lib/ui-classes'
 import { DateField } from '../../components/DateField'
@@ -159,11 +158,12 @@ export function ExpenseFormScreen() {
 
   return (
     <Screen>
-      <TopBar to={backTo} label="Huỷ" />
+      <FormHeader
+        to={backTo}
+        title={editing ? 'Sửa khoản chi' : 'Ghi một khoản'}
+      />
       <form onSubmit={submit} className="contents">
         <Stage>
-          <Title>{editing ? 'Sửa khoản chi' : 'Ghi một khoản'}</Title>
-
           <div className="mt-6">
             <Field label="Số tiền">
               <AmountInput

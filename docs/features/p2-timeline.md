@@ -58,8 +58,9 @@ MỘT màn hình soạn bài duy nhất (không chia nhiều bước)
   đăng + thời điểm đăng (`created_at`, dạng tương đối). Không cần vào chi tiết
   mới biết ai đăng.
 - Bài **của mình** có nút `⋯` ngay trên thẻ → **Cập nhật** / **Xoá** (xoá hỏi
-  xác nhận tại chỗ; cập nhật mở form sửa ở màn chi tiết). Bài của người kia
-  không có menu này.
+  xác nhận tại chỗ; cập nhật mở form sửa ở màn chi tiết). Form sửa cho phép
+  **thêm / xoá ảnh** (cùng giới hạn `VITE_MAX_PHOTOS`), không chỉ sửa chữ.
+  Bài của người kia không có menu này.
 - Ngày kỉ niệm (`happened_on`), nơi chốn và hoạt động vẫn nằm dưới caption —
   đó là ngày sự kiện, khác với lúc bài được đăng lên.
 - Chia nhóm theo tháng, tiêu đề dính (`Tháng 9, 2026`).

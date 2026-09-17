@@ -70,3 +70,4 @@ Toàn bộ — xem [tasks.md](tasks.md).
 | 2026-09-17 | Điều tra `TypeError: Load failed` khi đăng caption có emoji: không phải lỗi emoji (DB UTF-8 ok) mà là lỗi mạng Safari. Sửa `isRetriable` đọc message từ object Supabase + try/catch ComposeScreen, thông báo tiếng Việt, tránh nhân đôi bài khi đứt mạng lúc upload | Đã xong code | Thử đăng lại caption có ☀️🇻🇳💕 trên iPhone |
 | 2026-09-17 | Chuyển `MAX_PHOTOS` sang `VITE_MAX_PHOTOS` trong `.env` (mặc định 8). Flow đăng giữ nguyên | Đã xong | Muốn tăng giảm → sửa env rồi restart Vite |
 | 2026-09-17 | Ô comment: `fixed` + `useKeyboardBottom` dán sát bàn phím (bỏ sticky/mt-auto gây khoảng trống). Không co cả màn hình | Đã xong | Gõ comment trên iPhone |
+| 2026-09-17 | Form sửa kỉ niệm: cho thêm/xoá ảnh (lưới giống đăng bài), đồng bộ `post_media` + Storage khi Lưu. `MAX_PHOTOS` gom vào `lib/maxPhotos.ts` | Đã xong | Thử sửa bài: bỏ ảnh / thêm ảnh rồi Lưu |
